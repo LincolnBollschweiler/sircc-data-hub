@@ -1,0 +1,7 @@
+.vscode
+.next
+public
+design
+node_modules
+*.md
+src/app/drizzle/migrations
