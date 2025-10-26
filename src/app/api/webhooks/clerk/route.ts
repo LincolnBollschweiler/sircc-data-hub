@@ -49,6 +49,7 @@ export async function POST(req: Request) {
 			if (lastName === "") return new Response("No last name", { status: 400 });
 
 			if (event.type === "user.created") {
+				console.log("event.type === user.created");
 				const user = await insertUser({
 					clerkUserId: event.data.id,
 					firstName,

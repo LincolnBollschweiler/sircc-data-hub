@@ -22,7 +22,7 @@ const deletedAt = timestamp("deleted_at", { withTimezone: true });
 
 // Enum
 
-export const userRoles = ["admin", "coach", "client", "volunteer", "client-volunteer"] as const;
+export const userRoles = ["developer", "admin", "coach", "client", "volunteer", "client-volunteer"] as const;
 export type UserRole = (typeof userRoles)[number];
 const userRoleEnum = pgEnum("user_role", userRoles);
 
@@ -184,7 +184,7 @@ export const reentryCheckListItem = pgTable(
 	"reentry_check_list_item",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
-		name: varchar("name", { length: 255 }).notNull(),
+		name: varchar("name", { length: 100 }).notNull(),
 		description: varchar("description", { length: 1000 }),
 		createdAt,
 		updatedAt,

@@ -1,0 +1,1 @@
+ALTER TABLE "site" DROP COLUMN "birth_day";
