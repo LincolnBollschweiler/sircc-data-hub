@@ -6,10 +6,12 @@ export const getClientServiceGlobalTag = () => {
 };
 
 export const getClientServiceIdTag = (id: string) => {
+	console.log("Getting ID tag for client service ID:", id, getIdTag("client-services", id));
 	return getIdTag("client-services", id);
 };
 
-export const revalidateClientServiceCache = (id: string) => {
+export const revalidateClientServiceCache = async (id: string) => {
+	// console.log("Revalidating cache for client service ID:", id, getClientServiceIdTag(id));
 	revalidateTag(getClientServiceGlobalTag(), "max");
 	revalidateTag(getClientServiceIdTag(id), "max");
 };

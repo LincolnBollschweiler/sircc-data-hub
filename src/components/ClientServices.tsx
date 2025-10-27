@@ -2,38 +2,54 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { clientServiceSchema } from "../schemas/clientServices";
-import z from "zod";
+import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import RequiredLabelIcon from "@/components/RequiredLabelIcon";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { createClientService } from "../actions/clientServices";
 import { actionToast } from "@/hooks/use-toast";
+import { createClientService, updateClientService } from "../tableInteractions/actions";
+import { clientServiceSchema } from "../tableInteractions/schemas";
+import { redirect, useRouter } from "next/navigation";
 
-export default function ClientServiceForm() {
+export default function ClientServiceForm({
+	clientService,
+}: {
+	clientService?: { id: string; name: string; description: string | null; dispersesFunds: boolean | null };
+}) {
 	const form = useForm<z.infer<typeof clientServiceSchema>>({
 		resolver: zodResolver(clientServiceSchema),
-		defaultValues: {
+		defaultValues: clientService ?? {
 			name: "",
 			description: "",
 			dispersesFunds: false,
 		},
 	});
 
-	const onSubmit = async (data: z.infer<typeof clientServiceSchema>) => {
-		const actionData = await createClientService(data);
-		if (actionData.error) {
+	const router = useRouter();
+
+	const onSubmit = async (values: z.infer<typeof clientServiceSchema>) => {
+		const action = clientService == null ? createClientService : updateClientService.bind(null, clientService.id);
+
+		const actionData = await action(values);
+
+		if (actionData) {
 			actionToast({ actionData });
-			return;
 		}
+
+		// Force a fresh navigation AFTER the server action fully completes with a timeout for router.refresh()
+		console.log("************************************************");
+		console.log("**********  Refreshing router... ***************");
+		console.log("************************************************");
+		setTimeout(() => router.refresh(), 250);
+		redirect("/admin/data-types/client-services");
 	};
 
 	return (
 		<Form {...form}>
-			<form onSubmit={() => onSubmit(form.getValues())} className="flex gap-6 flex-col">
+			<form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-6 flex-col">
 				<FormField
 					control={form.control}
 					name="name"
@@ -57,9 +73,8 @@ export default function ClientServiceForm() {
 						<FormItem>
 							<FormLabel>Description</FormLabel>
 							<FormControl>
-								<Textarea className="min-h-20 resize-none" {...field} />
+								<Textarea className="min-h-20 resize-none" {...field} value={field.value ?? ""} />
 							</FormControl>
-							<FormMessage />
 						</FormItem>
 					)}
 				/>
@@ -70,8 +85,12 @@ export default function ClientServiceForm() {
 						<FormItem>
 							<FormLabel>Disperses Funds?</FormLabel>
 							<FormControl>
-								{/* TODO FIX */}
-								<Checkbox {...field} onChange={() => (field.value = !field.value)} />
+								<Checkbox
+									checked={!!field.value}
+									onCheckedChange={(checked) => field.onChange(checked)}
+									ref={field.ref}
+									name={field.name}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>

@@ -1,5 +1,5 @@
 import PageHeader from "@/components/PageHeader";
-import ClientServiceForm from "@/features/clientServices/components/clientServices";
+import ClientServiceForm from "@/components/ClientServices";
 
 export default function NewClientServicesPage() {
 	return (
