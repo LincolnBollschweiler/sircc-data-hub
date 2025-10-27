@@ -64,6 +64,20 @@
       "when": 1761403363272,
       "tag": "0008_crazy_siren",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1761407080430,
+      "tag": "0009_faulty_maelstrom",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1761419790799,
+      "tag": "0010_smooth_lightspeed",
+      "breakpoints": true
     }
   ]
 }
