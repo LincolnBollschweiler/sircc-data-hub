@@ -8,7 +8,7 @@ export default async function EditClientServicePage({ params }: { params: Promis
 	const { clientServiceId } = await params;
 	const clientService = await getCachedClientService(clientServiceId);
 	return (
-		<div className="container py-4">
+		<div className="container py-4 max-w-2xl mx-auto">
 			<PageHeader title="Edit Client Service" />
 			<ClientServiceForm clientService={clientService} />
 		</div>
@@ -18,7 +18,6 @@ export default async function EditClientServicePage({ params }: { params: Promis
 const getCachedClientService = (clientServiceId: string) => {
 	const cachedFn = unstable_cache(
 		async () => {
-			console.log("Fetching client service from DB (not cache):", clientServiceId);
 			return await getClientServiceById(clientServiceId);
 		},
 		["getClientServiceById", clientServiceId],

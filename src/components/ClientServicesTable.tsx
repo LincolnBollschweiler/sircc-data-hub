@@ -18,7 +18,7 @@ export default function ClientServicesTable({
 	}[];
 }) {
 	return (
-		<Table>
+		<Table className="w-fit mx-auto">
 			<TableHeader>
 				<TableRow>
 					<TableHead>Name</TableHead>
@@ -39,7 +39,7 @@ export default function ClientServicesTable({
 						<TableCell>{new Date(item.updatedAt).toLocaleDateString()}</TableCell>
 						<TableCell>
 							<div className="flex gap-2">
-								<Button asChild className="w-fit text-center">
+								<Button asChild>
 									<Link href={`/admin/data-types/client-services/${item.id}/edit`} className="w-full">
 										<FilePenLineIcon />
 										<span className="sr-only">Edit</span>
