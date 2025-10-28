@@ -1,5 +1,5 @@
 import { getGlobalTag, getIdTag } from "@/lib/dataCache";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export const getClientServiceGlobalTag = () => {
 	return getGlobalTag("client-services");
@@ -11,7 +11,9 @@ export const getClientServiceIdTag = (id: string) => {
 };
 
 export const revalidateClientServiceCache = async (id: string) => {
-	// console.log("Revalidating cache for client service ID:", id, getClientServiceIdTag(id));
+	console.log(">>> revalidate called for id:", id);
 	revalidateTag(getClientServiceGlobalTag(), "max");
 	revalidateTag(getClientServiceIdTag(id), "max");
+	revalidatePath("/admin/data-types/client-services");
+	revalidatePath(`/admin/data-types/client-services/${id}/edit`);
 };
