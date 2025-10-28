@@ -2,9 +2,9 @@ import { db } from "@/drizzle/db";
 import { service } from "@/drizzle/schema";
 import { revalidateClientServiceCache } from "./cache";
 import { eq } from "drizzle-orm";
-import { isNull, desc } from "drizzle-orm";
+import { isNull } from "drizzle-orm";
 import { getClientServiceGlobalTag } from "@/tableInteractions/cache";
-import { unstable_cache } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 
 //#region Client Service DB Interactions
 export const insertClientService = async (data: typeof service.$inferInsert) => {
@@ -65,11 +65,33 @@ const cachedClientServices = unstable_cache(
 			})
 			.from(service)
 			.where(isNull(service.deletedAt))
-			.orderBy(desc(service.createdAt));
+			.orderBy(service.order);
 	},
 	["getClientServices"],
 	{ tags: [getClientServiceGlobalTag()] }
 );
 
 export const getClientServices = async () => cachedClientServices();
+
+export const updateClientServiceOrders = async (orderedIds: string[]) => {
+	const services = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [updatedService] = await db
+				.update(service)
+				.set({ order: index })
+				.where(eq(service.id, id))
+				.returning();
+			return updatedService;
+		})
+	);
+
+	services.flat().forEach((svc) => {
+		if (svc) {
+			revalidateClientServiceCache(svc.id);
+		}
+	});
+	revalidatePath("/admin/data-types/client-services");
+
+	return services;
+};
 //#endregion Client Service DB Interactions

@@ -1,1 +1,0 @@
-ALTER TABLE "user" ALTER COLUMN "clerk_user_id" SET DATA TYPE varchar(100);

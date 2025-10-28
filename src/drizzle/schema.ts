@@ -160,6 +160,7 @@ export const service = pgTable(
 		name: varchar("name", { length: 100 }).notNull(),
 		description: varchar("description", { length: 1000 }),
 		dispersesFunds: boolean("disperses_funds").default(false),
+		order: integer("order").notNull().default(0),
 		createdAt,
 		updatedAt,
 		deletedAt,

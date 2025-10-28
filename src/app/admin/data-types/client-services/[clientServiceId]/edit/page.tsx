@@ -1,4 +1,4 @@
-import ClientServiceForm from "@/components/ClientServices";
+import ClientServiceForm from "@/components/ClientServiceForm";
 import PageHeader from "@/components/PageHeader";
 import { getClientServiceIdTag } from "@/tableInteractions/cache";
 import { getClientServiceById } from "@/tableInteractions/db";
