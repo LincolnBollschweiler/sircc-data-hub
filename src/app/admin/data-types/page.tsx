@@ -17,8 +17,8 @@ export default function DataTypesPage() {
 					</Link>
 				</Button>
 				<Button asChild>
-					<Link className="mx-auto" href={"/admin/data-types/volunteer-roles"}>
-						Volunteer Roles
+					<Link className="mx-auto" href={"/admin/data-types/volunteer-types"}>
+						Volunteer Types
 					</Link>
 				</Button>
 				<Button asChild>
