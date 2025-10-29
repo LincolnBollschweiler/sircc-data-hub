@@ -46,7 +46,50 @@ export const updateVolunteerTypeOrders = async (orderedIds: string[]) => {
 	await dbTable.updateVolunteerTypeOrders(orderedIds);
 	return { error: false, message: "Volunteer type orders updated successfully" };
 };
+//#endregion
 
+//#region Reentry Checklist Items
+export const createReentryChecklistItem = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.insertReentryChecklistItem(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create reentry checklist item" : "Reentry checklist item created successfully",
+	};
+};
+
+export const updateReentryChecklistItem = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.updateReentryChecklistItemById(id, data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to update reentry checklist item" : "Reentry checklist item updated successfully",
+	};
+};
+
+export const removeReentryChecklistItem = async (id: string) => {
+	const rv = await dbTable.deleteReentryChecklistItem(id);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to remove reentry checklist item" : "Reentry checklist item removed successfully",
+	};
+};
+
+export const updateReentryChecklistItemOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No reentry checklist items to update" };
+
+	await dbTable.updateReentryChecklistItemOrders(orderedIds);
+	return { error: false, message: "Reentry checklist item orders updated successfully" };
+};
 //#endregion
 
 //#region Client Services

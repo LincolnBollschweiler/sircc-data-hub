@@ -99,6 +99,99 @@ export const updateVolunteerTypeOrders = async (orderedIds: string[]) => {
 };
 //#endregion
 
+//#region Reentry Checklist Items
+export const insertReentryChecklistItem = async (data: typeof dbTable.reentryCheckListItem.$inferInsert) => {
+	const [rv] = await db.insert(dbTable.reentryCheckListItem).values(data).returning();
+	if (!rv) return;
+
+	cache.revalidateReentryChecklistItemCache(rv.id);
+	return rv;
+};
+
+export const getReentryChecklistItemById = async (id: string) => {
+	const reentryChecklistItem = await db.query.reentryCheckListItem.findFirst({
+		columns: { id: true, name: true, description: true },
+		where: eq(dbTable.reentryCheckListItem.id, id),
+	});
+
+	if (!reentryChecklistItem) {
+		throw new Error("Reentry checklist item not found");
+	}
+	return reentryChecklistItem;
+};
+
+export const updateReentryChecklistItemById = async (
+	id: string,
+	data: Partial<typeof dbTable.reentryCheckListItem.$inferInsert>
+) => {
+	const [rv] = await db
+		.update(dbTable.reentryCheckListItem)
+		.set(data)
+		.where(eq(dbTable.reentryCheckListItem.id, id))
+		.returning();
+	if (!rv) {
+		return { error: true, message: "Failed to update reentry checklist item" };
+	}
+	cache.revalidateReentryChecklistItemCache(id);
+	return { error: false, message: "Reentry checklist item updated successfully" };
+};
+
+export const deleteReentryChecklistItem = async (id: string) => {
+	const [rv] = await db
+		.update(dbTable.reentryCheckListItem)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.reentryCheckListItem.id, id))
+		.returning();
+	if (!rv) return;
+
+	cache.revalidateReentryChecklistItemCache(id);
+	return rv;
+};
+
+const cachedReentryChecklistItems = unstable_cache(
+	async () => {
+		console.log("Fetching reentry checklist items from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.reentryCheckListItem.id,
+				name: dbTable.reentryCheckListItem.name,
+				description: dbTable.reentryCheckListItem.description,
+				createdAt: dbTable.reentryCheckListItem.createdAt,
+				updatedAt: dbTable.reentryCheckListItem.updatedAt,
+			})
+			.from(dbTable.reentryCheckListItem)
+			.where(isNull(dbTable.reentryCheckListItem.deletedAt))
+			.orderBy(dbTable.reentryCheckListItem.order);
+	},
+	["getReentryChecklistItems"],
+	{ tags: [cache.getReentryChecklistItemGlobalTag()] }
+);
+
+export const getReentryChecklistItems = async () => cachedReentryChecklistItems();
+
+export const updateReentryChecklistItemOrders = async (orderedIds: string[]) => {
+	const items = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db
+				.update(dbTable.reentryCheckListItem)
+				.set({ order: index })
+				.where(eq(dbTable.reentryCheckListItem.id, id))
+				.returning();
+			return rv;
+		})
+	);
+
+	items.flat().forEach((item) => {
+		if (item) {
+			cache.revalidateReentryChecklistItemCache(item.id);
+		}
+	});
+	revalidatePath("/admin/data-types/reentry-checklist-items");
+
+	return items;
+};
+//#endregion
+
 //#region Client Service DB Interactions
 export const insertClientService = async (data: typeof dbTable.service.$inferInsert) => {
 	const [newClientService] = await db.insert(dbTable.service).values(data).returning();
@@ -110,17 +203,16 @@ export const insertClientService = async (data: typeof dbTable.service.$inferIns
 	return newClientService;
 };
 
-export const deleteClientService = async (id: string) => {
-	const [deletedClientService] = await db
-		.update(dbTable.service)
-		.set({ deletedAt: new Date() })
-		.where(eq(dbTable.service.id, id))
-		.returning();
+export const getClientServiceById = async (id: string) => {
+	const clientService = await db.query.service.findFirst({
+		columns: { id: true, name: true, description: true, dispersesFunds: true },
+		where: eq(dbTable.service.id, id),
+	});
 
-	if (!deletedClientService) return;
-
-	cache.revalidateClientServiceCache(id);
-	return deletedClientService;
+	if (!clientService) {
+		throw new Error("Client service not found");
+	}
+	return clientService;
 };
 
 export const updateClientServiceById = async (id: string, data: Partial<typeof dbTable.service.$inferInsert>) => {
@@ -136,16 +228,17 @@ export const updateClientServiceById = async (id: string, data: Partial<typeof d
 	return { error: false, message: "Client service updated successfully" };
 };
 
-export const getClientServiceById = async (id: string) => {
-	const clientService = await db.query.service.findFirst({
-		columns: { id: true, name: true, description: true, dispersesFunds: true },
-		where: eq(dbTable.service.id, id),
-	});
+export const deleteClientService = async (id: string) => {
+	const [deletedClientService] = await db
+		.update(dbTable.service)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.service.id, id))
+		.returning();
 
-	if (!clientService) {
-		throw new Error("Client service not found");
-	}
-	return clientService;
+	if (!deletedClientService) return;
+
+	cache.revalidateClientServiceCache(id);
+	return deletedClientService;
 };
 
 const cachedClientServices = unstable_cache(
