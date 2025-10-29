@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { clientServiceSchema } from "./schemas";
-import { deleteClientService, insertClientService, updateClientServiceById } from "./db";
+import { deleteClientService, insertClientService, updateClientServiceById, updateClientServiceOrders } from "./db";
 
 export const createClientService = async (unsafeData: z.infer<typeof clientServiceSchema>) => {
 	const { success, data } = clientServiceSchema.safeParse(unsafeData);
@@ -31,4 +31,11 @@ export const removeClientService = async (id: string) => {
 		error: !clientService,
 		message: !clientService ? "Failed to remove client service" : "Client service removed successfully",
 	};
+};
+
+export const updateOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No client services to update" };
+
+	await updateClientServiceOrders(orderedIds);
+	return { error: false, message: "Client service orders updated successfully" };
 };

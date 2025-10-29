@@ -1,5 +1,5 @@
 {
-  "id": "935412b5-7aff-4175-815f-4b8d02c4161a",
+  "id": "af225a64-44ea-4403-8512-45c9381c69ed",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -27,35 +27,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "is_reentry_client": {
-          "name": "is_reentry_client",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "ssn_or_dln": {
-          "name": "ssn_or_dln",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'0'"
-        },
-        "photo_url": {
-          "name": "photo_url",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": false
-        },
         "phone": {
           "name": "phone",
           "type": "varchar(10)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "email": {
-          "name": "email",
-          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
         },
@@ -64,6 +38,19 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
+        },
+        "date_of_birth": {
+          "name": "date_of_birth",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_reentry_client": {
+          "name": "is_reentry_client",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         },
         "follow_up_needed": {
           "name": "follow_up_needed",
@@ -163,7 +150,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "client_coach_id_coach_id_fk": {
@@ -176,7 +163,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -237,7 +224,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "client_reentry_check_list_item_reentry_check_list_item_id_reentry_check_list_item_id_fk": {
@@ -250,7 +237,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },
@@ -437,7 +424,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "client_service_location_id_location_id_fk": {
@@ -450,7 +437,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "client_service_client_id_client_id_fk": {
@@ -463,7 +450,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "client_service_requested_service_id_service_id_fk": {
@@ -476,7 +463,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "restrict",
           "onUpdate": "no action"
         },
         "client_service_provided_service_id_service_id_fk": {
@@ -489,7 +476,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "restrict",
           "onUpdate": "no action"
         },
         "client_service_referral_source_id_referral_source_id_fk": {
@@ -502,7 +489,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -527,35 +514,11 @@
           "name": "user_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "site_id": {
           "name": "site_id",
           "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "photo_url": {
-          "name": "photo_url",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "phone": {
-          "name": "phone",
-          "type": "varchar(10)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "email": {
-          "name": "email",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "address": {
-          "name": "address",
-          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
         },
@@ -565,6 +528,18 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -645,7 +620,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "coach_site_id_site_id_fk": {
@@ -658,7 +633,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -740,7 +715,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -837,7 +812,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -898,7 +873,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "coach_training_training_id_training_id_fk": {
@@ -911,7 +886,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },
@@ -996,7 +971,7 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1148,6 +1123,13 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "created_at": {
           "name": "created_at",
@@ -1349,7 +1331,7 @@
         },
         "clerk_user_id": {
           "name": "clerk_user_id",
-          "type": "uuid",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1372,6 +1354,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'client'"
+        },
+        "photo_url": {
+          "name": "photo_url",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -1428,7 +1422,15 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "user_clerk_user_id_unique": {
+          "name": "user_clerk_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clerk_user_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1456,27 +1458,21 @@
           "primaryKey": false,
           "notNull": false
         },
-        "photo_url": {
-          "name": "photo_url",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": false
-        },
         "phone": {
           "name": "phone",
           "type": "varchar(10)",
           "primaryKey": false,
           "notNull": false
         },
-        "email": {
-          "name": "email",
+        "address": {
+          "name": "address",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
         },
-        "address": {
-          "name": "address",
-          "type": "varchar(255)",
+        "date_of_birth": {
+          "name": "date_of_birth",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1559,7 +1555,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "volunteer_coach_id_coach_id_fk": {
@@ -1572,7 +1568,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -1690,7 +1686,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "volunteer_hours_volunteering_type_id_volunteering_type_id_fk": {
@@ -1703,7 +1699,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "restrict",
           "onUpdate": "no action"
         },
         "volunteer_hours_site_id_site_id_fk": {
@@ -1716,7 +1712,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
