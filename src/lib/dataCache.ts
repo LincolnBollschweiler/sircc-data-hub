@@ -1,7 +1,14 @@
 // TODO: review video timestamp 1:28:00 for cache invalidation strategy
 
 // TODO: Add more tags as needed
-type CACHE_TAG = "users" | "coaches" | "clients" | "volunteers" | "client-services" | "volunteer-types";
+type CACHE_TAG =
+	| "users"
+	| "coaches"
+	| "clients"
+	| "volunteers"
+	| "client-services"
+	| "volunteer-types"
+	| "reentry-checklist-items";
 
 export const getGlobalTag = (tag: CACHE_TAG) => {
 	return `global:${tag}` as const;

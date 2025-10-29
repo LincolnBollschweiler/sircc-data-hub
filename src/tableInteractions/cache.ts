@@ -20,6 +20,25 @@ export const revalidateVolunteeringTypeCache = async (id: string) => {
 };
 //#endregion
 
+//#region Reentry Checklist Items Cache Tags
+export const getReentryChecklistItemGlobalTag = () => {
+	return getGlobalTag("reentry-checklist-items");
+};
+
+export const getReentryChecklistItemIdTag = (id: string) => {
+	console.log("Getting ID tag for reentry checklist item ID:", id, getIdTag("reentry-checklist-items", id));
+	return getIdTag("reentry-checklist-items", id);
+};
+
+export const revalidateReentryChecklistItemCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(getReentryChecklistItemGlobalTag(), "max");
+	revalidateTag(getReentryChecklistItemIdTag(id), "max");
+	revalidatePath("/admin/data-types/reentry-checklist-items");
+	revalidatePath(`/admin/data-types/reentry-checklist-items/${id}/edit`);
+};
+//#endregion
+
 //#region Client Services Cache Tags
 export const getClientServiceGlobalTag = () => {
 	return getGlobalTag("client-services");
