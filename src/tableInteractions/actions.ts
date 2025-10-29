@@ -1,0 +1,88 @@
+"use server";
+
+import { z } from "zod";
+import * as schemas from "./schemas";
+import * as dbTable from "./db";
+
+//#region Volunteer Types
+export const createVolunteerType = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.insertVolunteerType(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create volunteer type" : "Volunteer type created successfully",
+	};
+};
+
+export const updateVolunteerType = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.updateVolunteerTypeById(id, data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to update volunteer type" : "Volunteer type updated successfully",
+	};
+};
+
+export const removeVolunteerType = async (id: string) => {
+	const rv = await dbTable.deleteVolunteerType(id);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to remove volunteer type" : "Volunteer type removed successfully",
+	};
+};
+
+export const updateVolunteerTypeOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No volunteer types to update" };
+
+	await dbTable.updateVolunteerTypeOrders(orderedIds);
+	return { error: false, message: "Volunteer type orders updated successfully" };
+};
+
+//#endregion
+
+//#region Client Services
+export const createClientService = async (unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
+	const { success, data } = schemas.clientServiceSchema.safeParse(unsafeData);
+
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.insertClientService(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create client service" : "Client service created successfully",
+	};
+};
+
+export const updateClientService = async (id: string, unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
+	const { success, data } = schemas.clientServiceSchema.safeParse(unsafeData);
+
+	if (!success) return { error: true, message: "Validation failed" };
+	return await dbTable.updateClientServiceById(id, data);
+};
+
+export const removeClientService = async (id: string) => {
+	const clientService = await dbTable.deleteClientService(id);
+
+	return {
+		error: !clientService,
+		message: !clientService ? "Failed to remove client service" : "Client service removed successfully",
+	};
+};
+
+export const updateClientServicesOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No client services to update" };
+
+	await dbTable.updateClientServiceOrders(orderedIds);
+	return { error: false, message: "Client service orders updated successfully" };
+};
+//#endregion

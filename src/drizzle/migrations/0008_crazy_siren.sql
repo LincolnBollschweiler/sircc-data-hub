@@ -1,1 +1,0 @@
-ALTER TABLE "client" DROP COLUMN "ssn_or_dln";
