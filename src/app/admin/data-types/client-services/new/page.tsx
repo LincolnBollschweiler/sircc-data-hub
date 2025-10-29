@@ -3,7 +3,7 @@ import ClientServiceForm from "@/components/ClientServiceForm";
 
 export default function NewClientServicesPage() {
 	return (
-		<div className="container py-4">
+		<div className="container py-4 max-w-2xl mx-auto">
 			<PageHeader title="New Client Service" />
 			<ClientServiceForm />
 		</div>
