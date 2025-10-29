@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
 	title: "SIRCC",
@@ -16,10 +15,7 @@ export default function RootLayout({
 	return (
 		<ClerkProvider>
 			<html lang="en">
-				<body className={"antialiased"}>
-					{children}
-					<Toaster />
-				</body>
+				<body className={"antialiased"}>{children}</body>
 			</html>
 		</ClerkProvider>
 	);

@@ -49,7 +49,6 @@ export async function POST(req: Request) {
 			if (lastName === "") return new Response("No last name", { status: 400 });
 
 			if (event.type === "user.created") {
-				console.log("User created webhook received for:", email);
 				const user = await insertUser({
 					clerkUserId: event.data.id,
 					firstName,
@@ -61,7 +60,6 @@ export async function POST(req: Request) {
 
 				await syncClerkUserMetadata(user);
 			} else {
-				console.log("User updated webhook received for:", email);
 				await updateUser(
 					{ clerkUserId: event.data.id },
 					{
@@ -76,7 +74,6 @@ export async function POST(req: Request) {
 			break;
 		}
 		case "user.deleted": {
-			console.log("User deleted webhook received for:", event.data.id);
 			if (event.data.id != null) {
 				await deleteUser({ clerkUserId: event.data.id });
 			}
