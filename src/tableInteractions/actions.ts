@@ -169,6 +169,83 @@ export const updateLocationOrders = async (orderedIds: string[]) => {
 };
 //#endregion
 
+//#region Referral Sources
+export const createReferralSource = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.insertReferralSource(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create referral source" : "Referral source created successfully",
+	};
+};
+
+export const updateReferralSource = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+	const rv = await dbTable.updateReferralSourceById(id, data);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to update referral source" : "Referral source updated successfully",
+	};
+};
+
+export const removeReferralSource = async (id: string) => {
+	const rv = await dbTable.deleteReferralSource(id);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to remove referral source" : "Referral source removed successfully",
+	};
+};
+
+export const updateReferralSourceOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No referral sources to update" };
+	await dbTable.updateReferralSourceOrders(orderedIds);
+	return { error: false, message: "Referral source orders updated successfully" };
+};
+//#endregion
+
+//#region Sites
+export const createSite = async (unsafeData: z.infer<typeof schemas.siteSchema>) => {
+	const { success, data } = schemas.siteSchema.safeParse(unsafeData);
+
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.insertSite(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create site" : "Site created successfully",
+	};
+};
+
+export const updateSite = async (id: string, unsafeData: z.infer<typeof schemas.siteSchema>) => {
+	const { success, data } = schemas.siteSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+	const rv = await dbTable.updateSiteById(id, data);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to update site" : "Site updated successfully",
+	};
+};
+
+export const removeSite = async (id: string) => {
+	const rv = await dbTable.deleteSite(id);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to remove site" : "Site removed successfully",
+	};
+};
+
+export const updateSiteOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No sites to update" };
+	await dbTable.updateSiteOrders(orderedIds);
+	return { error: false, message: "Site orders updated successfully" };
+};
+//#endregion
+
 //#region Client Services
 export const createClientService = async (unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
 	const { success, data } = schemas.clientServiceSchema.safeParse(unsafeData);

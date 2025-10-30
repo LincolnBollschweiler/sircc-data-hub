@@ -76,6 +76,44 @@ export const revalidateLocationCache = async (id: string) => {
 };
 //#endregion
 
+//#region Sites Cache Tags
+export const getSiteGlobalTag = () => {
+	return getGlobalTag("sites");
+};
+
+export const getSiteIdTag = (id: string) => {
+	console.log("Getting ID tag for site ID:", id, getIdTag("sites", id));
+	return getIdTag("sites", id);
+};
+
+export const revalidateSiteCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(getSiteGlobalTag(), "max");
+	revalidateTag(getSiteIdTag(id), "max");
+	revalidatePath("/admin/data-types/sites");
+	revalidatePath(`/admin/data-types/sites/${id}/edit`);
+};
+//#endregion
+
+//#region Referral Sources Cache Tags
+export const getReferralSourceGlobalTag = () => {
+	return getGlobalTag("referral-sources");
+};
+
+export const getReferralSourceIdTag = (id: string) => {
+	console.log("Getting ID tag for referral source ID:", id, getIdTag("referral-sources", id));
+	return getIdTag("referral-sources", id);
+};
+
+export const revalidateReferralSourceCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(getReferralSourceGlobalTag(), "max");
+	revalidateTag(getReferralSourceIdTag(id), "max");
+	revalidatePath("/admin/data-types/referral-sources");
+	revalidatePath(`/admin/data-types/referral-sources/${id}/edit`);
+};
+//#endregion
+
 //#region Client Services Cache Tags
 export const getClientServiceGlobalTag = () => {
 	return getGlobalTag("client-services");
