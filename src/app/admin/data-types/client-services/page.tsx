@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
 import Link from "next/link";
-import ClientServices from "@/components/ClientServices";
+import ClientServices from "@/components/clientServices/ClientServices";
 import { getClientServices } from "@/tableInteractions/db";
 
 export default async function ClientServicesPage() {

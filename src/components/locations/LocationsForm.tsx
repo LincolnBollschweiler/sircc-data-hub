@@ -7,29 +7,27 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import RequiredLabelIcon from "@/components/RequiredLabelIcon";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
-import { createClientService, updateClientService } from "../tableInteractions/actions";
-import { clientServiceSchema } from "../tableInteractions/schemas";
+import { generalSchema } from "../../tableInteractions/schemas";
 import { redirect } from "next/navigation";
+import { createLocation, updateLocation } from "@/tableInteractions/actions";
 
-export default function ClientServiceForm({
-	clientService,
+export default function LocationsForm({
+	location,
 }: {
-	clientService?: { id: string; name: string; description: string | null; dispersesFunds: boolean | null };
+	location?: { id: string; name: string; description: string | null };
 }) {
-	const form = useForm<z.infer<typeof clientServiceSchema>>({
-		resolver: zodResolver(clientServiceSchema),
-		defaultValues: clientService ?? {
+	const form = useForm<z.infer<typeof generalSchema>>({
+		resolver: zodResolver(generalSchema),
+		defaultValues: location ?? {
 			name: "",
 			description: "",
-			dispersesFunds: false,
 		},
 	});
 
-	const onSubmit = async (values: z.infer<typeof clientServiceSchema>) => {
-		const action = clientService == null ? createClientService : updateClientService.bind(null, clientService.id);
+	const onSubmit = async (values: z.infer<typeof generalSchema>) => {
+		const action = location == null ? createLocation : updateLocation.bind(null, location.id);
 
 		const actionData = await action(values);
 
@@ -37,7 +35,7 @@ export default function ClientServiceForm({
 			actionToast({ actionData });
 		}
 
-		redirect("/admin/data-types/client-services");
+		redirect("/admin/data-types/locations");
 	};
 
 	return (
@@ -71,33 +69,11 @@ export default function ClientServiceForm({
 						</FormItem>
 					)}
 				/>
-				<FormField
-					control={form.control}
-					name="dispersesFunds"
-					render={({ field }) => (
-						<FormItem>
-							<div className="flex items-center gap-3">
-								<FormLabel className="m-0 leading-none">
-									Requires a funds dispersal dollar amount?
-								</FormLabel>
-								<FormControl>
-									<Checkbox
-										className="mt-0 align-middle size-5"
-										checked={!!field.value}
-										onCheckedChange={(checked) => field.onChange(checked)}
-										ref={field.ref}
-										name={field.name}
-									/>
-								</FormControl>
-							</div>
-						</FormItem>
-					)}
-				/>
 				<div className="self-end gap-2 flex">
 					<Button
 						type="button"
 						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/client-services")}
+						onClick={() => redirect("/admin/data-types/locations")}
 					>
 						Cancel
 					</Button>

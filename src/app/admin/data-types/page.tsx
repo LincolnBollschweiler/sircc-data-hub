@@ -27,13 +27,13 @@ export default function DataTypesPage() {
 					</Link>
 				</Button>
 				<Button asChild>
-					<Link className="mx-auto" href={"/admin/data-types/volunteering-types"}>
-						Volunteering Types
-					</Link>
-				</Button>
-				<Button asChild>
 					<Link className="mx-auto" href={"/admin/data-types/referral-sources"}>
 						Referral Sources
+					</Link>
+				</Button>{" "}
+				<Button asChild>
+					<Link className="mx-auto" href={"/admin/data-types/locations"}>
+						Locations
 					</Link>
 				</Button>
 			</div>

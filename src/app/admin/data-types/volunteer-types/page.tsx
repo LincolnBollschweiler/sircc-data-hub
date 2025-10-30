@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
 import Link from "next/link";
-import VolunteerTypes from "@/components/VolunteerTypes";
+import VolunteerTypes from "@/components/volunteerTypes/VolunteerTypes";
 import { getVolunteerTypes } from "@/tableInteractions/db";
 
 export default async function VolunteerTypesPage() {

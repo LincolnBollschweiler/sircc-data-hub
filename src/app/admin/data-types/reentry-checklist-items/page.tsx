@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
 import Link from "next/link";
-import ReentryChecklistItems from "@/components/ReentryChecklistItems";
+import ReentryChecklistItems from "@/components/reentryChecklistItems/ReentryChecklistItems";
 import { getReentryChecklistItems } from "@/tableInteractions/db";
 
 export default async function ReentryChecklistItemsPage() {

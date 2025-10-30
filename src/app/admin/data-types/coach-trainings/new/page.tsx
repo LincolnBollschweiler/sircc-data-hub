@@ -1,11 +1,11 @@
+import CoachTrainingsForm from "@/components/coachTrainings/CoachTrainingsForm";
 import PageHeader from "@/components/PageHeader";
-import VolunteerTypesForm from "@/components/volunteerTypes/VolunteerTypesForm";
 
-export default function NewVolunteerTypesPage() {
+export default function NewCoachTrainingPage() {
 	return (
 		<div className="container py-4 max-w-2xl mx-auto">
 			<PageHeader title="New Volunteering Type" />
-			<VolunteerTypesForm />
+			<CoachTrainingsForm />
 		</div>
 	);
 }

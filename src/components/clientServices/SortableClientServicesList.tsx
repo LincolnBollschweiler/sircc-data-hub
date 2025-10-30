@@ -1,10 +1,10 @@
 "use client";
 
-import SortableList, { SortableItem } from "./SortableList";
+import SortableList, { SortableItem } from "../SortableList";
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
-import { ActionButton } from "./ActionButton";
+import { ActionButton } from "../ActionButton";
 import { removeClientService, updateClientServicesOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
 
