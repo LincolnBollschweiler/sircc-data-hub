@@ -36,6 +36,11 @@ export default function DataTypesPage() {
 						Locations
 					</Link>
 				</Button>
+				<Button asChild>
+					<Link className="mx-auto" href={"/admin/data-types/sites"}>
+						Sites
+					</Link>
+				</Button>
 			</div>
 		</div>
 	);

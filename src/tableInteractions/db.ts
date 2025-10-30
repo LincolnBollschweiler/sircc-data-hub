@@ -3,7 +3,6 @@ import * as dbTable from "@/drizzle/schema";
 import * as cache from "./cache";
 import { eq } from "drizzle-orm";
 import { isNull } from "drizzle-orm";
-import { getClientServiceGlobalTag } from "@/tableInteractions/cache";
 import { revalidatePath, unstable_cache } from "next/cache";
 
 //#region Volunteer Types
@@ -293,6 +292,7 @@ export const getLocationById = async (id: string) => {
 	if (!location) throw new Error("Location not found");
 	return location;
 };
+
 export const updateLocationById = async (id: string, data: Partial<typeof dbTable.location.$inferInsert>) => {
 	const [updatedLocation] = await db
 		.update(dbTable.location)
@@ -361,6 +361,179 @@ export const updateLocationOrders = async (orderedIds: string[]) => {
 };
 //#endregion Locations DB Interactions
 
+//#region Referral Sources DB Interactions
+export const insertReferralSource = async (data: typeof dbTable.referralSource.$inferInsert) => {
+	const [newReferralSource] = await db.insert(dbTable.referralSource).values(data).returning();
+
+	if (!newReferralSource) return;
+	cache.revalidateReferralSourceCache(newReferralSource.id);
+	return newReferralSource;
+};
+
+export const getReferralSourceById = async (id: string) => {
+	const referralSource = await db.query.referralSource.findFirst({
+		columns: { id: true, name: true, description: true },
+		where: eq(dbTable.referralSource.id, id),
+	});
+
+	if (!referralSource) throw new Error("Referral source not found");
+	return referralSource;
+};
+
+export const updateReferralSourceById = async (
+	id: string,
+	data: Partial<typeof dbTable.referralSource.$inferInsert>
+) => {
+	const [updatedReferralSource] = await db
+		.update(dbTable.referralSource)
+		.set(data)
+		.where(eq(dbTable.referralSource.id, id))
+		.returning();
+	if (!updatedReferralSource) {
+		return { error: true, message: "Failed to update referral source" };
+	}
+	cache.revalidateReferralSourceCache(id);
+	return { error: false, message: "Referral source updated successfully" };
+};
+
+export const deleteReferralSource = async (id: string) => {
+	const [deletedReferralSource] = await db
+		.update(dbTable.referralSource)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.referralSource.id, id))
+		.returning();
+
+	if (!deletedReferralSource) return;
+
+	cache.revalidateReferralSourceCache(id);
+	return deletedReferralSource;
+};
+
+const cachedReferralSources = unstable_cache(
+	async () => {
+		console.log("Fetching referral sources from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.referralSource.id,
+				name: dbTable.referralSource.name,
+				description: dbTable.referralSource.description,
+				createdAt: dbTable.referralSource.createdAt,
+				updatedAt: dbTable.referralSource.updatedAt,
+			})
+			.from(dbTable.referralSource)
+			.where(isNull(dbTable.referralSource.deletedAt))
+			.orderBy(dbTable.referralSource.order);
+	},
+	["getReferralSources"],
+	{ tags: [cache.getReferralSourceGlobalTag()] }
+);
+
+export const getReferralSources = async () => cachedReferralSources();
+
+export const updateReferralSourceOrders = async (orderedIds: string[]) => {
+	const sources = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db
+				.update(dbTable.referralSource)
+				.set({ order: index })
+				.where(eq(dbTable.referralSource.id, id))
+				.returning();
+			return rv;
+		})
+	);
+
+	sources.flat().forEach((src) => {
+		if (src) {
+			cache.revalidateReferralSourceCache(src.id);
+		}
+	});
+	revalidatePath("/admin/data-types/referral-sources");
+
+	return sources;
+};
+//#endregion Referral Sources DB Interactions
+
+//#region Sites DB Interactions
+export const insertSite = async (data: typeof dbTable.site.$inferInsert) => {
+	const [newSite] = await db.insert(dbTable.site).values(data).returning();
+	if (!newSite) return;
+	cache.revalidateSiteCache(newSite.id);
+	return newSite;
+};
+
+export const getSiteById = async (id: string) => {
+	const site = await db.query.site.findFirst({
+		columns: { id: true, name: true, address: true, phone: true },
+		where: eq(dbTable.site.id, id),
+	});
+
+	if (!site) throw new Error("Site not found");
+	return site;
+};
+
+export const updateSiteById = async (id: string, data: Partial<typeof dbTable.site.$inferInsert>) => {
+	const [updatedSite] = await db.update(dbTable.site).set(data).where(eq(dbTable.site.id, id)).returning();
+	if (!updatedSite) {
+		return { error: true, message: "Failed to update site" };
+	}
+	cache.revalidateSiteCache(id);
+	return { error: false, message: "Site updated successfully" };
+};
+
+export const deleteSite = async (id: string) => {
+	const [deletedSite] = await db
+		.update(dbTable.site)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.site.id, id))
+		.returning();
+
+	if (!deletedSite) return;
+
+	cache.revalidateSiteCache(id);
+	return deletedSite;
+};
+
+const cachedSites = unstable_cache(
+	async () => {
+		console.log("Fetching sites from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.site.id,
+				name: dbTable.site.name,
+				address: dbTable.site.address,
+				phone: dbTable.site.phone,
+				createdAt: dbTable.site.createdAt,
+				updatedAt: dbTable.site.updatedAt,
+			})
+			.from(dbTable.site)
+			.where(isNull(dbTable.site.deletedAt))
+			.orderBy(dbTable.site.order);
+	},
+	["getSites"],
+	{ tags: [cache.getSiteGlobalTag()] }
+);
+
+export const getSites = async () => cachedSites();
+
+export const updateSiteOrders = async (orderedIds: string[]) => {
+	const sites = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db.update(dbTable.site).set({ order: index }).where(eq(dbTable.site.id, id)).returning();
+			return rv;
+		})
+	);
+
+	sites.flat().forEach((site) => {
+		if (site) {
+			cache.revalidateSiteCache(site.id);
+		}
+	});
+	revalidatePath("/admin/data-types/sites");
+
+	return sites;
+};
+//#endregion Sites DB Interactions
+
 //#region Client Service DB Interactions
 export const insertClientService = async (data: typeof dbTable.service.$inferInsert) => {
 	const [newClientService] = await db.insert(dbTable.service).values(data).returning();
@@ -427,7 +600,7 @@ const cachedClientServices = unstable_cache(
 			.orderBy(dbTable.service.order);
 	},
 	["getClientServices"],
-	{ tags: [getClientServiceGlobalTag()] }
+	{ tags: [cache.getClientServiceGlobalTag()] }
 );
 
 export const getClientServices = async () => cachedClientServices();

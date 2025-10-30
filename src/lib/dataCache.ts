@@ -10,7 +10,9 @@ type CACHE_TAG =
 	| "volunteer-types"
 	| "reentry-checklist-items"
 	| "coach-trainings"
-	| "locations";
+	| "locations"
+	| "referral-sources"
+	| "sites";
 
 export const getGlobalTag = (tag: CACHE_TAG) => {
 	return `global:${tag}` as const;
