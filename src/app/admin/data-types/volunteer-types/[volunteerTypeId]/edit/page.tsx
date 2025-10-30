@@ -1,4 +1,4 @@
-import VolunteerTypesForm from "@/components/VolunteerTypesForm";
+import VolunteerTypesForm from "@/components/volunteerTypes/VolunteerTypesForm";
 import PageHeader from "@/components/PageHeader";
 import { getVolunteeringTypeIdTag } from "@/tableInteractions/cache";
 import { getVolunteerTypeById } from "@/tableInteractions/db";
@@ -9,7 +9,7 @@ export default async function EditVolunteerTypePage({ params }: { params: Promis
 	const volunteerType = await getCachedVolunteerType(volunteerTypeId);
 	return (
 		<div className="container py-4 max-w-2xl mx-auto">
-			<PageHeader title="Edit Client Service" />
+			<PageHeader title="Edit Volunteer Type" />
 			<VolunteerTypesForm volunteerType={volunteerType} />
 		</div>
 	);

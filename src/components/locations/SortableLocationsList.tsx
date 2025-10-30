@@ -1,14 +1,14 @@
 "use client";
 
-import SortableList, { SortableItem } from "./SortableList";
+import SortableList, { SortableItem } from "../SortableList";
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
-import { ActionButton } from "./ActionButton";
-import { removeVolunteerType, updateVolunteerTypeOrders } from "@/tableInteractions/actions";
+import { ActionButton } from "../ActionButton";
 import { cn } from "@/lib/utils";
+import { removeLocation, updateLocationOrders } from "@/tableInteractions/actions";
 
-export function SortableVolunteerTypesList({
+export function SortableLocationsList({
 	items,
 }: {
 	items: {
@@ -22,7 +22,7 @@ export function SortableVolunteerTypesList({
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
 	return (
-		<SortableList items={items} onOrderChange={updateVolunteerTypeOrders}>
+		<SortableList items={items} onOrderChange={updateLocationOrders}>
 			{(sorted) =>
 				sorted.map((item, index) => (
 					<SortableItem key={item.id} id={item.id}>
@@ -49,14 +49,14 @@ export function SortableVolunteerTypesList({
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
 									<Button asChild>
-										<Link href={`/admin/data-types/volunteer-types/${item.id}/edit`}>
+										<Link href={`/admin/data-types/locations/${item.id}/edit`}>
 											<FilePenLineIcon className="w-4 h-4" />
 											<span className="sr-only">Edit</span>
 										</Link>
 									</Button>
 									<ActionButton
 										variant="destructiveOutline"
-										action={removeVolunteerType.bind(null, item.id)}
+										action={removeLocation.bind(null, item.id)}
 										requireAreYouSure
 									>
 										<Trash2Icon className="w-4 h-4" />

@@ -192,6 +192,175 @@ export const updateReentryChecklistItemOrders = async (orderedIds: string[]) => 
 };
 //#endregion
 
+//#region Coach Trainings
+export const insertCoachTraining = async (data: typeof dbTable.training.$inferInsert) => {
+	const [rv] = await db.insert(dbTable.training).values(data).returning();
+	if (!rv) return;
+
+	cache.revalidateCoachTrainingCache(rv.id);
+	return rv;
+};
+
+export const getCoachTrainingById = async (id: string) => {
+	const coachTraining = await db.query.training.findFirst({
+		columns: { id: true, name: true, description: true },
+		where: eq(dbTable.training.id, id),
+	});
+	if (!coachTraining) throw new Error("Coach training not found");
+	return coachTraining;
+};
+
+export const updateCoachTrainingById = async (id: string, data: Partial<typeof dbTable.training.$inferInsert>) => {
+	const [rv] = await db.update(dbTable.training).set(data).where(eq(dbTable.training.id, id)).returning();
+	if (!rv) {
+		return { error: true, message: "Failed to update coach training" };
+	}
+	cache.revalidateCoachTrainingCache(id);
+	return { error: false, message: "Coach training updated successfully" };
+};
+
+export const deleteCoachTraining = async (id: string) => {
+	const [rv] = await db
+		.update(dbTable.training)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.training.id, id))
+		.returning();
+	if (!rv) return;
+
+	cache.revalidateCoachTrainingCache(id);
+	return rv;
+};
+
+const cachedCoachTrainings = unstable_cache(
+	async () => {
+		console.log("Fetching coach trainings from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.training.id,
+				name: dbTable.training.name,
+				description: dbTable.training.description,
+				createdAt: dbTable.training.createdAt,
+				updatedAt: dbTable.training.updatedAt,
+			})
+			.from(dbTable.training)
+			.where(isNull(dbTable.training.deletedAt))
+			.orderBy(dbTable.training.order);
+	},
+	["getCoachTrainings"],
+	{ tags: [cache.getCoachTrainingGlobalTag()] }
+);
+
+export const getCoachTrainings = async () => cachedCoachTrainings();
+
+export const updateCoachTrainingOrders = async (orderedIds: string[]) => {
+	const trainings = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db
+				.update(dbTable.training)
+				.set({ order: index })
+				.where(eq(dbTable.training.id, id))
+				.returning();
+			return rv;
+		})
+	);
+
+	trainings.flat().forEach((training) => {
+		if (training) {
+			cache.revalidateCoachTrainingCache(training.id);
+		}
+	});
+	revalidatePath("/admin/data-types/coach-trainings");
+
+	return trainings;
+};
+//#endregion
+
+//#region Locations DB Interactions
+export const insertLocation = async (data: typeof dbTable.location.$inferInsert) => {
+	const [newLocation] = await db.insert(dbTable.location).values(data).returning();
+
+	if (!newLocation) return;
+	cache.revalidateLocationCache(newLocation.id);
+	return newLocation;
+};
+
+export const getLocationById = async (id: string) => {
+	const location = await db.query.location.findFirst({
+		columns: { id: true, name: true, description: true },
+		where: eq(dbTable.location.id, id),
+	});
+
+	if (!location) throw new Error("Location not found");
+	return location;
+};
+export const updateLocationById = async (id: string, data: Partial<typeof dbTable.location.$inferInsert>) => {
+	const [updatedLocation] = await db
+		.update(dbTable.location)
+		.set(data)
+		.where(eq(dbTable.location.id, id))
+		.returning();
+	if (!updatedLocation) {
+		return { error: true, message: "Failed to update location" };
+	}
+	cache.revalidateLocationCache(id);
+	return { error: false, message: "Location updated successfully" };
+};
+
+export const deleteLocation = async (id: string) => {
+	const [deletedLocation] = await db
+		.update(dbTable.location)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.location.id, id))
+		.returning();
+	if (!deletedLocation) return;
+	cache.revalidateLocationCache(id);
+	return deletedLocation;
+};
+
+const cachedLocations = unstable_cache(
+	async () => {
+		console.log("Fetching locations from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.location.id,
+				name: dbTable.location.name,
+				description: dbTable.location.description,
+				createdAt: dbTable.location.createdAt,
+				updatedAt: dbTable.location.updatedAt,
+			})
+			.from(dbTable.location)
+			.where(isNull(dbTable.location.deletedAt))
+			.orderBy(dbTable.location.order);
+	},
+	["getLocations"],
+	{ tags: [cache.getLocationGlobalTag()] }
+);
+
+export const getLocations = async () => cachedLocations();
+
+export const updateLocationOrders = async (orderedIds: string[]) => {
+	const locations = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db
+				.update(dbTable.location)
+				.set({ order: index })
+				.where(eq(dbTable.location.id, id))
+				.returning();
+			return rv;
+		})
+	);
+
+	locations.flat().forEach((location) => {
+		if (location) {
+			cache.revalidateLocationCache(location.id);
+		}
+	});
+	revalidatePath("/admin/data-types/locations");
+
+	return locations;
+};
+//#endregion Locations DB Interactions
+
 //#region Client Service DB Interactions
 export const insertClientService = async (data: typeof dbTable.service.$inferInsert) => {
 	const [newClientService] = await db.insert(dbTable.service).values(data).returning();

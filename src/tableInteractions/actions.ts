@@ -92,6 +92,83 @@ export const updateReentryChecklistItemOrders = async (orderedIds: string[]) => 
 };
 //#endregion
 
+//#region Coach Trainings
+export const createCoachTraining = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.insertCoachTraining(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create coach training" : "Coach training created successfully",
+	};
+};
+
+export const updateCoachTraining = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.updateCoachTrainingById(id, data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to update coach training" : "Coach training updated successfully",
+	};
+};
+
+export const removeCoachTraining = async (id: string) => {
+	const rv = await dbTable.deleteCoachTraining(id);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to remove coach training" : "Coach training removed successfully",
+	};
+};
+export const updateCoachTrainingOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No coach trainings to update" };
+	await dbTable.updateCoachTrainingOrders(orderedIds);
+	return { error: false, message: "Coach training orders updated successfully" };
+};
+//#endregion
+
+//#region Locations
+export const createLocation = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+
+	const rv = await dbTable.insertLocation(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create location" : "Location created successfully",
+	};
+};
+
+export const updateLocation = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+	const rv = await dbTable.updateLocationById(id, data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to update location" : "Location updated successfully",
+	};
+};
+
+export const removeLocation = async (id: string) => {
+	const rv = await dbTable.deleteLocation(id);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to remove location" : "Location removed successfully",
+	};
+};
+export const updateLocationOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No locations to update" };
+	await dbTable.updateLocationOrders(orderedIds);
+	return { error: false, message: "Location orders updated successfully" };
+};
+//#endregion
+
 //#region Client Services
 export const createClientService = async (unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
 	const { success, data } = schemas.clientServiceSchema.safeParse(unsafeData);

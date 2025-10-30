@@ -39,6 +39,43 @@ export const revalidateReentryChecklistItemCache = async (id: string) => {
 };
 //#endregion
 
+//#region Coach Trainings Cache Tags
+export const getCoachTrainingGlobalTag = () => {
+	return getGlobalTag("coach-trainings");
+};
+
+export const getCoachTrainingIdTag = (id: string) => {
+	console.log("Getting ID tag for coach training ID:", id, getIdTag("coach-trainings", id));
+	return getIdTag("coach-trainings", id);
+};
+export const revalidateCoachTrainingCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(getCoachTrainingGlobalTag(), "max");
+	revalidateTag(getCoachTrainingIdTag(id), "max");
+	revalidatePath("/admin/data-types/coach-trainings");
+	revalidatePath(`/admin/data-types/coach-trainings/${id}/edit`);
+};
+//#endregion
+
+//#region Locations Cache Tags
+export const getLocationGlobalTag = () => {
+	return getGlobalTag("locations");
+};
+
+export const getLocationIdTag = (id: string) => {
+	console.log("Getting ID tag for location ID:", id, getIdTag("locations", id));
+	return getIdTag("locations", id);
+};
+
+export const revalidateLocationCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(getLocationGlobalTag(), "max");
+	revalidateTag(getLocationIdTag(id), "max");
+	revalidatePath("/admin/data-types/locations");
+	revalidatePath(`/admin/data-types/locations/${id}/edit`);
+};
+//#endregion
+
 //#region Client Services Cache Tags
 export const getClientServiceGlobalTag = () => {
 	return getGlobalTag("client-services");

@@ -9,25 +9,25 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
-import { createVolunteerType, updateVolunteerType } from "../tableInteractions/actions";
-import { generalSchema } from "../tableInteractions/schemas";
+import { generalSchema } from "../../tableInteractions/schemas";
 import { redirect } from "next/navigation";
+import { createCoachTraining, updateCoachTraining } from "@/tableInteractions/actions";
 
-export default function VolunteerTypesForm({
-	volunteerType,
+export default function CoachTrainingsForm({
+	coachTraining,
 }: {
-	volunteerType?: { id: string; name: string; description: string | null };
+	coachTraining?: { id: string; name: string; description: string | null };
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({
 		resolver: zodResolver(generalSchema),
-		defaultValues: volunteerType ?? {
+		defaultValues: coachTraining ?? {
 			name: "",
 			description: "",
 		},
 	});
 
 	const onSubmit = async (values: z.infer<typeof generalSchema>) => {
-		const action = volunteerType == null ? createVolunteerType : updateVolunteerType.bind(null, volunteerType.id);
+		const action = coachTraining == null ? createCoachTraining : updateCoachTraining.bind(null, coachTraining.id);
 
 		const actionData = await action(values);
 
@@ -35,7 +35,7 @@ export default function VolunteerTypesForm({
 			actionToast({ actionData });
 		}
 
-		redirect("/admin/data-types/volunteer-types");
+		redirect("/admin/data-types/coach-trainings");
 	};
 
 	return (
@@ -73,7 +73,7 @@ export default function VolunteerTypesForm({
 					<Button
 						type="button"
 						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/client-services")}
+						onClick={() => redirect("/admin/data-types/coach-trainings")}
 					>
 						Cancel
 					</Button>

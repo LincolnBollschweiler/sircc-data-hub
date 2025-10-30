@@ -1,6 +1,6 @@
 import PageHeader from "@/components/PageHeader";
 import { unstable_cache } from "next/cache";
-import ReentryChecklistItemsForm from "@/components/ReentryChecklistItemsForm";
+import ReentryChecklistItemsForm from "@/components/reentryChecklistItems/ReentryChecklistItemsForm";
 import { getReentryChecklistItemIdTag } from "@/tableInteractions/cache";
 import { getReentryChecklistItemById } from "@/tableInteractions/db";
 

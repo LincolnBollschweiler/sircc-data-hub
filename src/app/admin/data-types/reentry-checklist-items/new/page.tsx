@@ -1,5 +1,5 @@
 import PageHeader from "@/components/PageHeader";
-import ReentryChecklistItemsForm from "@/components/ReentryChecklistItemsForm";
+import ReentryChecklistItemsForm from "@/components/reentryChecklistItems/ReentryChecklistItemsForm";
 
 export default function NewVolunteerTypesPage() {
 	return (

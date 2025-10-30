@@ -1,14 +1,14 @@
 "use client";
 
-import SortableList, { SortableItem } from "./SortableList";
+import SortableList, { SortableItem } from "../SortableList";
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
-import { ActionButton } from "./ActionButton";
-import { removeReentryChecklistItem, updateReentryChecklistItemOrders } from "@/tableInteractions/actions";
+import { ActionButton } from "../ActionButton";
+import { removeCoachTraining, updateCoachTrainingOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
 
-export function SortableReentryChecklistItemsList({
+export function SortableCoachTrainingsList({
 	items,
 }: {
 	items: {
@@ -22,7 +22,7 @@ export function SortableReentryChecklistItemsList({
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
 	return (
-		<SortableList items={items} onOrderChange={updateReentryChecklistItemOrders}>
+		<SortableList items={items} onOrderChange={updateCoachTrainingOrders}>
 			{(sorted) =>
 				sorted.map((item, index) => (
 					<SortableItem key={item.id} id={item.id}>
@@ -49,14 +49,14 @@ export function SortableReentryChecklistItemsList({
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
 									<Button asChild>
-										<Link href={`/admin/data-types/reentry-checklist-items/${item.id}/edit`}>
+										<Link href={`/admin/data-types/coach-trainings/${item.id}/edit`}>
 											<FilePenLineIcon className="w-4 h-4" />
 											<span className="sr-only">Edit</span>
 										</Link>
 									</Button>
 									<ActionButton
 										variant="destructiveOutline"
-										action={removeReentryChecklistItem.bind(null, item.id)}
+										action={removeCoachTraining.bind(null, item.id)}
 										requireAreYouSure
 									>
 										<Trash2Icon className="w-4 h-4" />

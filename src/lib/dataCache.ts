@@ -8,7 +8,9 @@ type CACHE_TAG =
 	| "volunteers"
 	| "client-services"
 	| "volunteer-types"
-	| "reentry-checklist-items";
+	| "reentry-checklist-items"
+	| "coach-trainings"
+	| "locations";
 
 export const getGlobalTag = (tag: CACHE_TAG) => {
 	return `global:${tag}` as const;
