@@ -1,6 +1,7 @@
 import { db } from "@/drizzle/db";
 import { user } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
+import { revalidateUserCache } from "./cache";
 
 export async function insertUser(data: typeof user.$inferInsert) {
 	// console.log("Inserting user:", data);
@@ -18,6 +19,7 @@ export async function insertUser(data: typeof user.$inferInsert) {
 		throw new Error("Failed to insert user");
 	}
 
+	revalidateUserCache(newUser.id);
 	return newUser;
 }
 
@@ -27,10 +29,12 @@ export async function updateUser({ clerkUserId }: { clerkUserId: string }, data:
 
 	if (updatedUser == null) throw new Error("Failed to update user");
 
+	revalidateUserCache(updatedUser.id);
 	return updatedUser;
 }
 
 export async function deleteUser({ clerkUserId }: { clerkUserId: string }) {
+	// console.log("Deleting user with clerkUserId:", clerkUserId);
 	const [deletedUser] = await db
 		.update(user)
 		.set({
@@ -44,7 +48,11 @@ export async function deleteUser({ clerkUserId }: { clerkUserId: string }) {
 		.where(eq(user.clerkUserId, clerkUserId))
 		.returning();
 
-	if (deletedUser == null) throw new Error("Failed to delete user");
+	if (!deletedUser) {
+		console.warn(`Delete webhook received for non-existent Clerk user: ${clerkUserId}`);
+		return null;
+	}
 
+	revalidateUserCache(deletedUser.id);
 	return deletedUser;
 }

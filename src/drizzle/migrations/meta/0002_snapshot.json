@@ -1,6 +1,6 @@
 {
-  "id": "4088b1bd-d2c4-4e5d-8c75-d5c05d2f4b4e",
-  "prevId": "36fc2888-5818-4005-9857-a71e2df65375",
+  "id": "dad90a70-8ff2-4d7c-afaa-9b8ab985be94",
+  "prevId": "f47d68e6-0f89-4df2-b848-9a77d6eb2a41",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -27,19 +27,30 @@
           "primaryKey": false,
           "notNull": false
         },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date_of_birth": {
+          "name": "date_of_birth",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "is_reentry_client": {
           "name": "is_reentry_client",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
-        },
-        "ssn_or_dln": {
-          "name": "ssn_or_dln",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'0'"
         },
         "follow_up_needed": {
           "name": "follow_up_needed",
@@ -518,6 +529,18 @@
           "notNull": false,
           "default": false
         },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -890,6 +913,19 @@
           "primaryKey": false,
           "notNull": true
         },
+        "description": {
+          "name": "description",
+          "type": "varchar(1000)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 9999
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -948,7 +984,7 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
         },
@@ -957,6 +993,13 @@
           "type": "varchar(1000)",
           "primaryKey": false,
           "notNull": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 9999
         },
         "created_at": {
           "name": "created_at",
@@ -1025,6 +1068,13 @@
           "type": "varchar(1000)",
           "primaryKey": false,
           "notNull": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 9999
         },
         "created_at": {
           "name": "created_at",
@@ -1101,6 +1151,13 @@
           "notNull": false,
           "default": false
         },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 9999
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1175,6 +1232,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 9999
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1243,6 +1307,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 9999
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1301,7 +1372,7 @@
         },
         "clerk_user_id": {
           "name": "clerk_user_id",
-          "type": "uuid",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1331,20 +1402,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "phone": {
-          "name": "phone",
-          "type": "varchar(10)",
-          "primaryKey": false,
-          "notNull": false
-        },
         "email": {
           "name": "email",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "address": {
-          "name": "address",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
@@ -1404,7 +1463,15 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "user_clerk_user_id_unique": {
+          "name": "user_clerk_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clerk_user_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1429,6 +1496,24 @@
         "coach_id": {
           "name": "coach_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date_of_birth": {
+          "name": "date_of_birth",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1700,6 +1785,13 @@
           "type": "varchar(1000)",
           "primaryKey": false,
           "notNull": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 9999
         },
         "created_at": {
           "name": "created_at",
