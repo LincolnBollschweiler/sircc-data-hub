@@ -1,8 +1,8 @@
+import DataTypesDropdownMenu from "@/components/DataTypesDropdownMenu";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { canAccessAdminPages, canAccessCoachPages } from "@/permissions/general";
 import { getCurrentUser } from "@/services/clerk";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -45,7 +45,7 @@ const Navbar = () => {
 
 const Coaches = async () => {
 	const user = await getCurrentUser();
-	if (!canAccessAdminPages(user)) return null;
+	if (!canAccessCoachPages(user)) return null;
 
 	return (
 		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin/coaches">
@@ -79,10 +79,5 @@ const Volunteers = async () => {
 const DataTypes = async () => {
 	const user = await getCurrentUser();
 	if (!canAccessAdminPages(user)) return null;
-
-	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin/data-types">
-			Data Types
-		</Link>
-	);
+	return <DataTypesDropdownMenu />;
 };
