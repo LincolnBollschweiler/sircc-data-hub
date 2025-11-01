@@ -13,8 +13,10 @@ import { redirect } from "next/navigation";
 export default function DataTypesDropdownMenu() {
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger className="hover:bg-accent/10 flex items-center px-2">Data Types</DropdownMenuTrigger>
-			<DropdownMenuContent>
+			<DropdownMenuTrigger className="flex items-center px-2 hover:bg-accent/50">
+				<span className="hover:border-b">Data Types</span>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="end" className="bg-background-dark border-transparent -translate-y-3">
 				{/* <DropdownMenuLabel>My Account</DropdownMenuLabel>
 				<DropdownMenuSeparator /> */}
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/client-services")}>

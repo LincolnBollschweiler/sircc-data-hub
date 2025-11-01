@@ -17,13 +17,13 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
 
 const Navbar = () => {
 	return (
-		<header className="flex h-12 shadow bg-background z-10">
-			<nav className="flex gap-4 container">
+		<header className="flex h-12 shadow bg-background-dark z-10">
+			<nav className="flex gap-2 container">
 				<div className="mr-auto flex items-center gap-2">
 					<Link className="text-lg hover:underline" href="/">
 						Sircc Data Hub
 					</Link>
-					<Badge>Admin</Badge>
+					<Badge className="bg-black hover:bg-black">Admin</Badge>
 				</div>
 				<Dev />
 				<Coaches />
@@ -49,8 +49,8 @@ const Dev = async () => {
 	if (!canAccessDevPages(user)) return null;
 
 	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin/dev">
-			Dev
+		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin/dev">
+			<span className="hover:border-b">Dev</span>
 		</Link>
 	);
 };
@@ -60,8 +60,8 @@ const Coaches = async () => {
 	if (!canAccessCoachPages(user)) return null;
 
 	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin/coaches">
-			Coaches
+		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin/coaches">
+			<span className="hover:border-b">Coaches</span>
 		</Link>
 	);
 };
@@ -71,8 +71,8 @@ const Clients = async () => {
 	if (!canAccessAdminPages(user)) return null;
 
 	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin/clients">
-			Clients
+		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin/clients">
+			<span className="hover:border-b">Clients</span>
 		</Link>
 	);
 };
@@ -82,8 +82,8 @@ const Volunteers = async () => {
 	if (!canAccessAdminPages(user)) return null;
 
 	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin/volunteers">
-			Volunteers
+		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin/volunteers">
+			<span className="hover:border-b">Volunteers</span>
 		</Link>
 	);
 };
