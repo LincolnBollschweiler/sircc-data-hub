@@ -19,7 +19,7 @@ export default clerkMiddleware(async (auth, req) => {
 	const { sessionClaims } = await auth();
 	const role = sessionClaims?.role ?? "no-user";
 	// Protect admin routes
-	if (adminRoutes(req) && role !== "admin") {
+	if (adminRoutes(req) && role !== "admin" && role !== "developer") {
 		console.warn("Access denied to admin route for role:", role);
 		return NextResponse.redirect(new URL("/", req.url));
 	}
