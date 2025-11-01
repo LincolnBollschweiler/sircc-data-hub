@@ -8,7 +8,7 @@ export default async function EditReferralSourcesPage({ params }: { params: Prom
 	const { referralSourceId } = await params;
 	const referralSource = await getCachedReferralSource(referralSourceId);
 	return (
-		<div className="container py-4 max-w-2xl mx-auto">
+		<div className="container mt-4 py-4 px-6 max-w-2xl mx-auto bg-background-light rounded-md shadow-md">
 			<PageHeader title="Edit Referral Source" />
 			<ReferralSourcesForm referralSource={referralSource} />
 		</div>

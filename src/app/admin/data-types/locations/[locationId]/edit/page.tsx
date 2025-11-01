@@ -8,7 +8,7 @@ export default async function EditLocationsPage({ params }: { params: Promise<{ 
 	const { locationId } = await params;
 	const location = await getCachedLocation(locationId);
 	return (
-		<div className="container py-4 max-w-2xl mx-auto">
+		<div className="container mt-4 py-4 px-6 max-w-2xl mx-auto bg-background-light rounded-md shadow-md">
 			<PageHeader title="Edit Location" />
 			<LocationsForm location={location} />
 		</div>

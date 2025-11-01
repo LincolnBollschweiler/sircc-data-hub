@@ -14,8 +14,6 @@ export default async function ClientServicesPage() {
 					<Link href="/admin/data-types/client-services/new">Add New Client Service</Link>
 				</Button>
 			</PageHeader>
-
-			{/* scroll container handled inside ClientServices */}
 			<ClientServices items={clientServices} />
 		</div>
 	);

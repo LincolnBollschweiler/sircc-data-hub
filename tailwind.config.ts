@@ -19,7 +19,11 @@ export default {
 		},
 		extend: {
 			colors: {
-				background: "hsl(var(--background))",
+				background: {
+					DEFAULT: "hsl(var(--background))",
+					dark: "hsl(var(--background-dark))",
+					light: "hsl(var(--background-light))",
+				},
 				foreground: "hsl(var(--foreground))",
 				card: {
 					DEFAULT: "hsl(var(--card))",
@@ -49,7 +53,10 @@ export default {
 					DEFAULT: "hsl(var(--destructive))",
 					foreground: "hsl(var(--destructive-foreground))",
 				},
-				border: "hsl(var(--border))",
+				border: {
+					DEFAULT: "hsl(var(--border))",
+					muted: "hsl(var(--border-muted))",
+				},
 				input: "hsl(var(--input))",
 				ring: "hsl(var(--ring))",
 				chart: {

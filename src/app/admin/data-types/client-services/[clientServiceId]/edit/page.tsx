@@ -8,7 +8,7 @@ export default async function EditClientServicePage({ params }: { params: Promis
 	const { clientServiceId } = await params;
 	const clientService = await getCachedClientService(clientServiceId);
 	return (
-		<div className="container py-4 max-w-2xl mx-auto">
+		<div className="container mt-4 py-4 px-6 max-w-2xl mx-auto bg-background-light rounded-md shadow-md">
 			<PageHeader title="Edit Client Service" />
 			<ClientServiceForm clientService={clientService} />
 		</div>

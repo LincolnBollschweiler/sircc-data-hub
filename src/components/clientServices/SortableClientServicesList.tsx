@@ -30,7 +30,7 @@ export function SortableClientServicesList({
 						{({ attributes, listeners }) => (
 							<div
 								className={cn(
-									index % 2 === 0 ? "bg-white" : "bg-[gray-100]",
+									index % 2 === 0 ? "bg-background-light" : "bg-background-light/30",
 									"w-full grid grid-cols-[24%,31%,10%,9%,9%,17%] items-start py-1 border-b border-gray-200 text-xs lg:text-base"
 								)}
 							>
@@ -60,6 +60,7 @@ export function SortableClientServicesList({
 										variant="destructiveOutline"
 										action={removeClientService.bind(null, item.id)}
 										requireAreYouSure
+										className="mr-1"
 									>
 										<Trash2Icon className="w-4 h-4" />
 										<span className="sr-only">Delete</span>

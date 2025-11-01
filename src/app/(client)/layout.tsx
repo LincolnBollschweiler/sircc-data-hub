@@ -16,9 +16,9 @@ export default function ClientLayout({ children }: Readonly<{ children: ReactNod
 
 const Navbar = () => {
 	return (
-		<header className="flex h-12 shadow bg-background z-10">
+		<header className="flex h-12 shadow bg-background-dark z-10">
 			<nav className="flex gap-4 container">
-				<Link className="mr-auto text-lg hover:underline flex items-center" href="/">
+				<Link className="mr-auto text-xl hover:underline flex items-center" href="/">
 					Sircc Data Hub
 				</Link>
 				<SignedIn>
@@ -49,8 +49,8 @@ const AdminLink = async () => {
 	if (!canAccessAdminPages(currUser)) return null;
 
 	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin">
-			Admin
+		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin">
+			<span className="hover:border-b">Admin</span>
 		</Link>
 	);
 };
@@ -60,8 +60,8 @@ const YourClients = async () => {
 	if (!canAccessCoachPages(user)) return null;
 
 	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/coach">
-			Your Clients
+		<Link className="flex items-center px-2 hover:bg-accent/50" href="/clients">
+			<span className="hover:border-b">Clients</span>
 		</Link>
 	);
 };
