@@ -73,7 +73,7 @@ export default function VolunteerTypesForm({
 					<Button
 						type="button"
 						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/client-services")}
+						onClick={() => redirect("/admin/data-types/volunteer-types")}
 					>
 						Cancel
 					</Button>

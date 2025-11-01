@@ -8,7 +8,7 @@ export default async function EditSitesPage({ params }: { params: Promise<{ site
 	const { siteId } = await params;
 	const site = await getCachedSite(siteId);
 	return (
-		<div className="container py-4 max-w-2xl mx-auto">
+		<div className="container mt-4 py-4 px-6 max-w-2xl mx-auto bg-background-light rounded-md shadow-md">
 			<PageHeader title="Edit Site" />
 			<SitesForm site={site} />
 		</div>

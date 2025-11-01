@@ -12,7 +12,7 @@ export default async function EditReentryChecklistItemsPage({
 	const { reentryChecklistItemId } = await params;
 	const reentryChecklistItem = await getCachedReentryChecklistItem(reentryChecklistItemId);
 	return (
-		<div className="container py-4 max-w-2xl mx-auto">
+		<div className="container mt-4 py-4 px-6 max-w-2xl mx-auto bg-background-light rounded-md shadow-md">
 			<PageHeader title="Edit Reentry Checklist Item" />
 			<ReentryChecklistItemsForm reentryChecklistItem={reentryChecklistItem} />
 		</div>
