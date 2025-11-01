@@ -19,6 +19,20 @@ export default {
 		},
 		extend: {
 			colors: {
+				"bg-dark": "oklch(var(--bg-dark))",
+				bg: "oklch(var(--bg))",
+				"bg-light": "oklch(var(--bg-light))",
+				text: "oklch(var(--text))",
+				"text-muted": "oklch(var(--text-muted))",
+				highlight: "oklch(var(--highlight))",
+				border: "oklch(var(--border))",
+				"border-muted": "oklch(var(--border-muted))",
+				primary: "oklch(var(--primary))",
+				secondary: "oklch(var(--secondary))",
+				danger: "oklch(var(--danger))",
+				warning: "oklch(var(--warning))",
+				success: "oklch(var(--success))",
+				info: "oklch(var(--info))",
 				background: "hsl(var(--background))",
 				foreground: "hsl(var(--foreground))",
 				card: {
@@ -28,14 +42,6 @@ export default {
 				popover: {
 					DEFAULT: "hsl(var(--popover))",
 					foreground: "hsl(var(--popover-foreground))",
-				},
-				primary: {
-					DEFAULT: "hsl(var(--primary))",
-					foreground: "hsl(var(--primary-foreground))",
-				},
-				secondary: {
-					DEFAULT: "hsl(var(--secondary))",
-					foreground: "hsl(var(--secondary-foreground))",
 				},
 				muted: {
 					DEFAULT: "hsl(var(--muted))",
@@ -49,7 +55,6 @@ export default {
 					DEFAULT: "hsl(var(--destructive))",
 					foreground: "hsl(var(--destructive-foreground))",
 				},
-				border: "hsl(var(--border))",
 				input: "hsl(var(--input))",
 				ring: "hsl(var(--ring))",
 				chart: {
