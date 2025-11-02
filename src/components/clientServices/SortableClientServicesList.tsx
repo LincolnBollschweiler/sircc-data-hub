@@ -1,12 +1,11 @@
-"use client";
-
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { removeClientService, updateClientServicesOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
+import { DialogTrigger } from "../ui/dialog";
+import ClientServiceFormDialog from "./ClientServiceFormDialog";
 
 export function SortableClientServicesList({
 	items,
@@ -50,12 +49,20 @@ export function SortableClientServicesList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
+									<ClientServiceFormDialog clientServiceId={item.id}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</ClientServiceFormDialog>
+									{/* <Button asChild>
 										<Link href={`/admin/data-types/client-services/${item.id}/edit`}>
 											<FilePenLineIcon className="w-4 h-4" />
 											<span className="sr-only">Edit</span>
 										</Link>
-									</Button>
+									</Button> */}
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeClientService.bind(null, item.id)}

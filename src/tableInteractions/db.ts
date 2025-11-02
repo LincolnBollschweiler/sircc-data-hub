@@ -626,4 +626,15 @@ export const updateClientServiceOrders = async (orderedIds: string[]) => {
 
 	return services;
 };
+
+export const getCachedClientService = (clientServiceId: string) => {
+	const cachedFn = unstable_cache(
+		async () => {
+			return await getClientServiceById(clientServiceId);
+		},
+		["getClientServiceById", clientServiceId],
+		{ tags: [cache.getClientServiceIdTag(clientServiceId)] }
+	);
+	return cachedFn(); // execute it only when this function is called
+};
 //#endregion Client Service DB Interactions

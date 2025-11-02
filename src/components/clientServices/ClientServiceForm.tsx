@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,8 +16,10 @@ import { redirect } from "next/navigation";
 
 export default function ClientServiceForm({
 	clientService,
+	onSuccess,
 }: {
-	clientService?: { id: string; name: string; description: string | null; dispersesFunds: boolean | null };
+	clientService: { id: string; name: string; description: string | null; dispersesFunds: boolean | null };
+	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof clientServiceSchema>>({
 		resolver: zodResolver(clientServiceSchema),
@@ -35,9 +37,10 @@ export default function ClientServiceForm({
 
 		if (actionData) {
 			actionToast({ actionData });
+			onSuccess?.();
 		}
 
-		redirect("/admin/data-types/client-services");
+		// redirect("/admin/data-types/client-services");
 	};
 
 	return (
