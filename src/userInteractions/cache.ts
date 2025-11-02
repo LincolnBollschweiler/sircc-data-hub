@@ -1,5 +1,5 @@
 import { getGlobalTag, getIdTag } from "@/lib/dataCache";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export const getUserGlobalTag = () => {
 	return getGlobalTag("users");
@@ -12,4 +12,5 @@ export const getUserIdTag = (id: string) => {
 export const revalidateUserCache = (id: string) => {
 	revalidateTag(getUserGlobalTag(), "max");
 	revalidateTag(getUserIdTag(id), "max");
+	revalidatePath("/");
 };

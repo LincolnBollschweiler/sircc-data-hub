@@ -1,5 +1,5 @@
 import { env } from "@/data/env/server";
-import { deleteUser, insertUser, updateUser } from "@/features/users/db/users";
+import { deleteUser, insertUser, updateUser } from "@/userInteractions/db";
 import { syncClerkUserMetadata } from "@/services/clerk";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
@@ -20,11 +20,11 @@ export async function POST(req: Request) {
 	const payload = await req.json();
 	const body = JSON.stringify(payload);
 
-	const wh = new Webhook(env.CLERK_WEBHOOK_SECRET);
+	const webHook = new Webhook(env.CLERK_WEBHOOK_SECRET);
 	let event: WebhookEvent;
 
 	try {
-		event = wh.verify(body, {
+		event = webHook.verify(body, {
 			"svix-id": svixId,
 			"svix-timestamp": svixTimestamp,
 			"svix-signature": svixSignature,

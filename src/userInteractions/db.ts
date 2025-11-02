@@ -2,9 +2,10 @@ import { db } from "@/drizzle/db";
 import { user } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { revalidateUserCache } from "./cache";
+import { revalidatePath } from "next/cache";
 
 export async function insertUser(data: typeof user.$inferInsert) {
-	// console.log("Inserting user:", data);
+	console.log("Inserting user:", data);
 	const [newUser] = await db
 		.insert(user)
 		.values(data)
@@ -24,8 +25,18 @@ export async function insertUser(data: typeof user.$inferInsert) {
 }
 
 export async function updateUser({ clerkUserId }: { clerkUserId: string }, data: Partial<typeof user.$inferInsert>) {
-	// console.log("Updating user with clerkUserId:", clerkUserId, "Data:", data);
+	console.log("Updating user with clerkUserId:", clerkUserId, "Data:", data);
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.clerkUserId, clerkUserId)).returning();
+
+	if (updatedUser == null) throw new Error("Failed to update user");
+
+	revalidateUserCache(updatedUser.id);
+	return updatedUser;
+}
+
+export async function updateUserFull({ id }: { id: string }, data: Partial<typeof user.$inferInsert>) {
+	console.log("Updating user with id:", id, "Data:", data);
+	const [updatedUser] = await db.update(user).set(data).where(eq(user.id, id)).returning();
 
 	if (updatedUser == null) throw new Error("Failed to update user");
 

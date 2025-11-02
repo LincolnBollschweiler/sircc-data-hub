@@ -43,6 +43,20 @@
       "when": 1761866240768,
       "tag": "0005_regular_thaddeus_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1762040958042,
+      "tag": "0006_solid_spitfire",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1762046062134,
+      "tag": "0007_steady_spencer_smythe",
+      "breakpoints": true
     }
   ]
 }
