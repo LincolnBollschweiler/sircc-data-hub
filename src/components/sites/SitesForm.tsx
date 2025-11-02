@@ -9,12 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { siteSchema } from "../../tableInteractions/schemas";
-import { redirect } from "next/navigation";
 import { createSite, updateSite } from "@/tableInteractions/actions";
 import PhoneInput from "react-phone-number-input/input";
 import { useState } from "react";
 
-export default function SitesForm({ site }: { site?: { id: string; name: string; address: string; phone: string } }) {
+export default function SitesForm({
+	site,
+	onSuccess,
+}: {
+	site?: { id: string; name: string; address: string; phone: string };
+	onSuccess?: () => void;
+}) {
 	const form = useForm<z.infer<typeof siteSchema>>({
 		resolver: zodResolver(siteSchema),
 		defaultValues: site ?? {
@@ -33,7 +38,7 @@ export default function SitesForm({ site }: { site?: { id: string; name: string;
 			actionToast({ actionData });
 		}
 
-		redirect("/admin/data-types/sites");
+		if (!actionData?.error) onSuccess?.();
 	};
 
 	const [phone, setPhone] = useState(site?.phone || "");
@@ -98,11 +103,7 @@ export default function SitesForm({ site }: { site?: { id: string; name: string;
 					)}
 				/>
 				<div className="self-end gap-2 flex">
-					<Button
-						type="button"
-						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/sites")}
-					>
+					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel
 					</Button>
 					<Button type="submit" disabled={form.formState.isSubmitting}>

@@ -1,12 +1,13 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { removeReentryChecklistItem, updateReentryChecklistItemOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
+import ReentryChecklistItemsFormDialog from "./ReentryChecklistItemsFormDialog";
+import { DialogTrigger } from "../ui/dialog";
 
 export function SortableReentryChecklistItemsList({
 	items,
@@ -48,12 +49,14 @@ export function SortableReentryChecklistItemsList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/reentry-checklist-items/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<ReentryChecklistItemsFormDialog reentryChecklistItem={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</ReentryChecklistItemsFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeReentryChecklistItem.bind(null, item.id)}

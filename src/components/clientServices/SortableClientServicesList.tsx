@@ -1,14 +1,12 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { removeClientService, updateClientServicesOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
-import ClientServiceForm from "./ClientServiceForm";
-import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { DialogTrigger } from "@radix-ui/react-dialog";
 import ClientServiceFormDialog from "./ClientServiceFormDialog";
 
 export function SortableClientServicesList({
@@ -50,7 +48,6 @@ export function SortableClientServicesList({
 								<div className="text-center pt-2">
 									{new Date(item.updatedAt).toLocaleDateString("en-US", dateOptions)}
 								</div>
-
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
 									<ClientServiceFormDialog clientService={item}>

@@ -1,12 +1,13 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { removeVolunteerType, updateVolunteerTypeOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
+import VolunteerTypesFormDialog from "./VolunteerTypesFormDialog";
+import { DialogTrigger } from "../ui/dialog";
 
 export function SortableVolunteerTypesList({
 	items,
@@ -48,12 +49,14 @@ export function SortableVolunteerTypesList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/volunteer-types/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<VolunteerTypesFormDialog volunteerType={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</VolunteerTypesFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeVolunteerType.bind(null, item.id)}

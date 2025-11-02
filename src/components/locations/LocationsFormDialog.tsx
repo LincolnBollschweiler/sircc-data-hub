@@ -2,20 +2,13 @@
 
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import ClientServiceForm from "./ClientServiceForm";
+import LocationsForm from "./LocationsForm";
 
-export default function ClientServiceFormDialog({
-	clientService,
+export default function LocationsFormDialog({
+	location,
 	children,
 }: {
-	clientService?: {
-		id: string;
-		name: string;
-		description: string | null;
-		dispersesFunds: boolean | null;
-		createdAt: Date;
-		updatedAt: Date;
-	};
+	location?: { id: string; name: string; description: string | null };
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -25,10 +18,10 @@ export default function ClientServiceFormDialog({
 			{children}
 			<DialogContent className="sm:max-w-[550px]">
 				<DialogHeader>
-					<DialogTitle>{clientService ? "Edit Client Service" : "Add New Client Service"}</DialogTitle>
+					<DialogTitle>{location ? "Edit Location" : "Add New Location"}</DialogTitle>
 				</DialogHeader>
 				<div className="grid gap-4">
-					<ClientServiceForm clientService={clientService} onSuccess={() => setIsOpen(false)} />
+					<LocationsForm location={location} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>
 		</Dialog>

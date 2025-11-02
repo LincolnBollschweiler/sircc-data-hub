@@ -1,12 +1,13 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { removeCoachTraining, updateCoachTrainingOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
+import { DialogTrigger } from "@radix-ui/react-dialog";
+import CoachTrainingsFormDialog from "./CoachTrainingsFormDialog";
 
 export function SortableCoachTrainingsList({
 	items,
@@ -48,12 +49,14 @@ export function SortableCoachTrainingsList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/coach-trainings/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<CoachTrainingsFormDialog coachTraining={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</CoachTrainingsFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeCoachTraining.bind(null, item.id)}

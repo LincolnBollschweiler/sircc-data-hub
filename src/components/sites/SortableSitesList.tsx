@@ -1,13 +1,14 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { cn } from "@/lib/utils";
 import { removeSite, updateSiteOrders } from "@/tableInteractions/actions";
 import { formatPhoneNumber } from "react-phone-number-input";
+import SitesFormDialog from "./SitesFormDialog";
+import { DialogTrigger } from "../ui/dialog";
 
 export function SortableSitesList({
 	items,
@@ -51,12 +52,14 @@ export function SortableSitesList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/sites/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<SitesFormDialog site={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</SitesFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeSite.bind(null, item.id)}

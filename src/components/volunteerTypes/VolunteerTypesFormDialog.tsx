@@ -2,20 +2,13 @@
 
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import ClientServiceForm from "./ClientServiceForm";
+import VolunteerTypesForm from "./VolunteerTypesForm";
 
-export default function ClientServiceFormDialog({
-	clientService,
+export default function VolunteerTypesFormDialog({
+	volunteerType,
 	children,
 }: {
-	clientService?: {
-		id: string;
-		name: string;
-		description: string | null;
-		dispersesFunds: boolean | null;
-		createdAt: Date;
-		updatedAt: Date;
-	};
+	volunteerType?: { id: string; name: string; description: string | null };
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -25,10 +18,10 @@ export default function ClientServiceFormDialog({
 			{children}
 			<DialogContent className="sm:max-w-[550px]">
 				<DialogHeader>
-					<DialogTitle>{clientService ? "Edit Client Service" : "Add New Client Service"}</DialogTitle>
+					<DialogTitle>{volunteerType ? "Edit Volunteer Type" : "Add New Volunteer Type"}</DialogTitle>
 				</DialogHeader>
 				<div className="grid gap-4">
-					<ClientServiceForm clientService={clientService} onSuccess={() => setIsOpen(false)} />
+					<VolunteerTypesForm volunteerType={volunteerType} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>
 		</Dialog>

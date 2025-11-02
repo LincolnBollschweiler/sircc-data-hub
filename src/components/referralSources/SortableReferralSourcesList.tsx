@@ -1,12 +1,13 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { cn } from "@/lib/utils";
 import { removeReferralSource, updateReferralSourceOrders } from "@/tableInteractions/actions";
+import ReferralSourcesFormDialog from "./ReferralSourcesFormDialog";
+import { DialogTrigger } from "../ui/dialog";
 
 export function SortableReferralSourcesList({
 	items,
@@ -48,12 +49,14 @@ export function SortableReferralSourcesList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/referral-sources/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<ReferralSourcesFormDialog referralSource={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</ReferralSourcesFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeReferralSource.bind(null, item.id)}

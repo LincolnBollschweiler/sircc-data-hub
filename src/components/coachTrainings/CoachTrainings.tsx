@@ -22,8 +22,6 @@ export default function CoachTrainings({
 					<div className="text-center">Updated</div>
 					<div></div>
 				</div>
-
-				{/* Table rows */}
 				<SortableCoachTrainingsList items={items} />
 			</div>
 		</div>

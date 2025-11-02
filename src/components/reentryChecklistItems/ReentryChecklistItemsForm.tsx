@@ -12,11 +12,14 @@ import { actionToast } from "@/hooks/use-toast";
 import { createReentryChecklistItem, updateReentryChecklistItem } from "../../tableInteractions/actions";
 import { generalSchema } from "../../tableInteractions/schemas";
 import { redirect } from "next/navigation";
+import { on } from "events";
 
 export default function ReentryChecklistItemsForm({
 	reentryChecklistItem,
+	onSuccess,
 }: {
 	reentryChecklistItem?: { id: string; name: string; description: string | null };
+	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({
 		resolver: zodResolver(generalSchema),
@@ -38,7 +41,7 @@ export default function ReentryChecklistItemsForm({
 			actionToast({ actionData });
 		}
 
-		redirect("/admin/data-types/reentry-checklist-items");
+		if (!actionData?.error) onSuccess?.();
 	};
 
 	return (
@@ -73,11 +76,7 @@ export default function ReentryChecklistItemsForm({
 					)}
 				/>
 				<div className="self-end gap-2 flex">
-					<Button
-						type="button"
-						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/reentry-checklist-items")}
-					>
+					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel
 					</Button>
 					<Button type="submit" disabled={form.formState.isSubmitting}>

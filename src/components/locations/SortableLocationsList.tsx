@@ -7,6 +7,8 @@ import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { cn } from "@/lib/utils";
 import { removeLocation, updateLocationOrders } from "@/tableInteractions/actions";
+import LocationsFormDialog from "./LocationsFormDialog";
+import { DialogTrigger } from "../ui/dialog";
 
 export function SortableLocationsList({
 	items,
@@ -48,12 +50,14 @@ export function SortableLocationsList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/locations/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<LocationsFormDialog location={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</LocationsFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeLocation.bind(null, item.id)}
