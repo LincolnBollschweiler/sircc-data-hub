@@ -1,6 +1,6 @@
 import ClientServiceForm from "@/components/clientServices/ClientServiceForm";
 import PageHeader from "@/components/PageHeader";
-import { getClientServiceIdTag } from "@/tableInteractions/cache";
+import { getClientServiceIdTag } from "@/tableInteractions/cacheTags";
 import { getClientServiceById } from "@/tableInteractions/db";
 import { unstable_cache } from "next/cache";
 

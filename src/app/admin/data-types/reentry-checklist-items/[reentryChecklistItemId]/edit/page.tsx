@@ -1,7 +1,7 @@
 import PageHeader from "@/components/PageHeader";
 import { unstable_cache } from "next/cache";
 import ReentryChecklistItemsForm from "@/components/reentryChecklistItems/ReentryChecklistItemsForm";
-import { getReentryChecklistItemIdTag } from "@/tableInteractions/cache";
+import { getReentryChecklistItemIdTag } from "@/tableInteractions/cacheTags";
 import { getReentryChecklistItemById } from "@/tableInteractions/db";
 
 export default async function EditReentryChecklistItemsPage({

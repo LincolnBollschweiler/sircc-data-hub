@@ -1,6 +1,6 @@
 import PageHeader from "@/components/PageHeader";
 import SitesForm from "@/components/sites/SitesForm";
-import { getSiteIdTag } from "@/tableInteractions/cache";
+import { getSiteIdTag } from "@/tableInteractions/cacheTags";
 import { getSiteById } from "@/tableInteractions/db";
 import { unstable_cache } from "next/cache";
 

@@ -1,6 +1,6 @@
 import LocationsForm from "@/components/locations/LocationsForm";
 import PageHeader from "@/components/PageHeader";
-import { getLocationIdTag } from "@/tableInteractions/cache";
+import { getLocationIdTag } from "@/tableInteractions/cacheTags";
 import { getLocationById } from "@/tableInteractions/db";
 import { unstable_cache } from "next/cache";
 

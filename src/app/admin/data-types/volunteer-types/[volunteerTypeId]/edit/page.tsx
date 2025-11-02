@@ -1,6 +1,6 @@
 import VolunteerTypesForm from "@/components/volunteerTypes/VolunteerTypesForm";
 import PageHeader from "@/components/PageHeader";
-import { getVolunteeringTypeIdTag } from "@/tableInteractions/cache";
+import { getVolunteeringTypeIdTag } from "@/tableInteractions/cacheTags";
 import { getVolunteerTypeById } from "@/tableInteractions/db";
 import { unstable_cache } from "next/cache";
 

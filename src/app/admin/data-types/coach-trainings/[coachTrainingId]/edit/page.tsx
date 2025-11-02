@@ -1,6 +1,6 @@
 import CoachTrainingsForm from "@/components/coachTrainings/CoachTrainingsForm";
 import PageHeader from "@/components/PageHeader";
-import { getCoachTrainingIdTag } from "@/tableInteractions/cache";
+import { getCoachTrainingIdTag } from "@/tableInteractions/cacheTags";
 import { getCoachTrainingById } from "@/tableInteractions/db";
 import { unstable_cache } from "next/cache";
 

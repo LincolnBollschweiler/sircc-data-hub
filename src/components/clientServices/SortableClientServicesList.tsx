@@ -7,6 +7,9 @@ import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { removeClientService, updateClientServicesOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
+import ClientServiceForm from "./ClientServiceForm";
+import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import ClientServiceFormDialog from "./ClientServiceFormDialog";
 
 export function SortableClientServicesList({
 	items,
@@ -50,12 +53,14 @@ export function SortableClientServicesList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/client-services/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<ClientServiceFormDialog clientService={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</ClientServiceFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeClientService.bind(null, item.id)}

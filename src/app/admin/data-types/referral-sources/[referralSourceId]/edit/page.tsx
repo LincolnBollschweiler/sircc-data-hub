@@ -1,6 +1,6 @@
 import PageHeader from "@/components/PageHeader";
 import ReferralSourcesForm from "@/components/referralSources/ReferralSourcesForm";
-import { getReferralSourceIdTag } from "@/tableInteractions/cache";
+import { getReferralSourceIdTag } from "@/tableInteractions/cacheTags";
 import { getReferralSourceById } from "@/tableInteractions/db";
 import { unstable_cache } from "next/cache";
 
