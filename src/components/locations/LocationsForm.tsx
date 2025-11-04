@@ -16,7 +16,7 @@ export default function LocationsForm({
 	location,
 	onSuccess,
 }: {
-	location?: { id: string; name: string; description: string | null };
+	location?: z.infer<typeof generalSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({

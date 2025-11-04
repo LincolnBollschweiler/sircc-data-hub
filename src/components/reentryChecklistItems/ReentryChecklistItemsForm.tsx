@@ -10,15 +10,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { createReentryChecklistItem, updateReentryChecklistItem } from "../../tableInteractions/actions";
-import { generalSchema } from "../../tableInteractions/schemas";
-import { redirect } from "next/navigation";
-import { on } from "events";
+import { generalSchema, updateSchema } from "../../tableInteractions/schemas";
 
 export default function ReentryChecklistItemsForm({
 	reentryChecklistItem,
 	onSuccess,
 }: {
-	reentryChecklistItem?: { id: string; name: string; description: string | null };
+	reentryChecklistItem?: z.infer<typeof generalSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({

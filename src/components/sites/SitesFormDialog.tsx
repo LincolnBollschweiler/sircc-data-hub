@@ -3,12 +3,14 @@
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import SitesForm from "./SitesForm";
+import { siteSchema } from "@/tableInteractions/schemas";
+import z from "zod";
 
 export default function SitesFormDialog({
 	site,
 	children,
 }: {
-	site?: { id: string; name: string; address: string; phone: string };
+	site?: z.infer<typeof siteSchema> & { id: string };
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);

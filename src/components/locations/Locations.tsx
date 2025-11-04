@@ -1,15 +1,11 @@
+import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
 import { SortableLocationsList } from "./SortableLocationsList";
+import z from "zod";
 
 export default function Locations({
 	items,
 }: {
-	items: {
-		id: string;
-		name: string;
-		description: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
+	items: (z.infer<typeof generalSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	return (
 		<div className="w-full overflow-x-auto">

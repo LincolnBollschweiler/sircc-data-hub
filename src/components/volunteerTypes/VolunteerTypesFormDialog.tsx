@@ -3,12 +3,14 @@
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import VolunteerTypesForm from "./VolunteerTypesForm";
+import { generalSchema } from "@/tableInteractions/schemas";
+import { z } from "zod";
 
 export default function VolunteerTypesFormDialog({
 	volunteerType,
 	children,
 }: {
-	volunteerType?: { id: string; name: string; description: string | null };
+	volunteerType?: z.infer<typeof generalSchema> & { id: string };
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);

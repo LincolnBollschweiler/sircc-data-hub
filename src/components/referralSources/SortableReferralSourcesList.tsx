@@ -8,17 +8,13 @@ import { cn } from "@/lib/utils";
 import { removeReferralSource, updateReferralSourceOrders } from "@/tableInteractions/actions";
 import ReferralSourcesFormDialog from "./ReferralSourcesFormDialog";
 import { DialogTrigger } from "../ui/dialog";
+import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
+import z from "zod";
 
 export function SortableReferralSourcesList({
 	items,
 }: {
-	items: {
-		id: string;
-		name: string;
-		description: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
+	items: (z.infer<typeof generalSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 

@@ -3,12 +3,14 @@
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import ReentryChecklistItemsForm from "./ReentryChecklistItemsForm";
+import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
+import z from "zod";
 
 export default function ReentryChecklistItemsFormDialog({
 	reentryChecklistItem,
 	children,
 }: {
-	reentryChecklistItem?: { id: string; name: string; description: string | null };
+	reentryChecklistItem?: z.infer<typeof generalSchema> & z.infer<typeof updateSchema>;
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);

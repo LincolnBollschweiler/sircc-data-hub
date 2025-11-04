@@ -16,7 +16,7 @@ export default function VolunteerTypesForm({
 	volunteerType,
 	onSuccess,
 }: {
-	volunteerType?: { id: string; name: string; description: string | null };
+	volunteerType?: z.infer<typeof generalSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({

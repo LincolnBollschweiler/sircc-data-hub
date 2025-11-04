@@ -17,7 +17,7 @@ export default function SitesForm({
 	site,
 	onSuccess,
 }: {
-	site?: { id: string; name: string; address: string; phone: string };
+	site?: z.infer<typeof siteSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof siteSchema>>({

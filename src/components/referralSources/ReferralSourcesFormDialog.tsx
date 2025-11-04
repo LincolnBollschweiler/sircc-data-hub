@@ -3,12 +3,14 @@
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import ReferralSourcesForm from "./ReferralSourcesForm";
+import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
+import z from "zod";
 
 export default function ReferralSourcesFormDialog({
 	referralSource,
 	children,
 }: {
-	referralSource?: { id: string; name: string; description: string | null };
+	referralSource?: z.infer<typeof generalSchema> & z.infer<typeof updateSchema>;
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);

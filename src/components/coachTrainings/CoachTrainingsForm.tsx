@@ -17,7 +17,7 @@ export default function CoachTrainingsForm({
 	coachTraining,
 	onSuccess,
 }: {
-	coachTraining?: { id: string; name: string; description: string | null };
+	coachTraining?: z.infer<typeof generalSchema> & { id: string };
 	onSuccess: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({

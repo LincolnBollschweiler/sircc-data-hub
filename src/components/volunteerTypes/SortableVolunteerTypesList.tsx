@@ -8,17 +8,13 @@ import { removeVolunteerType, updateVolunteerTypeOrders } from "@/tableInteracti
 import { cn } from "@/lib/utils";
 import VolunteerTypesFormDialog from "./VolunteerTypesFormDialog";
 import { DialogTrigger } from "../ui/dialog";
+import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
+import { z } from "zod";
 
 export function SortableVolunteerTypesList({
 	items,
 }: {
-	items: {
-		id: string;
-		name: string;
-		description: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
+	items: (z.infer<typeof generalSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 

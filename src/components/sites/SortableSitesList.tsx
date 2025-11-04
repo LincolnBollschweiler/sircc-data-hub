@@ -9,19 +9,10 @@ import { removeSite, updateSiteOrders } from "@/tableInteractions/actions";
 import { formatPhoneNumber } from "react-phone-number-input";
 import SitesFormDialog from "./SitesFormDialog";
 import { DialogTrigger } from "../ui/dialog";
+import { siteSchema, updateSchema } from "@/tableInteractions/schemas";
+import z from "zod";
 
-export function SortableSitesList({
-	items,
-}: {
-	items: {
-		id: string;
-		name: string;
-		address: string;
-		phone: string;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
-}) {
+export function SortableSitesList({ items }: { items: (z.infer<typeof siteSchema> & z.infer<typeof updateSchema>)[] }) {
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
 	return (

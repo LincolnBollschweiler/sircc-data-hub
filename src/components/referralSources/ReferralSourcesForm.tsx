@@ -16,7 +16,7 @@ export default function ReferralSourcesForm({
 	referralSource,
 	onSuccess,
 }: {
-	referralSource?: { id: string; name: string; description: string | null };
+	referralSource?: z.infer<typeof generalSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({
