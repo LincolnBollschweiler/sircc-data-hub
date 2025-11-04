@@ -1,16 +1,11 @@
+import z from "zod";
 import { SortableClientServicesList } from "./SortableClientServicesList";
+import { clientServiceSchema, updateSchema } from "../../tableInteractions/schemas";
 
 export default function ClientServices({
 	items,
 }: {
-	items: {
-		id: string;
-		name: string;
-		description: string | null;
-		dispersesFunds: boolean | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
+	items: (z.infer<typeof clientServiceSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	return (
 		<div className="w-full overflow-x-auto">

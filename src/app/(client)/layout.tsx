@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { canAccessAdminPages, canAccessCoachPages } from "@/permissions/general";
+import ProfileDialog from "@/components/users/ProfileDialog";
+// import { canAccessAdminPages, canAccessCoachPages } from "@/permissions/general";
+import { canAccessAdminPages } from "@/permissions/general";
 import { getCurrentUser } from "@/services/clerk";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { DialogTrigger } from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -17,13 +20,13 @@ export default function ClientLayout({ children }: Readonly<{ children: ReactNod
 const Navbar = () => {
 	return (
 		<header className="flex h-12 shadow bg-background-dark z-10">
-			<nav className="flex gap-4 container">
-				<Link className="mr-auto text-xl hover:underline flex items-center" href="/">
+			<nav className="flex container text-sm sm:text-lg lg:text-xl">
+				<Link className="mr-auto hover:underline flex items-center" href="/">
 					Sircc Data Hub
 				</Link>
 				<SignedIn>
 					<AdminLink />
-					<YourClients />
+					<ProfileLink />
 					<div className="size-8 self-center">
 						<UserButton
 							appearance={{
@@ -55,13 +58,24 @@ const AdminLink = async () => {
 	);
 };
 
-const YourClients = async () => {
-	const user = await getCurrentUser();
-	if (!canAccessCoachPages(user)) return null;
-
+const ProfileLink = async () => {
+	const currUser = await getCurrentUser({ allData: true });
 	return (
-		<Link className="flex items-center px-2 hover:bg-accent/50" href="/clients">
-			<span className="hover:border-b">Clients</span>
-		</Link>
+		<ProfileDialog user={currUser?.data!}>
+			<DialogTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
+				<span className="hover:border-b">Profile</span>
+			</DialogTrigger>
+		</ProfileDialog>
 	);
 };
+
+// const YourClients = async () => {
+// 	const user = await getCurrentUser();
+// 	if (!canAccessCoachPages(user)) return null;
+
+// 	return (
+// 		<Link className="flex items-center px-2 hover:bg-accent/50" href="/clients">
+// 			<span className="hover:border-b">Clients</span>
+// 		</Link>
+// 	);
+// };

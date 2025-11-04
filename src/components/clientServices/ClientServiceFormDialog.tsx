@@ -3,19 +3,14 @@
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import ClientServiceForm from "./ClientServiceForm";
-
+import z from "zod";
+import { clientServiceSchema, updateSchema } from "../../tableInteractions/schemas";
 export default function ClientServiceFormDialog({
 	clientService,
 	children,
 }: {
-	clientService?: {
-		id: string;
-		name: string;
-		description: string | null;
-		dispersesFunds: boolean | null;
-		createdAt: Date;
-		updatedAt: Date;
-	};
+	clientService?: z.infer<typeof clientServiceSchema> & z.infer<typeof updateSchema>;
+
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);

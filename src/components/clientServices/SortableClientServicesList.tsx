@@ -8,18 +8,13 @@ import { removeClientService, updateClientServicesOrders } from "@/tableInteract
 import { cn } from "@/lib/utils";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import ClientServiceFormDialog from "./ClientServiceFormDialog";
+import z from "zod";
+import { clientServiceSchema, updateSchema } from "../../tableInteractions/schemas";
 
 export function SortableClientServicesList({
 	items,
 }: {
-	items: {
-		id: string;
-		name: string;
-		description: string | null;
-		dispersesFunds: boolean | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
+	items: (z.infer<typeof clientServiceSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 

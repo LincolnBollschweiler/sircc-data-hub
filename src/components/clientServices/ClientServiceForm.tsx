@@ -17,7 +17,7 @@ export default function ClientServiceForm({
 	clientService,
 	onSuccess,
 }: {
-	clientService?: { id: string; name: string; description: string | null; dispersesFunds: boolean | null };
+	clientService?: z.infer<typeof clientServiceSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof clientServiceSchema>>({
