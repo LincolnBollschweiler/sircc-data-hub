@@ -14,3 +14,4 @@ export const getReferralSourceGlobalTag = () => getGlobalTag("referral-sources")
 export const getReferralSourceIdTag = (id: string) => getIdTag("referral-sources", id);
 export const getClientServiceGlobalTag = () => getGlobalTag("client-services");
 export const getClientServiceIdTag = (id: string) => getIdTag("client-services", id);
+export const getUserSitesGlobalTag = () => getGlobalTag("user-sites");

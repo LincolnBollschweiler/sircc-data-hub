@@ -31,6 +31,7 @@ export const revalidateLocationCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
 	revalidateTag(cacheTags.getLocationGlobalTag(), "max");
 	revalidateTag(cacheTags.getLocationIdTag(id), "max");
+	revalidateTag(cacheTags.getUserSitesGlobalTag(), "max");
 	revalidatePath("/admin/data-types/locations");
 	revalidatePath(`/admin/data-types/locations/${id}/edit`);
 };

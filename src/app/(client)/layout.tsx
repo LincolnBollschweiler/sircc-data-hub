@@ -3,6 +3,7 @@ import ProfileDialog from "@/components/users/ProfileDialog";
 // import { canAccessAdminPages, canAccessCoachPages } from "@/permissions/general";
 import { canAccessAdminPages } from "@/permissions/general";
 import { getCurrentUser } from "@/services/clerk";
+import { getUserSites } from "@/userInteractions/db";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import Link from "next/link";
@@ -60,8 +61,9 @@ const AdminLink = async () => {
 
 const ProfileLink = async () => {
 	const currUser = await getCurrentUser({ allData: true });
+	const sites = await getUserSites();
 	return (
-		<ProfileDialog user={currUser?.data!}>
+		<ProfileDialog user={currUser?.data!} sites={sites}>
 			<DialogTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
 				<span className="hover:border-b">Profile</span>
 			</DialogTrigger>

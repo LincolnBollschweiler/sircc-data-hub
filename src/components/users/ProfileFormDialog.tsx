@@ -1,29 +1,36 @@
-// "use client";
+"use client";
 
-// import { ReactNode, useState } from "react";
-// import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-// import ReferralSourcesForm from "./ReferralSourcesForm";
+import { ReactNode, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { z } from "zod";
+import { userSchema } from "@/userInteractions/schema";
+import ProfileForm from "./ProfileForm";
 
-// export default function ProfileFormDialog({
-// 	referralSource,
-// 	children,
-// }: {
-// 	referralSource?: { id: string; name: string; description: string | null };
-// 	children: ReactNode;
-// }) {
-// 	const [isOpen, setIsOpen] = useState(false);
+export default function ProfileFormDialog({
+	profile,
+	sites,
+	children,
+}: {
+	profile: z.infer<typeof userSchema> & { id: string };
+	sites: {
+		id: string;
+		name: string;
+	}[];
+	children: ReactNode;
+}) {
+	const [isOpen, setIsOpen] = useState(false);
 
-// 	return (
-// 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-// 			{children}
-// 			<DialogContent className="sm:max-w-[550px]">
-// 				<DialogHeader>
-// 					<DialogTitle>{referralSource ? "Edit Referral Source" : "Add New Referral Source"}</DialogTitle>
-// 				</DialogHeader>
-// 				<div className="grid gap-4">
-// 					<ReferralSourcesForm referralSource={referralSource} onSuccess={() => setIsOpen(false)} />
-// 				</div>
-// 			</DialogContent>
-// 		</Dialog>
-// 	);
-// }
+	return (
+		<Dialog open={isOpen} onOpenChange={setIsOpen}>
+			{children}
+			<DialogContent className="overflow-y-auto max-h-screen sm:max-w-[550px]">
+				<DialogHeader>
+					<DialogTitle>{profile ? "Edit Profile" : "Add New Profile"}</DialogTitle>
+				</DialogHeader>
+				<div className="grid gap-4">
+					<ProfileForm profile={profile} sites={sites} onSuccess={() => setIsOpen(false)} />
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}

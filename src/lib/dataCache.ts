@@ -12,7 +12,8 @@ type CACHE_TAG =
 	| "coach-trainings"
 	| "locations"
 	| "referral-sources"
-	| "sites";
+	| "sites"
+	| "user-sites";
 
 export const getGlobalTag = (tag: CACHE_TAG) => {
 	return `global:${tag}` as const;
