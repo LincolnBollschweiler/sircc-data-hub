@@ -63,7 +63,7 @@ const ProfileLink = async () => {
 	const currUser = await getCurrentUser({ allData: true });
 	const sites = await getUserSites();
 	return (
-		<ProfileDialog user={currUser?.data!} sites={sites}>
+		<ProfileDialog user={currUser?.data} sites={sites}>
 			<DialogTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
 				<span className="hover:border-b">Profile</span>
 			</DialogTrigger>

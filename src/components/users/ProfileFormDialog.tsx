@@ -3,7 +3,7 @@
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { z } from "zod";
-import { userSchema } from "@/userInteractions/schema";
+import { userSchema, UserType } from "@/userInteractions/schema";
 import ProfileForm from "./ProfileForm";
 
 export default function ProfileFormDialog({
@@ -11,7 +11,7 @@ export default function ProfileFormDialog({
 	sites,
 	children,
 }: {
-	profile: z.infer<typeof userSchema> & { id: string };
+	profile: UserType;
 	sites: {
 		id: string;
 		name: string;
@@ -28,7 +28,11 @@ export default function ProfileFormDialog({
 					<DialogTitle>{profile ? "Edit Profile" : "Add New Profile"}</DialogTitle>
 				</DialogHeader>
 				<div className="grid gap-4">
-					<ProfileForm profile={profile} sites={sites} onSuccess={() => setIsOpen(false)} />
+					<ProfileForm
+						profile={profile as z.infer<typeof userSchema> & { id: string }}
+						sites={sites}
+						onSuccess={() => setIsOpen(false)}
+					/>
 				</div>
 			</DialogContent>
 		</Dialog>
