@@ -10,13 +10,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { generalSchema } from "../../tableInteractions/schemas";
-import { redirect } from "next/navigation";
 import { createCoachTraining, updateCoachTraining } from "@/tableInteractions/actions";
+import { on } from "events";
 
 export default function CoachTrainingsForm({
 	coachTraining,
+	onSuccess,
 }: {
-	coachTraining?: { id: string; name: string; description: string | null };
+	coachTraining?: z.infer<typeof generalSchema> & { id: string };
+	onSuccess: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({
 		resolver: zodResolver(generalSchema),
@@ -35,7 +37,7 @@ export default function CoachTrainingsForm({
 			actionToast({ actionData });
 		}
 
-		redirect("/admin/data-types/coach-trainings");
+		if (!actionData.error) onSuccess?.();
 	};
 
 	return (
@@ -70,11 +72,7 @@ export default function CoachTrainingsForm({
 					)}
 				/>
 				<div className="self-end gap-2 flex">
-					<Button
-						type="button"
-						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/coach-trainings")}
-					>
+					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel
 					</Button>
 					<Button type="submit" disabled={form.formState.isSubmitting}>

@@ -1,26 +1,18 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { cn } from "@/lib/utils";
 import { removeSite, updateSiteOrders } from "@/tableInteractions/actions";
 import { formatPhoneNumber } from "react-phone-number-input";
+import SitesFormDialog from "./SitesFormDialog";
+import { DialogTrigger } from "../ui/dialog";
+import { siteSchema, updateSchema } from "@/tableInteractions/schemas";
+import z from "zod";
 
-export function SortableSitesList({
-	items,
-}: {
-	items: {
-		id: string;
-		name: string;
-		address: string;
-		phone: string;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
-}) {
+export function SortableSitesList({ items }: { items: (z.infer<typeof siteSchema> & z.infer<typeof updateSchema>)[] }) {
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
 	return (
@@ -51,12 +43,14 @@ export function SortableSitesList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/sites/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<SitesFormDialog site={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</SitesFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeSite.bind(null, item.id)}

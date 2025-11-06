@@ -1,17 +1,8 @@
+import { siteSchema, updateSchema } from "@/tableInteractions/schemas";
 import { SortableSitesList } from "./SortableSitesList";
+import z from "zod";
 
-export default function Sites({
-	items,
-}: {
-	items: {
-		id: string;
-		name: string;
-		address: string;
-		phone: string;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
-}) {
+export default function Sites({ items }: { items: (z.infer<typeof siteSchema> & z.infer<typeof updateSchema>)[] }) {
 	return (
 		<div className="w-full overflow-x-auto">
 			<div className="min-w-[950px] max-w-[1920px] mx-auto">

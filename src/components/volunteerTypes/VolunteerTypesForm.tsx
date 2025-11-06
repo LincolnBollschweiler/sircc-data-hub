@@ -11,12 +11,13 @@ import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { createVolunteerType, updateVolunteerType } from "../../tableInteractions/actions";
 import { generalSchema } from "../../tableInteractions/schemas";
-import { redirect } from "next/navigation";
 
 export default function VolunteerTypesForm({
 	volunteerType,
+	onSuccess,
 }: {
-	volunteerType?: { id: string; name: string; description: string | null };
+	volunteerType?: z.infer<typeof generalSchema> & { id: string };
+	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({
 		resolver: zodResolver(generalSchema),
@@ -31,11 +32,8 @@ export default function VolunteerTypesForm({
 
 		const actionData = await action(values);
 
-		if (actionData) {
-			actionToast({ actionData });
-		}
-
-		redirect("/admin/data-types/volunteer-types");
+		if (actionData) actionToast({ actionData });
+		if (!actionData?.error) onSuccess?.();
 	};
 
 	return (
@@ -70,11 +68,7 @@ export default function VolunteerTypesForm({
 					)}
 				/>
 				<div className="self-end gap-2 flex">
-					<Button
-						type="button"
-						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/volunteer-types")}
-					>
+					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel
 					</Button>
 					<Button type="submit" disabled={form.formState.isSubmitting}>

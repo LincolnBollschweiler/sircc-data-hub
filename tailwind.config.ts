@@ -11,10 +11,8 @@ export default {
 	],
 	theme: {
 		container: {
-			center: true,
-			padding: "2rem",
 			screens: {
-				sm: "1920px",
+				"2xl": "1920px", // adding 2xl so larger monitors allow more content width
 			},
 		},
 		extend: {

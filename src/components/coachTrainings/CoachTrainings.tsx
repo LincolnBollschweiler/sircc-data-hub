@@ -1,15 +1,11 @@
+import z from "zod";
 import { SortableCoachTrainingsList } from "./SortableCoachTrainingsList";
+import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
 
 export default function CoachTrainings({
 	items,
 }: {
-	items: {
-		id: string;
-		name: string;
-		description: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
+	items: (z.infer<typeof generalSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	return (
 		<div className="w-full overflow-x-auto">
@@ -22,8 +18,6 @@ export default function CoachTrainings({
 					<div className="text-center">Updated</div>
 					<div></div>
 				</div>
-
-				{/* Table rows */}
 				<SortableCoachTrainingsList items={items} />
 			</div>
 		</div>

@@ -1,24 +1,20 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { removeClientService, updateClientServicesOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
+import { DialogTrigger } from "@radix-ui/react-dialog";
+import ClientServiceFormDialog from "./ClientServiceFormDialog";
+import z from "zod";
+import { clientServiceSchema, updateSchema } from "../../tableInteractions/schemas";
 
 export function SortableClientServicesList({
 	items,
 }: {
-	items: {
-		id: string;
-		name: string;
-		description: string | null;
-		dispersesFunds: boolean | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
+	items: (z.infer<typeof clientServiceSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -47,15 +43,16 @@ export function SortableClientServicesList({
 								<div className="text-center pt-2">
 									{new Date(item.updatedAt).toLocaleDateString("en-US", dateOptions)}
 								</div>
-
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/client-services/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<ClientServiceFormDialog clientService={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</ClientServiceFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeClientService.bind(null, item.id)}

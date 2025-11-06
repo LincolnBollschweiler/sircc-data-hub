@@ -10,13 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { generalSchema } from "../../tableInteractions/schemas";
-import { redirect } from "next/navigation";
 import { createReferralSource, updateReferralSource } from "@/tableInteractions/actions";
 
 export default function ReferralSourcesForm({
 	referralSource,
+	onSuccess,
 }: {
-	referralSource?: { id: string; name: string; description: string | null };
+	referralSource?: z.infer<typeof generalSchema> & { id: string };
+	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({
 		resolver: zodResolver(generalSchema),
@@ -36,7 +37,7 @@ export default function ReferralSourcesForm({
 			actionToast({ actionData });
 		}
 
-		redirect("/admin/data-types/referral-sources");
+		if (!actionData?.error) onSuccess?.();
 	};
 
 	return (
@@ -71,11 +72,7 @@ export default function ReferralSourcesForm({
 					)}
 				/>
 				<div className="self-end gap-2 flex">
-					<Button
-						type="button"
-						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/referral-sources")}
-					>
+					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel
 					</Button>
 					<Button type="submit" disabled={form.formState.isSubmitting}>
