@@ -17,6 +17,7 @@ import { userSchema } from "@/userInteractions/schema";
 import { updateUser } from "./actions";
 import { redirect } from "next/navigation";
 import { Textarea } from "../ui/textarea";
+import { Site } from "@/drizzle/types";
 
 export default function ProfileForm({
 	profile,
@@ -25,10 +26,7 @@ export default function ProfileForm({
 	intakeNotes,
 }: {
 	profile: z.infer<typeof userSchema> & { id: string };
-	sites: {
-		id: string;
-		name: string;
-	}[];
+	sites: Partial<Site>[];
 	onSuccess?: () => void;
 	intakeNotes?: boolean;
 }) {
@@ -239,7 +237,7 @@ export default function ProfileForm({
 													No Preferred Site
 												</SelectItem>,
 												...sites.map((site) => (
-													<SelectItem key={site.id} value={site.id}>
+													<SelectItem key={site.id} value={site.id ?? ""}>
 														{site.name}
 													</SelectItem>
 												)),

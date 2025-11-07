@@ -2,9 +2,9 @@ import { db } from "@/drizzle/db";
 import { site, user } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { revalidateUserCache } from "./cache";
-import { isNull } from "drizzle-orm";
+import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
-import { getUserSitesGlobalTag } from "@/tableInteractions/cacheTags";
+import { getAllUsersGlobalTag, getUserSitesGlobalTag } from "@/tableInteractions/cacheTags";
 
 export async function insertUser(data: typeof user.$inferInsert) {
 	console.log("Inserting user:", data);
@@ -92,7 +92,19 @@ const cachedUserSites = unstable_cache(
 			.orderBy(site.name);
 	},
 	["getUserSites"],
-	{ tags: [getUserSitesGlobalTag()], revalidate: 5 }
+	// { tags: [getUserSitesGlobalTag()] }
+	{ tags: [getUserSitesGlobalTag()], revalidate: 5 } // HOW TO: set a time-based revalidation alongside tag-based so that data is at most 5 seconds stale
+	// requires a hard-refresh too
 );
 
 export const getUserSites = async () => cachedUserSites();
+
+const cachedUsers = unstable_cache(
+	async () => {
+		return await db.select().from(user).where(isNull(user.deletedAt)).orderBy(desc(user.updatedAt));
+	},
+	["getAllUsers"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
+
+export const getAllUsers = async () => cachedUsers();

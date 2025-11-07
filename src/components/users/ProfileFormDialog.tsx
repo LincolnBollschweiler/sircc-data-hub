@@ -3,7 +3,8 @@
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { z } from "zod";
-import { userSchema, UserType } from "@/userInteractions/schema";
+import { userSchema } from "@/userInteractions/schema";
+import { User, Site } from "@/drizzle/types";
 import ProfileForm from "./ProfileForm";
 
 export default function ProfileFormDialog({
@@ -11,11 +12,9 @@ export default function ProfileFormDialog({
 	sites,
 	children,
 }: {
-	profile: UserType;
-	sites: {
-		id: string;
-		name: string;
-	}[];
+	// profile: z.infer<typeof userSchema> & { id: string };
+	profile: User;
+	sites: Site[];
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);

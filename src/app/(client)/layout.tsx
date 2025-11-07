@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import ProfileDialog from "@/components/users/ProfileDialog";
-// import { canAccessAdminPages, canAccessCoachPages } from "@/permissions/general";
+import { Site, User } from "@/drizzle/types";
 import { canAccessAdminPages } from "@/permissions/general";
 import { getCurrentUser } from "@/services/clerk";
 import { getUserSites } from "@/userInteractions/db";
@@ -63,7 +63,7 @@ const ProfileLink = async () => {
 	const currUser = await getCurrentUser({ allData: true });
 	const sites = await getUserSites();
 	return (
-		<ProfileDialog user={currUser?.data} sites={sites}>
+		<ProfileDialog user={currUser?.data as User} sites={sites as Site[]}>
 			<DialogTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
 				<span className="hover:border-b">Profile</span>
 			</DialogTrigger>

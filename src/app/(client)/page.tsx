@@ -2,7 +2,6 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/services/clerk";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUserSites } from "@/userInteractions/db";
 import { userSchema } from "@/userInteractions/schema";
