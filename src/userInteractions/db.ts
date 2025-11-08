@@ -8,7 +8,7 @@ import { getAllUsersGlobalTag, getUserSitesGlobalTag } from "@/tableInteractions
 
 export async function insertUser(data: typeof user.$inferInsert) {
 	console.log("Inserting user:", data);
-	const [newUser] = await db
+	const [applicant] = await db
 		.insert(user)
 		.values(data)
 		.returning()
@@ -17,13 +17,13 @@ export async function insertUser(data: typeof user.$inferInsert) {
 			set: data,
 		});
 
-	if (newUser == null) {
+	if (applicant == null) {
 		console.error("Failed to insert user");
 		throw new Error("Failed to insert user");
 	}
 
-	revalidateUserCache(newUser.id);
-	return newUser;
+	revalidateUserCache(applicant.id);
+	return applicant;
 }
 
 export async function updateUser({ clerkUserId }: { clerkUserId: string }, data: Partial<typeof user.$inferInsert>) {

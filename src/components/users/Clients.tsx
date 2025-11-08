@@ -9,7 +9,7 @@ import DataTable from "./DataTable";
 export default async function Clients() {
 	const sites = await getUserSites();
 	const users = await getAllUsers();
-	const newUsers = users.filter((user) => user.role === "client" && user.accepted);
+	const clients = users.filter((user) => user.role === "client" && user.accepted);
 	return (
 		<div className="container py-4 mx-auto">
 			<PageHeader title="Clients" className="mb-0">
@@ -17,7 +17,7 @@ export default async function Clients() {
 					<Link href="/admin">Admin Dashboard</Link>
 				</Button>
 			</PageHeader>
-			<DataTable columns={clientColumns} data={newUsers as Partial<User>[]} sites={sites} />
+			<DataTable columns={clientColumns} data={clients as Partial<User>[]} sites={sites} />
 		</div>
 	);
 }

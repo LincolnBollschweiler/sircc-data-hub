@@ -1,5 +1,5 @@
-import NewUsers from "@/components/users/NewUsers";
+import Applicants from "@/components/users/Applicants";
 
-export default function NewUsersPage() {
-	return <NewUsers />;
+export default function ApplicantsPage() {
+	return <Applicants />;
 }

@@ -47,7 +47,6 @@ export const user = pgTable(
 		followUpNeeded: boolean("follow_up_needed").default(false),
 		followUpDate: timestamp("follow_up_date", { withTimezone: true }),
 		accepted: boolean("accepted"),
-		roleAssigned: boolean("assigned").default(false),
 		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,

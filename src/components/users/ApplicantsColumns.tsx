@@ -17,7 +17,7 @@ import {
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
-export const newUserColumns: ColumnDef<Partial<User>>[] = [
+export const applicantsColumns: ColumnDef<Partial<User>>[] = [
 	{
 		id: "name",
 		accessorFn: (row) => `${row.firstName} ${row.lastName}`,

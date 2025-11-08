@@ -1,5 +1,4 @@
 // import { getAllUsers, getUserSites } from "@/userInteractions/db";
-// import NewUsers from "@/components/users/NewUsers";
 
 export default async function AdminPage() {
 	return (
@@ -9,9 +8,6 @@ export default async function AdminPage() {
 				Welcome to the admin dashboard. Use the navigation above to manage coaches, clients, volunteers, and
 				data types.
 			</p>
-			{/* <div className="mb-4">
-				{newUsers.length} new users pending acceptance and {sites.length} sites in the system. //{" "}
-			</div> */}
 		</div>
 	);
 }
