@@ -19,6 +19,9 @@ export default function PeopleDropdownMenu({ role }: { role: string }) {
 			<DropdownMenuContent className="bg-background-dark border-transparent -translate-y-3 min-w-fit">
 				{/* <DropdownMenuLabel>My Account</DropdownMenuLabel>
 				<DropdownMenuSeparator /> */}
+				<DropdownMenuItem onSelect={() => redirect("/admin/applicants")}>
+					<span className="hover:border-b">Applicants</span>
+				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/clients")}>
 					<span className="hover:border-b">Clients</span>
 				</DropdownMenuItem>

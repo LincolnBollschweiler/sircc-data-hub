@@ -1,7 +1,6 @@
 import DataTypesDropdownMenu from "@/components/DataTypesDropdownMenu";
 import PeopleDropdownMenu from "@/components/PeopleDropdownMenu";
 import { Badge } from "@/components/ui/badge";
-import { canAccessAdminPages, canAccessCoachPages, canAccessDevPages } from "@/permissions/general";
 import { getCurrentUser } from "@/services/clerk";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
@@ -27,7 +26,7 @@ const Navbar = () => {
 					<Badge className="bg-black hover:bg-black text-[0.625rem] sm:text-xs">Admin</Badge>
 				</div>
 				<People />
-				<DataTypes />
+				<DataTypesDropdownMenu />
 				<div className="size-8 self-center ml-[1rem]">
 					<UserButton
 						appearance={{
@@ -44,12 +43,5 @@ const Navbar = () => {
 
 const People = async () => {
 	const user = await getCurrentUser();
-	if (!canAccessAdminPages(user)) return null;
 	return <PeopleDropdownMenu role={user.role ?? "client"} />;
-};
-
-const DataTypes = async () => {
-	const user = await getCurrentUser();
-	if (!canAccessAdminPages(user)) return null;
-	return <DataTypesDropdownMenu />;
 };

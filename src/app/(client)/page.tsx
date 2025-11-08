@@ -13,6 +13,7 @@ export default async function Home() {
 	const profile = currentUser?.data as z.infer<typeof userSchema> & { id: string };
 	const intakeNotes = profile?.notes;
 	const hasCompletedIntake = intakeNotes && intakeNotes.length > 2;
+	// console.log("User: ", profile.firstName, "Notes length:", intakeNotes?.length, "Notes:", intakeNotes);
 	const sites = await getUserSites();
 
 	return (

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { getAllUsers } from "./db";
 
 export const userSchema = z
 	.object({

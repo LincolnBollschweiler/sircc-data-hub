@@ -104,7 +104,8 @@ const cachedUsers = unstable_cache(
 		return await db.select().from(user).where(isNull(user.deletedAt)).orderBy(desc(user.updatedAt));
 	},
 	["getAllUsers"],
-	{ tags: [getAllUsersGlobalTag()] }
+	// { tags: [getAllUsersGlobalTag()] }
+	{ tags: [getAllUsersGlobalTag()], revalidate: 5 }
 );
 
 export const getAllUsers = async () => cachedUsers();
