@@ -18,12 +18,16 @@ export default function PageHeader({
 }) {
 	return (
 		<>
-			{" "}
 			<div className={cn("mb-8 flex gap-4 items-center justify-between", className)}>
 				<h1 className="text-2xl font-semibold flex items-center gap-2">
 					{title}
 					{role && <Badge className="bg-black hover:bg-black">{role}</Badge>}
-					{role && (accepted ? "" : <span className="text-sm text-muted">(Acceptance Pending ...)</span>)}
+					{role &&
+						(accepted ? (
+							""
+						) : (
+							<span className="text-xs sm:text-sm text-muted">(Acceptance Pending ...)</span>
+						))}
 				</h1>
 				{children && <div>{children}</div>}
 			</div>

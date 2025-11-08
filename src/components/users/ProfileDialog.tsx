@@ -22,7 +22,7 @@ export default function ProfileDialog({ user, sites, children }: { user: User; s
 		<>
 			<Dialog>
 				{children}
-				<DialogContent>
+				<DialogContent className="rounded-md w-11/12 overflow-auto gap-0">
 					<DialogHeader>
 						<DialogTitle>
 							<PageHeader
@@ -30,39 +30,39 @@ export default function ProfileDialog({ user, sites, children }: { user: User; s
 								role={role}
 								accepted={user?.accepted}
 								coachAuthorized={user?.coachAuthorized}
-								className="mb-2"
+								className="mb-0"
 							/>
 						</DialogTitle>
 					</DialogHeader>
 					<div className="">
 						<Table>
-							<TableBody>
-								<TableRow key={"name"} className="hover:bg-0 text-lg font-semibold">
-									<TableCell colSpan={2} className="text-center px-3 text-xl">
+							<TableBody className="text-xs sm:text-sm md:text-base [&_td]:align-top">
+								<TableRow key={"name"} className="hover:bg-0 text-lg sm:text-xl font-semibold">
+									<TableCell colSpan={2} className="text-center px-3">
 										{user?.firstName} {user?.lastName}
 									</TableCell>
 								</TableRow>
-								<TableRow key={"email"} className="border-none hover:bg-0 text-lg">
+								<TableRow key={"email"} className="border-none hover:bg-0">
 									<TableCell className="py-0 pt-3">Email</TableCell>
 									<TableCell className="p-0 pt-3">{user?.email ?? "Not Provide"}</TableCell>
 								</TableRow>
-								<TableRow key={"address"} className="border-none my-0 hover:bg-0 text-lg">
+								<TableRow key={"address"} className="border-none my-0 hover:bg-0">
 									<TableCell className="py-0">Address</TableCell>
 									<TableCell className="p-0">{user?.address ?? "Not Provided"}</TableCell>
 								</TableRow>
-								<TableRow key={"phone"} className="border-none hover:bg-0 text-lg">
+								<TableRow key={"phone"} className="border-none hover:bg-0">
 									<TableCell className="py-0">Phone</TableCell>
 									<TableCell className="p-0">
 										{user?.phone ? formatPhoneNumber(user.phone) : "Not Provided"}
 									</TableCell>
 								</TableRow>
-								<TableRow key={"dob"} className="border-none my-0 hover:bg-0 text-lg">
+								<TableRow key={"dob"} className="border-none my-0 hover:bg-0">
 									<TableCell className="py-0">Birthday</TableCell>
 									<TableCell className="p-0">
 										{user?.birthMonth ?? "__"}/{user?.birthDay ?? "__"}
 									</TableCell>
 								</TableRow>
-								<TableRow key={"site"} className="border-none hover:bg-0 text-lg">
+								<TableRow key={"site"} className="border-none hover:bg-0">
 									<TableCell className="py-0">Preferred Site</TableCell>
 									<TableCell className="p-0">
 										{user?.siteId
@@ -74,7 +74,7 @@ export default function ProfileDialog({ user, sites, children }: { user: User; s
 							</TableBody>
 						</Table>
 					</div>
-					<DialogFooter>
+					<DialogFooter className="flex flex-row space-x-2 justify-end">
 						<DialogClose asChild>
 							<Button variant="destructiveOutline">Close</Button>
 						</DialogClose>
