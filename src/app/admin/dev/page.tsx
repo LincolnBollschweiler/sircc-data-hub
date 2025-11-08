@@ -94,7 +94,7 @@ body.light {
 							target="_blank"
 							rel="noreferrer"
 						>
-							https://www.iamsajid.com/ui-colors
+							https://www.iamsajid.com/ui-colors/
 						</Link>
 					</div>
 					<div>

@@ -41,9 +41,9 @@ body {
 		--radius: 0.5rem;
 	}
 	.dark {
-		--background: 214 15% 5%;
-		--background-dark: 216 24% 1%;
-		--background-light: 214 8% 9%;
+		--background: 227, 17%, 10%;
+		--background-dark: 210, 10%, 23%;
+		--background-light: 216 24% 1%;
 		--foreground: 214 47% 95%;
 		--primary: 214 78% 73%;
 		--primary-foreground: 214 29% 5%;
@@ -93,3 +93,14 @@ body {
 		@apply bg-background text-foreground;
 	}
 }
+
+/* example custom class styles */
+/* @layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary-dark;
+  }
+
+  .card-highlight {
+    @apply bg-background-light dark:bg-background-dark p-6 rounded-lg shadow-md;
+  }
+} */

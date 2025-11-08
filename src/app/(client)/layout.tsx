@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { ApplyUserTheme } from "@/components/users/ApplyUserTheme";
 import ProfileDialog from "@/components/users/ProfileDialog";
 import { Site, User } from "@/drizzle/types";
 import { canAccessAdminPages } from "@/permissions/general";
@@ -26,9 +27,8 @@ const Navbar = () => {
 					Sircc Data Hub
 				</Link>
 				<SignedIn>
-					<AdminLink />
-					<ProfileLink />
-					<div className="size-8 self-center">
+					<HeaderLinks />
+					<div className="size-8 self-center ml-[0.5rem]">
 						<UserButton
 							appearance={{
 								elements: {
@@ -48,10 +48,22 @@ const Navbar = () => {
 	);
 };
 
-const AdminLink = async () => {
-	const currUser = await getCurrentUser();
-	if (!canAccessAdminPages(currUser)) return null;
+const HeaderLinks = async () => {
+	const user = await getCurrentUser({ allData: true });
+	const sites = await getUserSites();
 
+	return (
+		<>
+			<ApplyUserTheme userTheme={user.data?.themePreference ?? undefined} />
+			{AdminLink(user.data as User)}
+			{/* {YourClients()} */}
+			{ProfileLink(user.data as User, sites as Site[])}
+		</>
+	);
+};
+
+const AdminLink = (user: User) => {
+	if (!canAccessAdminPages(user)) return null;
 	return (
 		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin">
 			<span className="hover:border-b">Admin</span>
@@ -59,11 +71,9 @@ const AdminLink = async () => {
 	);
 };
 
-const ProfileLink = async () => {
-	const currUser = await getCurrentUser({ allData: true });
-	const sites = await getUserSites();
+const ProfileLink = (user: User, sites: Site[]) => {
 	return (
-		<ProfileDialog user={currUser?.data as User} sites={sites as Site[]}>
+		<ProfileDialog user={user} sites={sites}>
 			<DialogTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
 				<span className="hover:border-b">Profile</span>
 			</DialogTrigger>

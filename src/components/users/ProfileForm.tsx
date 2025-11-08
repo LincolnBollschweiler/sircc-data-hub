@@ -18,6 +18,7 @@ import { updateUser } from "./actions";
 import { redirect } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Site } from "@/drizzle/types";
+import { useTheme } from "next-themes";
 
 export default function ProfileForm({
 	profile,
@@ -60,12 +61,20 @@ export default function ProfileForm({
 		form.setValue("phone", value);
 	};
 
+	const { setTheme } = useTheme();
+
 	const [focusedField, setFocusedField] = useState<string | null>(null);
 	const roles = [
 		{ id: "client", name: "Client" },
 		{ id: "coach", name: "Coach" },
 		{ id: "volunteer", name: "Volunteer" },
 		{ id: "client-volunteer", name: "Client-Volunteer" },
+	];
+
+	const themePreferences = [
+		{ id: "light", name: "Light" },
+		{ id: "dark", name: "Dark" },
+		{ id: "system", name: "System" },
 	];
 
 	return (
@@ -225,10 +234,10 @@ export default function ProfileForm({
 					render={({ field }) => (
 						<FormItem className="flex flex-col">
 							<div className="flex gap-2 items-center">
-								<FormLabel className="whitespace-nowrap">Preferred Site</FormLabel>
+								<FormLabel className="w-[100px]">Preferred Site</FormLabel>
 								<FormControl>
 									<Select onValueChange={field.onChange} value={field.value ?? ""}>
-										<SelectTrigger>
+										<SelectTrigger className="max-w-[150px]">
 											<SelectValue placeholder="Select a site" />
 										</SelectTrigger>
 										<SelectContent>
@@ -247,6 +256,39 @@ export default function ProfileForm({
 								</FormControl>
 							</div>
 							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					control={form.control}
+					name="themePreference"
+					render={({ field }) => (
+						<FormItem className="flex flex-col">
+							<div className="flex gap-2 items-center">
+								<FormLabel className="w-[100px]">Color Theme</FormLabel>
+								<FormControl>
+									<Select
+										onValueChange={(value) => {
+											field.onChange(value);
+											setTheme(value); // 👈 instantly update the UI theme
+										}}
+										value={field.value ?? ""}
+									>
+										<SelectTrigger className="max-w-[150px]">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{[
+												...themePreferences.map((theme) => (
+													<SelectItem key={theme.id} value={theme.id ?? ""}>
+														{theme.name}
+													</SelectItem>
+												)),
+											]}
+										</SelectContent>
+									</Select>
+								</FormControl>
+							</div>
 						</FormItem>
 					)}
 				/>
