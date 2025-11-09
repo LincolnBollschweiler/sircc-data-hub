@@ -1,10 +1,10 @@
 import { db } from "@/drizzle/db";
 import { site, user } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import { revalidateUserCache } from "./cache";
 import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { getAllUsersGlobalTag, getUserSitesGlobalTag } from "@/tableInteractions/cacheTags";
+import { revalidateUserCache } from "@/tableInteractions/cache";
 
 export async function insertUser(data: typeof user.$inferInsert) {
 	console.log("Inserting user:", data);

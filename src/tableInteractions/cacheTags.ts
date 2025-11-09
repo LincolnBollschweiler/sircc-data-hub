@@ -16,3 +16,5 @@ export const getClientServiceGlobalTag = () => getGlobalTag("client-services");
 export const getClientServiceIdTag = (id: string) => getIdTag("client-services", id);
 export const getUserSitesGlobalTag = () => getGlobalTag("user-sites");
 export const getAllUsersGlobalTag = () => getGlobalTag("users");
+export const getUserGlobalTag = () => getGlobalTag("users");
+export const getUserIdTag = (id: string) => getIdTag("users", id);

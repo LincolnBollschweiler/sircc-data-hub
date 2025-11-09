@@ -11,7 +11,7 @@ export default async function Applicants() {
 	const users = await getAllUsers();
 	let applicants = users.filter((user) => user.accepted == null);
 	console.log("Applicants found:", applicants.length);
-	// applicants = [...applicants, ...applicants, ...applicants, ...applicants]; // temp hack to show more data in table
+
 	return (
 		<div className="container py-4 mx-auto">
 			<PageHeader title="Applicants">
