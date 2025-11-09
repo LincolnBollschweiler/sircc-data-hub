@@ -2,7 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
 body {
+	overflow-x: none;
+}
+
+body {
+	width: 100%;
 	font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -42,7 +48,7 @@ body {
 	}
 	.dark {
 		--background: 227, 17%, 10%;
-		--background-dark: 210, 10%, 23%;
+		--background-dark: 210, 9%, 25%;
 		--background-light: 216 24% 1%;
 		--foreground: 214 47% 95%;
 		--primary: 214 78% 73%;
@@ -95,12 +101,16 @@ body {
 }
 
 /* example custom class styles */
-/* @layer components {
-  .btn-primary {
-    @apply px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary-dark;
-  }
+@layer components {
+	.hover-underline-border {
+		@apply border-b border-transparent hover:border-foreground transition-colors duration-200;
+	}
 
-  .card-highlight {
-    @apply bg-background-light dark:bg-background-dark p-6 rounded-lg shadow-md;
-  }
-} */
+	.data-types-header {
+		@apply border-b border-[#888] bg-background-dark py-2 text-xs font-semibold text-foreground lg:text-base;
+	}
+
+	.data-types-row {
+		@apply items-start py-1 border-b border-[#888] text-xs lg:text-base;
+	}
+}

@@ -9,7 +9,7 @@ export default async function CoachTrainingsPage() {
 	const coachTrainings = await getCoachTrainings();
 
 	return (
-		<div className="container py-4 mx-auto">
+		<div className="container py-4">
 			<PageHeader title="Coach Trainings">
 				<CoachTrainingsFormDialog>
 					<DialogTrigger asChild>

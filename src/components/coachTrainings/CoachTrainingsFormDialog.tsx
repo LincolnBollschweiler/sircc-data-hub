@@ -22,7 +22,7 @@ export default function CoachTrainingsFormDialog({
 				<DialogHeader>
 					<DialogTitle>{coachTraining ? "Edit Coach Training" : "Add New Coach Training"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<CoachTrainingsForm coachTraining={coachTraining} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>

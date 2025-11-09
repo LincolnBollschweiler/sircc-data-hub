@@ -22,7 +22,7 @@ export default function SitesFormDialog({
 				<DialogHeader>
 					<DialogTitle>{site ? "Edit Site" : "Add New Site"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<SitesForm site={site} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>

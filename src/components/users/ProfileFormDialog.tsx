@@ -26,7 +26,7 @@ export default function ProfileFormDialog({
 				<DialogHeader>
 					<DialogTitle>{profile ? "Edit Profile" : "Add New Profile"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<ProfileForm
 						profile={profile as z.infer<typeof userSchema> & { id: string }}
 						sites={sites}

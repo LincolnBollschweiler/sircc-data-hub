@@ -66,7 +66,7 @@ const AdminLink = (user: User) => {
 	if (!canAccessAdminPages(user)) return null;
 	return (
 		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin">
-			<span className="hover:border-b">Admin</span>
+			<span className="hover-underline-border">Admin</span>
 		</Link>
 	);
 };
@@ -75,7 +75,7 @@ const ProfileLink = (user: User, sites: Site[]) => {
 	return (
 		<ProfileDialog user={user} sites={sites}>
 			<DialogTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
-				<span className="hover:border-b">Profile</span>
+				<span className="hover-underline-border">Profile</span>
 			</DialogTrigger>
 		</ProfileDialog>
 	);
@@ -87,7 +87,7 @@ const ProfileLink = (user: User, sites: Site[]) => {
 
 // 	return (
 // 		<Link className="flex items-center px-2 hover:bg-accent/50" href="/clients">
-// 			<span className="hover:border-b">Clients</span>
+// 			<span className="hover-underline-border">Clients</span>
 // 		</Link>
 // 	);
 // };

@@ -22,7 +22,7 @@ export default function LocationsFormDialog({
 				<DialogHeader>
 					<DialogTitle>{location ? "Edit Location" : "Add New Location"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<LocationsForm location={location} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>

@@ -22,7 +22,7 @@ export default function VolunteerTypesFormDialog({
 				<DialogHeader>
 					<DialogTitle>{volunteerType ? "Edit Volunteer Type" : "Add New Volunteer Type"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<VolunteerTypesForm volunteerType={volunteerType} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>

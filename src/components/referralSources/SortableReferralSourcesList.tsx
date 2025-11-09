@@ -26,8 +26,8 @@ export function SortableReferralSourcesList({
 						{({ attributes, listeners }) => (
 							<div
 								className={cn(
-									index % 2 === 0 ? "bg-background-light" : "bg-background-light/30",
-									"w-full grid grid-cols-[30%,38%,9%,9%,14%] items-start py-1 border-b border-gray-200 text-xs lg:text-base"
+									index % 2 === 0 ? "bg-background-light" : "bg-background",
+									"w-full grid grid-cols-[30%,38%,9%,9%,14%] data-types-row"
 								)}
 							>
 								{/* content columns */}

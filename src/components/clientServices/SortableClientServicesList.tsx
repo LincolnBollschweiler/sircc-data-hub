@@ -26,8 +26,8 @@ export function SortableClientServicesList({
 						{({ attributes, listeners }) => (
 							<div
 								className={cn(
-									index % 2 === 0 ? "bg-background-light" : "bg-background-light/30",
-									"w-full grid grid-cols-[24%,31%,10%,9%,9%,17%] items-start py-1 border-b border-gray-200 text-xs lg:text-base"
+									index % 2 === 0 ? "bg-background-light" : "bg-background",
+									"w-full grid grid-cols-[24%,31%,10%,9%,9%,17%] data-types-row"
 								)}
 							>
 								{/* content columns */}

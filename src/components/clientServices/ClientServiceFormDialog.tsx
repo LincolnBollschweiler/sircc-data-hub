@@ -22,7 +22,7 @@ export default function ClientServiceFormDialog({
 				<DialogHeader>
 					<DialogTitle>{clientService ? "Edit Client Service" : "Add New Client Service"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<ClientServiceForm clientService={clientService} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>

@@ -24,7 +24,7 @@ export default function ReentryChecklistItemsFormDialog({
 						{reentryChecklistItem ? "Edit Reentry Checklist Item" : "Add New Reentry Checklist Item"}
 					</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<ReentryChecklistItemsForm
 						reentryChecklistItem={reentryChecklistItem}
 						onSuccess={() => setIsOpen(false)}
