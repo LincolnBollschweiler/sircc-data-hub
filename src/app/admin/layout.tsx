@@ -23,7 +23,7 @@ const Navbar = () => {
 					<Link className="hover:underline" href="/">
 						Sircc Data Hub
 					</Link>
-					<Badge className="bg-foreground text-background-dark hover:bg-black text-[0.625rem] sm:text-xs">
+					<Badge className="bg-foreground text-background-dark hover:bg-foreground h-5 text-[10px] sm:text-xs">
 						Admin
 					</Badge>
 				</div>

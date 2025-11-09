@@ -18,7 +18,7 @@ export default function SitesFormDialog({
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			{children}
-			<DialogContent className="sm:max-w-[550px]">
+			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
 					<DialogTitle>{site ? "Edit Site" : "Add New Site"}</DialogTitle>
 				</DialogHeader>

@@ -20,6 +20,13 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Run on a real device (must be on the same network)
+- Get your IPV4 (PS or CMD)
+  <code>ipconfig | findstr /i "IPv4"</code>
+- pick the first one, likely 192.168.[number][number]
+- run <code>npm run dev -- -H 0.0.0.0</code>
+- open http://IPv4:3000 on your device
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

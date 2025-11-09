@@ -8,8 +8,8 @@ export default function ReferralSources({
 	items: (z.infer<typeof generalSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	return (
-		<div className="w-full overflow-x-auto">
-			<div className="min-w-[950px] max-w-[1920px] mx-auto">
+		<div className="overflow-x-auto text-center">
+			<div className="inline-block min-w-[950px] sm:min-w-[1150px] text-left">
 				{/* Table header */}
 				<div className="grid grid-cols-[30%,38%,9%,9%,14%] data-types-header">
 					<div className="pl-4">Name</div>

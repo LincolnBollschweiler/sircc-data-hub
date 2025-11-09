@@ -9,7 +9,7 @@ export default function CoachTrainings({
 }) {
 	return (
 		<div className="overflow-x-auto text-center">
-			<div className="inline-block min-w-[950px] text-left">
+			<div className="inline-block min-w-[950px] sm:min-w-[1150px] text-left">
 				{/* Table header */}
 				<div className="grid grid-cols-[30%,38%,9%,9%,14%] data-types-header">
 					<div className="pl-4">Name</div>

@@ -22,7 +22,7 @@ export default function ProfileDialog({ user, sites, children }: { user: User; s
 		<>
 			<Dialog>
 				{children}
-				<DialogContent className="rounded-md w-11/12 overflow-auto gap-0">
+				<DialogContent className="dialog-mobile-safe">
 					<DialogHeader>
 						<DialogTitle>
 							<PageHeader

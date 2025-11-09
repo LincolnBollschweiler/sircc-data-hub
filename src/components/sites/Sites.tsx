@@ -4,8 +4,8 @@ import z from "zod";
 
 export default function Sites({ items }: { items: (z.infer<typeof siteSchema> & z.infer<typeof updateSchema>)[] }) {
 	return (
-		<div className="w-full overflow-x-auto">
-			<div className="min-w-[950px] max-w-[1920px] mx-auto">
+		<div className="overflow-x-auto text-center">
+			<div className="inline-block min-w-[950px] sm:min-w-[1150px] text-left">
 				{/* Table header */}
 				<div className="grid grid-cols-[20%,36%,12%,9%,9%,14%] data-types-header">
 					<div className="pl-4">Name</div>

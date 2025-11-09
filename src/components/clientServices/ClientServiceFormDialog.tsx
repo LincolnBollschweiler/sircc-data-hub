@@ -18,7 +18,7 @@ export default function ClientServiceFormDialog({
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			{children}
-			<DialogContent className="sm:max-w-[550px]">
+			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
 					<DialogTitle>{clientService ? "Edit Client Service" : "Add New Client Service"}</DialogTitle>
 				</DialogHeader>

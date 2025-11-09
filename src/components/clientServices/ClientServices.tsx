@@ -8,8 +8,8 @@ export default function ClientServices({
 	items: (z.infer<typeof clientServiceSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	return (
-		<div className="w-full overflow-x-auto">
-			<div className="min-w-[950px] max-w-[1920px] mx-auto">
+		<div className="overflow-x-auto text-center">
+			<div className="inline-block min-w-[950px] sm:min-w-[1150px] text-left">
 				{/* Table header */}
 				<div className="grid grid-cols-[24%,31%,10%,9%,9%,17%] data-types-header">
 					<div className="pl-4">Name</div>

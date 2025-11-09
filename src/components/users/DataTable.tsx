@@ -130,8 +130,8 @@ export default function DataTable<TData, TValue>({
 					/>
 				</div>
 			</div>
-			<div className="container mx-auto [&_table_tr:hover]:bg-background-light [&_table_th:hover]:bg-background-light border border-border-muted/50 p-1 rounded-lg shadow-md">
-				<Table className="bg-background-light dark:bg-background-dark rounded-t-md overflow-hidden">
+			<div className="container mx-auto [&_table_tr:hover]:bg-background-light [&_table_th:hover]:bg-background-light border border-[border-muted/50] p-1 rounded-lg shadow-md">
+				<Table className="bg-background-light rounded-t-md overflow-hidden">
 					<TableHeader className="bg-background-dark">
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>

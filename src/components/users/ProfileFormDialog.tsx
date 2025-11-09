@@ -22,7 +22,7 @@ export default function ProfileFormDialog({
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			{children}
-			<DialogContent className="overflow-y-auto max-h-screen sm:max-w-[550px]">
+			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
 					<DialogTitle>{profile ? "Edit Profile" : "Add New Profile"}</DialogTitle>
 				</DialogHeader>
