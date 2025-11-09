@@ -9,8 +9,9 @@ import Link from "next/link";
 export default async function Applicants() {
 	const sites = await getUserSites();
 	const users = await getAllUsers();
-	let applicants = users.filter((user) => !user.accepted);
-	applicants = [...applicants, ...applicants, ...applicants, ...applicants]; // temp hack to show more data in table
+	let applicants = users.filter((user) => user.accepted == null);
+	console.log("Applicants found:", applicants.length);
+	// applicants = [...applicants, ...applicants, ...applicants, ...applicants]; // temp hack to show more data in table
 	return (
 		<div className="container py-4 mx-auto">
 			<PageHeader title="Applicants">

@@ -27,6 +27,7 @@ export const userSchema = z
 		notes: z.string().min(2, "Required: can be as simple as 'Help!'").max(1000),
 		desiredRole: z.enum(["developer", "admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
 		themePreference: z.enum(["light", "dark", "system"]).default("system"),
+		accepted: z.boolean().nullable(),
 	})
 	.superRefine((data, ctx) => {
 		const hasPhone = !!data.phone;

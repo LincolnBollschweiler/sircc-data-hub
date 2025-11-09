@@ -54,13 +54,23 @@ export default function DataTable<TData, TValue>({
 		console.log("Site changed to:", value);
 		setSiteId(value);
 		localStorage.setItem(USER_SITE_ID, value);
-		setSiteFilteredData(value === "all" ? data : data.filter((item: any) => item.siteId === value));
+		setSiteFilteredData(
+			value === "all"
+				? data
+				: value === "none"
+				? data.filter((item: any) => !item.siteId)
+				: data.filter((item: any) => item.siteId === value)
+		);
 	};
 
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
 	const [siteFilteredData, setSiteFilteredData] = useState<TData[]>(
-		siteId === "all" ? data : data.filter((item: any) => item.siteId === siteId)
+		siteId === "all"
+			? data
+			: siteId === "none"
+			? data.filter((item: any) => !item.siteId)
+			: data.filter((item: any) => item.siteId === siteId)
 	);
 
 	const table = useReactTable({
@@ -106,6 +116,9 @@ export default function DataTable<TData, TValue>({
 						{[
 							<SelectItem key="all" value={"all"}>
 								All Sites
+							</SelectItem>,
+							<SelectItem key="none" value={"none"}>
+								No Site
 							</SelectItem>,
 							...sites.map((site) => (
 								<SelectItem key={site.id} value={site.id ?? ""}>

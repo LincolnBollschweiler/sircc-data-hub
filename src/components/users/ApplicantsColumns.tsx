@@ -14,8 +14,18 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { updateUser } from "./actions";
+import { actionToast } from "@/hooks/use-toast";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
+
+const processAcceptance = async (user: Partial<User>, accepted: boolean) => {
+	const action = user.id ? updateUser.bind(null, user.id) : undefined;
+	if (!action) return;
+	const actionData = await action({ ...user, accepted });
+	if (actionData) actionToast({ actionData });
+	if (!actionData?.error) requestAnimationFrame(() => window.location.reload());
+};
 
 export const applicantsColumns: ColumnDef<Partial<User>>[] = [
 	{
@@ -124,7 +134,8 @@ export const applicantsColumns: ColumnDef<Partial<User>>[] = [
 							Copy Email
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>View customer</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => processAcceptance(user, true)}>Accept</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => processAcceptance(user, false)}>Reject</DropdownMenuItem>
 						<DropdownMenuItem>View payment details</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

@@ -13,4 +13,5 @@ export const revalidateUserCache = (id: string) => {
 	revalidateTag(getUserGlobalTag(), "max");
 	revalidateTag(getUserIdTag(id), "max");
 	revalidatePath("/");
+	revalidatePath("/admin/applicants");
 };
