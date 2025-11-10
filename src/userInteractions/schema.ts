@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const assignRoleSchema = z.object({
+	firstName: z.string(),
+	lastName: z.string(),
+	desiredRole: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
+	role: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]),
+});
+
 export const userSchema = z
 	.object({
 		firstName: z.string().min(2, "Required").max(30),

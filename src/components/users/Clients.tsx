@@ -17,7 +17,7 @@ export default async function Clients() {
 					<Link href="/admin">Admin Dashboard</Link>
 				</Button>
 			</PageHeader>
-			<DataTable columns={clientColumns} data={clients as Partial<User>[]} sites={sites} />
+			<DataTable data={clients as Partial<User>[]} sites={sites} />
 		</div>
 	);
 }

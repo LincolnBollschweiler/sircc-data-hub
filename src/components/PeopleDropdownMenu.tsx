@@ -36,6 +36,12 @@ export default function PeopleDropdownMenu({ role }: { role: string }) {
 						<span className="hover-underline-border">Dev</span>
 					</DropdownMenuItem>
 				) : null}
+				<DropdownMenuItem onSelect={() => redirect("/admin/rejected-applicants")}>
+					<span className="hover-underline-border">
+						<div>Rejected</div>
+						<div>Applicants</div>
+					</span>
+				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

@@ -5,6 +5,7 @@ import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { getAllUsersGlobalTag, getUserSitesGlobalTag } from "@/tableInteractions/cacheTags";
 import { revalidateUserCache } from "@/tableInteractions/cache";
+import { syncClerkUserMetadata } from "@/services/clerk";
 
 export async function insertUser(data: typeof user.$inferInsert) {
 	console.log("Inserting user:", data);
@@ -41,6 +42,7 @@ export async function updateUserById(id: string, data: Partial<typeof user.$infe
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.id, id)).returning();
 
 	if (updatedUser == null) throw new Error("Failed to update user");
+	if (Object.keys(data).includes("role")) await syncClerkUserMetadata(updatedUser);
 
 	revalidateUserCache(updatedUser.id);
 	return updatedUser;

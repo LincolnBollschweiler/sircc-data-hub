@@ -17,20 +17,22 @@ import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "../ui/input";
+import { applicantsColumns } from "./ApplicantsColumns";
 
 interface DataTableProps<TData, TValue> {
-	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
+	userType?: string;
 }
 
 const PAGE_SIZE_KEY = "datatable_page_size";
 const USER_SITE_ID = "global_user_site_id";
 
 export default function DataTable<TData, TValue>({
-	columns,
 	data,
 	sites,
-}: DataTableProps<TData, TValue> & { sites: { id: string; name: string }[] }) {
+	userType,
+}: DataTableProps<TData, TValue> & { sites: { id: string; name: string }[]; userType?: string }) {
+	const columns = applicantsColumns(userType) as ColumnDef<TData, TValue>[];
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pageSize, setPageSize] = useState<number>(() => {
 		// Load from localStorage on first render (client only)
@@ -55,7 +57,7 @@ export default function DataTable<TData, TValue>({
 		localStorage.setItem(USER_SITE_ID, value);
 		const filteredData =
 			value === "all"
-				? data
+				? data.filter((item: any) => item.siteId)
 				: value === "none"
 				? data.filter((item: any) => !item.siteId)
 				: data.filter((item: any) => item.siteId === value);
@@ -106,7 +108,7 @@ export default function DataTable<TData, TValue>({
 		<>
 			<div className="flex flex-wrap gap-1 items-center justify-between my-1">
 				<Select onValueChange={handleSiteChange} value={siteId}>
-					<SelectTrigger className="w-[140px] text-primary-foreground bg-primary">
+					<SelectTrigger className="w-[160px] text-primary-foreground bg-primary">
 						<SelectValue placeholder="Select a site" />
 					</SelectTrigger>
 					<SelectContent>
@@ -115,7 +117,7 @@ export default function DataTable<TData, TValue>({
 								All Sites
 							</SelectItem>,
 							<SelectItem key="none" value={"none"}>
-								No Site
+								No Preferred Site
 							</SelectItem>,
 							...sites.map((site) => (
 								<SelectItem key={site.id} value={site.id ?? ""}>
