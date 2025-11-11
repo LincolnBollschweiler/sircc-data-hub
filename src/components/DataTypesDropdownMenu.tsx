@@ -13,26 +13,32 @@ import { redirect } from "next/navigation";
 export default function DataTypesDropdownMenu() {
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger className="hover:bg-accent/10 flex items-center px-2">Data Types</DropdownMenuTrigger>
-			<DropdownMenuContent>
+			<DropdownMenuTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
+				<span className="hover-underline-border">Data Types</span>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent className="bg-background-dark border-transparent -translate-y-3">
 				{/* <DropdownMenuLabel>My Account</DropdownMenuLabel>
 				<DropdownMenuSeparator /> */}
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/client-services")}>
-					Client Services
+					<span className="hover-underline-border">Client Services</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/coach-trainings")}>
-					Coach Trainings
+					<span className="hover-underline-border">Coach Trainings</span>
 				</DropdownMenuItem>
-				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/locations")}>Locations</DropdownMenuItem>
+				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/locations")}>
+					<span className="hover-underline-border">Locations</span>
+				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/reentry-checklist-items")}>
-					Reentry Checklist Items
+					<span className="hover-underline-border">Reentry Checklist Items</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/referral-sources")}>
-					Referral Sources
+					<span className="hover-underline-border">Referral Sources</span>
 				</DropdownMenuItem>
-				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/sites")}>Sites</DropdownMenuItem>
+				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/sites")}>
+					<span className="hover-underline-border">Sites</span>
+				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/volunteer-types")}>
-					Volunteer Types
+					<span className="hover-underline-border">Volunteer Types</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

@@ -1,24 +1,20 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { removeClientService, updateClientServicesOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
+import { DialogTrigger } from "@radix-ui/react-dialog";
+import ClientServiceFormDialog from "./ClientServiceFormDialog";
+import z from "zod";
+import { clientServiceSchema, updateSchema } from "../../tableInteractions/schemas";
 
 export function SortableClientServicesList({
 	items,
 }: {
-	items: {
-		id: string;
-		name: string;
-		description: string | null;
-		dispersesFunds: boolean | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
+	items: (z.infer<typeof clientServiceSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -30,8 +26,8 @@ export function SortableClientServicesList({
 						{({ attributes, listeners }) => (
 							<div
 								className={cn(
-									index % 2 === 0 ? "bg-white" : "bg-[gray-100]",
-									"w-full grid grid-cols-[24%,31%,10%,9%,9%,17%] items-start py-1 border-b border-gray-200 text-xs lg:text-base"
+									index % 2 === 0 ? "bg-background-light" : "bg-background",
+									"w-full grid grid-cols-[24%,31%,10%,9%,9%,17%] data-types-row"
 								)}
 							>
 								{/* content columns */}
@@ -47,19 +43,21 @@ export function SortableClientServicesList({
 								<div className="text-center pt-2">
 									{new Date(item.updatedAt).toLocaleDateString("en-US", dateOptions)}
 								</div>
-
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/client-services/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<ClientServiceFormDialog clientService={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</ClientServiceFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeClientService.bind(null, item.id)}
 										requireAreYouSure
+										className="mr-1"
 									>
 										<Trash2Icon className="w-4 h-4" />
 										<span className="sr-only">Delete</span>

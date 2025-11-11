@@ -10,13 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { generalSchema } from "../../tableInteractions/schemas";
-import { redirect } from "next/navigation";
 import { createLocation, updateLocation } from "@/tableInteractions/actions";
 
 export default function LocationsForm({
 	location,
+	onSuccess,
 }: {
-	location?: { id: string; name: string; description: string | null };
+	location?: z.infer<typeof generalSchema> & { id: string };
+	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof generalSchema>>({
 		resolver: zodResolver(generalSchema),
@@ -35,7 +36,7 @@ export default function LocationsForm({
 			actionToast({ actionData });
 		}
 
-		redirect("/admin/data-types/locations");
+		if (!actionData?.error) onSuccess?.();
 	};
 
 	return (
@@ -70,11 +71,7 @@ export default function LocationsForm({
 					)}
 				/>
 				<div className="self-end gap-2 flex">
-					<Button
-						type="button"
-						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/locations")}
-					>
+					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel
 					</Button>
 					<Button type="submit" disabled={form.formState.isSubmitting}>

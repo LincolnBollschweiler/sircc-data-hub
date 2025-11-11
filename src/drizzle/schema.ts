@@ -20,12 +20,26 @@ const updatedAt = timestamp("updated_at", { withTimezone: true })
 
 const deletedAt = timestamp("deleted_at", { withTimezone: true });
 
-// Enum
+// In your generated migration .sql, add these two CREATE TYPE lines to .sql migration (before any CREATE TABLE statements):
+// -- Enums
+// CREATE TYPE "user_role" AS ENUM ('developer', 'admin', 'coach', 'client', 'volunteer', 'client-volunteer');
+// CREATE TYPE "theme_preference" AS ENUM ('light', 'dark', 'system');
 
-export const userRoles = ["developer", "admin", "coach", "client", "volunteer", "client-volunteer"] as const;
+// When rolling back add these to .sql migration (after all DROP TABLE statements):
+// DROP TABLE IF EXISTS "user";
+// DROP TYPE IF EXISTS "user_role";
+// DROP TYPE IF EXISTS "theme_preference";
+
+// Enums
+const userRoles = ["developer", "admin", "coach", "client", "volunteer", "client-volunteer"] as const;
 export type UserRole = (typeof userRoles)[number];
 const userRoleEnum = pgEnum("user_role", userRoles);
 
+const themes = ["light", "dark", "system"] as const;
+export type ThemePreference = (typeof themes)[number];
+const themePreferenceEnum = pgEnum("theme_preference", themes);
+
+// Tables
 export const user = pgTable(
 	"user",
 	{
@@ -34,8 +48,21 @@ export const user = pgTable(
 		firstName: varchar("first_name", { length: 30 }).notNull(),
 		lastName: varchar("last_name", { length: 30 }).notNull(),
 		role: userRoleEnum().notNull().default("client"),
+		desiredRole: userRoleEnum(),
 		photoUrl: varchar("photo_url", { length: 500 }),
 		email: varchar("email", { length: 255 }),
+		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
+		coachAuthorized: boolean("coach_authorized").default(false),
+		phone: varchar("phone", { length: 12 }),
+		address: varchar("address", { length: 255 }),
+		birthMonth: integer("birth_month"),
+		birthDay: integer("birth_day"),
+		isReentryClient: boolean("is_reentry_client").default(false),
+		followUpNeeded: boolean("follow_up_needed").default(false),
+		followUpDate: timestamp("follow_up_date", { withTimezone: true }),
+		accepted: boolean("accepted"),
+		notes: varchar("notes", { length: 1000 }),
+		themePreference: themePreferenceEnum("theme_preference").default("system"),
 		createdAt,
 		updatedAt,
 		deletedAt,

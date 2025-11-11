@@ -1,0 +1,1 @@
+ALTER TABLE "user" RENAME COLUMN "themePreference" TO "theme_preference";

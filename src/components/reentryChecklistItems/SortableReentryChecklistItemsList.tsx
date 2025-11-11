@@ -1,23 +1,20 @@
 "use client";
 
 import SortableList, { SortableItem } from "../SortableList";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../ActionButton";
 import { removeReentryChecklistItem, updateReentryChecklistItemOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
+import ReentryChecklistItemsFormDialog from "./ReentryChecklistItemsFormDialog";
+import { DialogTrigger } from "../ui/dialog";
+import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
+import z from "zod";
 
 export function SortableReentryChecklistItemsList({
 	items,
 }: {
-	items: {
-		id: string;
-		name: string;
-		description: string | null;
-		createdAt: Date;
-		updatedAt: Date;
-	}[];
+	items: (z.infer<typeof generalSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -29,8 +26,8 @@ export function SortableReentryChecklistItemsList({
 						{({ attributes, listeners }) => (
 							<div
 								className={cn(
-									index % 2 === 0 ? "bg-white" : "bg-[gray-100]",
-									"w-full grid grid-cols-[30%,38%,9%,9%,14%] items-start py-1 border-b border-gray-200 text-xs lg:text-base"
+									index % 2 === 0 ? "bg-background-light" : "bg-background",
+									"w-full grid grid-cols-[30%,38%,9%,9%,14%] data-types-row"
 								)}
 							>
 								{/* content columns */}
@@ -48,12 +45,14 @@ export function SortableReentryChecklistItemsList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<Button asChild>
-										<Link href={`/admin/data-types/reentry-checklist-items/${item.id}/edit`}>
-											<FilePenLineIcon className="w-4 h-4" />
-											<span className="sr-only">Edit</span>
-										</Link>
-									</Button>
+									<ReentryChecklistItemsFormDialog reentryChecklistItem={item}>
+										<DialogTrigger asChild>
+											<Button>
+												<FilePenLineIcon className="w-4 h-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
+										</DialogTrigger>
+									</ReentryChecklistItemsFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
 										action={removeReentryChecklistItem.bind(null, item.id)}

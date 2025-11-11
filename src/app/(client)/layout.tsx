@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { canAccessAdminPages, canAccessCoachPages } from "@/permissions/general";
+import { ApplyUserTheme } from "@/components/users/ApplyUserTheme";
+import ProfileDialog from "@/components/users/ProfileDialog";
+import { Site, User } from "@/drizzle/types";
+import { canAccessAdminPages } from "@/permissions/general";
 import { getCurrentUser } from "@/services/clerk";
+import { getUserSites } from "@/userInteractions/db";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { DialogTrigger } from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -16,15 +21,14 @@ export default function ClientLayout({ children }: Readonly<{ children: ReactNod
 
 const Navbar = () => {
 	return (
-		<header className="flex h-12 shadow bg-background z-10">
-			<nav className="flex gap-4 container">
-				<Link className="mr-auto text-lg hover:underline flex items-center" href="/">
+		<header className="flex h-12 shadow bg-background-dark z-10">
+			<nav className="flex container text-sm sm:text-lg lg:text-xl">
+				<Link className="mr-auto hover:underline flex items-center" href="/">
 					Sircc Data Hub
 				</Link>
 				<SignedIn>
-					<AdminLink />
-					<YourClients />
-					<div className="size-8 self-center">
+					<HeaderLinks />
+					<div className="size-8 self-center ml-[0.5rem]">
 						<UserButton
 							appearance={{
 								elements: {
@@ -44,24 +48,46 @@ const Navbar = () => {
 	);
 };
 
-const AdminLink = async () => {
-	const currUser = await getCurrentUser();
-	if (!canAccessAdminPages(currUser)) return null;
+const HeaderLinks = async () => {
+	const user = await getCurrentUser({ allData: true });
+	const sites = await getUserSites();
 
 	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin">
-			Admin
+		<>
+			<ApplyUserTheme userTheme={user.data?.themePreference ?? undefined} />
+			{AdminLink(user.data as User)}
+			{/* {YourClients()} */}
+			{ProfileLink(user.data as User, sites as Site[])}
+		</>
+	);
+};
+
+const AdminLink = (user: User) => {
+	if (!canAccessAdminPages(user)) return null;
+	return (
+		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin">
+			<span className="hover-underline-border">Admin</span>
 		</Link>
 	);
 };
 
-const YourClients = async () => {
-	const user = await getCurrentUser();
-	if (!canAccessCoachPages(user)) return null;
-
+const ProfileLink = (user: User, sites: Site[]) => {
 	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/coach">
-			Your Clients
-		</Link>
+		<ProfileDialog user={user} sites={sites}>
+			<DialogTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
+				<span className="hover-underline-border">Profile</span>
+			</DialogTrigger>
+		</ProfileDialog>
 	);
 };
+
+// const YourClients = async () => {
+// 	const user = await getCurrentUser();
+// 	if (!canAccessCoachPages(user)) return null;
+
+// 	return (
+// 		<Link className="flex items-center px-2 hover:bg-accent/50" href="/clients">
+// 			<span className="hover-underline-border">Clients</span>
+// 		</Link>
+// 	);
+// };

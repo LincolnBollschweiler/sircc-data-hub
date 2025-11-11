@@ -9,12 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { siteSchema } from "../../tableInteractions/schemas";
-import { redirect } from "next/navigation";
 import { createSite, updateSite } from "@/tableInteractions/actions";
 import PhoneInput from "react-phone-number-input/input";
 import { useState } from "react";
 
-export default function SitesForm({ site }: { site?: { id: string; name: string; address: string; phone: string } }) {
+export default function SitesForm({
+	site,
+	onSuccess,
+}: {
+	site?: z.infer<typeof siteSchema> & { id: string };
+	onSuccess?: () => void;
+}) {
 	const form = useForm<z.infer<typeof siteSchema>>({
 		resolver: zodResolver(siteSchema),
 		defaultValues: site ?? {
@@ -33,7 +38,7 @@ export default function SitesForm({ site }: { site?: { id: string; name: string;
 			actionToast({ actionData });
 		}
 
-		redirect("/admin/data-types/sites");
+		if (!actionData?.error) onSuccess?.();
 	};
 
 	const [phone, setPhone] = useState(site?.phone || "");
@@ -89,7 +94,6 @@ export default function SitesForm({ site }: { site?: { id: string; name: string;
 									country="US"
 									value={phone}
 									onChange={(value) => updatePhone(value ?? "")}
-									// className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
 									className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 								/>
 							</FormControl>
@@ -98,11 +102,7 @@ export default function SitesForm({ site }: { site?: { id: string; name: string;
 					)}
 				/>
 				<div className="self-end gap-2 flex">
-					<Button
-						type="button"
-						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/sites")}
-					>
+					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel
 					</Button>
 					<Button type="submit" disabled={form.formState.isSubmitting}>
