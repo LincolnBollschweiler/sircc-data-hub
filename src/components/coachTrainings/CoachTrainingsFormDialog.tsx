@@ -18,11 +18,11 @@ export default function CoachTrainingsFormDialog({
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			{children}
-			<DialogContent className="sm:max-w-[550px]">
+			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
 					<DialogTitle>{coachTraining ? "Edit Coach Training" : "Add New Coach Training"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<CoachTrainingsForm coachTraining={coachTraining} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>

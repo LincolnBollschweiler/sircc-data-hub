@@ -1,14 +1,15 @@
 import { db } from "@/drizzle/db";
 import { site, user } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import { revalidateUserCache } from "./cache";
-import { isNull } from "drizzle-orm";
+import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
-import { getUserSitesGlobalTag } from "@/tableInteractions/cacheTags";
+import { getAllUsersGlobalTag, getUserSitesGlobalTag } from "@/tableInteractions/cacheTags";
+import { revalidateUserCache } from "@/tableInteractions/cache";
+import { syncClerkUserMetadata } from "@/services/clerk";
 
 export async function insertUser(data: typeof user.$inferInsert) {
 	console.log("Inserting user:", data);
-	const [newUser] = await db
+	const [applicant] = await db
 		.insert(user)
 		.values(data)
 		.returning()
@@ -17,13 +18,13 @@ export async function insertUser(data: typeof user.$inferInsert) {
 			set: data,
 		});
 
-	if (newUser == null) {
+	if (applicant == null) {
 		console.error("Failed to insert user");
 		throw new Error("Failed to insert user");
 	}
 
-	revalidateUserCache(newUser.id);
-	return newUser;
+	revalidateUserCache(applicant.id);
+	return applicant;
 }
 
 export async function updateUser({ clerkUserId }: { clerkUserId: string }, data: Partial<typeof user.$inferInsert>) {
@@ -41,6 +42,7 @@ export async function updateUserById(id: string, data: Partial<typeof user.$infe
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.id, id)).returning();
 
 	if (updatedUser == null) throw new Error("Failed to update user");
+	if (Object.keys(data).includes("role")) await syncClerkUserMetadata(updatedUser);
 
 	revalidateUserCache(updatedUser.id);
 	return updatedUser;
@@ -92,7 +94,20 @@ const cachedUserSites = unstable_cache(
 			.orderBy(site.name);
 	},
 	["getUserSites"],
-	{ tags: [getUserSitesGlobalTag()], revalidate: 5 }
+	// { tags: [getUserSitesGlobalTag()] }
+	{ tags: [getUserSitesGlobalTag()], revalidate: 5 } // HOW TO: set a time-based revalidation alongside tag-based so that data is at most 5 seconds stale
+	// requires a hard-refresh too
 );
 
 export const getUserSites = async () => cachedUserSites();
+
+const cachedUsers = unstable_cache(
+	async () => {
+		return await db.select().from(user).where(isNull(user.deletedAt)).orderBy(desc(user.updatedAt));
+	},
+	["getAllUsers"],
+	// { tags: [getAllUsersGlobalTag()] }
+	{ tags: [getAllUsersGlobalTag()], revalidate: 5 }
+);
+
+export const getAllUsers = async () => cachedUsers();

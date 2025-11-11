@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "next-themes";
 
 export const metadata: Metadata = {
 	title: "SIRCC",
@@ -15,10 +16,17 @@ export default function RootLayout({
 }>) {
 	return (
 		<ClerkProvider>
-			<html lang="en">
-				<body className={"antialiased"}>
-					{children}
-					<Toaster />
+			<html lang="en" suppressHydrationWarning>
+				<body className="antialiased bg-background text-foreground">
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem={true}
+						disableTransitionOnChange
+					>
+						{children}
+						<Toaster />
+					</ThemeProvider>
 				</body>
 			</html>
 		</ClerkProvider>

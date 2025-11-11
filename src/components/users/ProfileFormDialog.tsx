@@ -3,7 +3,8 @@
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { z } from "zod";
-import { userSchema, UserType } from "@/userInteractions/schema";
+import { userSchema } from "@/userInteractions/schema";
+import { User, Site } from "@/drizzle/types";
 import ProfileForm from "./ProfileForm";
 
 export default function ProfileFormDialog({
@@ -11,11 +12,9 @@ export default function ProfileFormDialog({
 	sites,
 	children,
 }: {
-	profile: UserType;
-	sites: {
-		id: string;
-		name: string;
-	}[];
+	// profile: z.infer<typeof userSchema> & { id: string };
+	profile: User;
+	sites: Site[];
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -23,11 +22,11 @@ export default function ProfileFormDialog({
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			{children}
-			<DialogContent className="overflow-y-auto max-h-screen sm:max-w-[550px]">
+			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
 					<DialogTitle>{profile ? "Edit Profile" : "Add New Profile"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<ProfileForm
 						profile={profile as z.infer<typeof userSchema> & { id: string }}
 						sites={sites}

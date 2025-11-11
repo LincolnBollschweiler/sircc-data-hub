@@ -13,7 +13,7 @@ export default async function ReentryChecklistItemsPage() {
 			<PageHeader title="Reentry Checklist Items">
 				<ReentryChecklistItemsFormDialog>
 					<DialogTrigger asChild>
-						<Button>Add New Reentry Checklist Item</Button>
+						<Button>Add Reentry Checklist Item</Button>
 					</DialogTrigger>
 				</ReentryChecklistItemsFormDialog>
 			</PageHeader>

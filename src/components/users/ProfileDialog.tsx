@@ -7,21 +7,10 @@ import { Table, TableBody, TableCell, TableRow } from "../ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { formatPhoneNumber } from "react-phone-number-input";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { UserType } from "@/userInteractions/schema";
+import { Site, User } from "@/drizzle/types";
 import ProfileFormDialog from "./ProfileFormDialog";
 
-export default function ProfileDialog({
-	user,
-	sites,
-	children,
-}: {
-	user: UserType;
-	sites: {
-		id: string;
-		name: string;
-	}[];
-	children?: ReactNode;
-}) {
+export default function ProfileDialog({ user, sites, children }: { user: User; sites: Site[]; children?: ReactNode }) {
 	const role = user?.role
 		? user.role
 				.split("-")
@@ -33,7 +22,7 @@ export default function ProfileDialog({
 		<>
 			<Dialog>
 				{children}
-				<DialogContent>
+				<DialogContent className="dialog-mobile-safe">
 					<DialogHeader>
 						<DialogTitle>
 							<PageHeader
@@ -41,39 +30,39 @@ export default function ProfileDialog({
 								role={role}
 								accepted={user?.accepted}
 								coachAuthorized={user?.coachAuthorized}
-								className="mb-2"
+								className="mb-0"
 							/>
 						</DialogTitle>
 					</DialogHeader>
 					<div className="">
 						<Table>
-							<TableBody>
-								<TableRow key={"name"} className="hover:bg-0 text-lg font-semibold">
-									<TableCell colSpan={2} className="text-center px-3 text-xl">
+							<TableBody className="text-xs sm:text-sm md:text-base [&_td]:align-top">
+								<TableRow key={"name"} className="hover:bg-0 text-lg sm:text-xl font-semibold">
+									<TableCell colSpan={2} className="text-center px-3">
 										{user?.firstName} {user?.lastName}
 									</TableCell>
 								</TableRow>
-								<TableRow key={"email"} className="border-none hover:bg-0 text-lg">
+								<TableRow key={"email"} className="border-none hover:bg-0">
 									<TableCell className="py-0 pt-3">Email</TableCell>
 									<TableCell className="p-0 pt-3">{user?.email ?? "Not Provide"}</TableCell>
 								</TableRow>
-								<TableRow key={"address"} className="border-none my-0 hover:bg-0 text-lg">
+								<TableRow key={"address"} className="border-none my-0 hover:bg-0">
 									<TableCell className="py-0">Address</TableCell>
 									<TableCell className="p-0">{user?.address ?? "Not Provided"}</TableCell>
 								</TableRow>
-								<TableRow key={"phone"} className="border-none hover:bg-0 text-lg">
+								<TableRow key={"phone"} className="border-none hover:bg-0">
 									<TableCell className="py-0">Phone</TableCell>
 									<TableCell className="p-0">
 										{user?.phone ? formatPhoneNumber(user.phone) : "Not Provided"}
 									</TableCell>
 								</TableRow>
-								<TableRow key={"dob"} className="border-none my-0 hover:bg-0 text-lg">
+								<TableRow key={"dob"} className="border-none my-0 hover:bg-0">
 									<TableCell className="py-0">Birthday</TableCell>
 									<TableCell className="p-0">
 										{user?.birthMonth ?? "__"}/{user?.birthDay ?? "__"}
 									</TableCell>
 								</TableRow>
-								<TableRow key={"site"} className="border-none hover:bg-0 text-lg">
+								<TableRow key={"site"} className="border-none hover:bg-0">
 									<TableCell className="py-0">Preferred Site</TableCell>
 									<TableCell className="p-0">
 										{user?.siteId
@@ -85,11 +74,11 @@ export default function ProfileDialog({
 							</TableBody>
 						</Table>
 					</div>
-					<DialogFooter>
+					<DialogFooter className="flex flex-row space-x-2 justify-end">
 						<DialogClose asChild>
 							<Button variant="destructiveOutline">Close</Button>
 						</DialogClose>
-						<ProfileFormDialog profile={user!} sites={sites}>
+						<ProfileFormDialog profile={user} sites={sites}>
 							<DialogTrigger asChild>
 								<Button className="mr-[1rem]">Edit</Button>
 							</DialogTrigger>

@@ -18,11 +18,11 @@ export default function ReferralSourcesFormDialog({
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			{children}
-			<DialogContent className="sm:max-w-[550px]">
+			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
 					<DialogTitle>{referralSource ? "Edit Referral Source" : "Add New Referral Source"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<ReferralSourcesForm referralSource={referralSource} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>

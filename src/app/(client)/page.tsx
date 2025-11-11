@@ -2,7 +2,6 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/services/clerk";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUserSites } from "@/userInteractions/db";
 import { userSchema } from "@/userInteractions/schema";
@@ -14,6 +13,7 @@ export default async function Home() {
 	const profile = currentUser?.data as z.infer<typeof userSchema> & { id: string };
 	const intakeNotes = profile?.notes;
 	const hasCompletedIntake = intakeNotes && intakeNotes.length > 2;
+	// console.log("User: ", profile.firstName, "Notes length:", intakeNotes?.length, "Notes:", intakeNotes);
 	const sites = await getUserSites();
 
 	return (

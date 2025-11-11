@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const assignRoleSchema = z.object({
+	firstName: z.string(),
+	lastName: z.string(),
+	desiredRole: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
+	role: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]),
+});
+
 export const userSchema = z
 	.object({
 		firstName: z.string().min(2, "Required").max(30),
@@ -26,6 +33,8 @@ export const userSchema = z
 		birthDay: z.number().min(1).max(31).nullable(),
 		notes: z.string().min(2, "Required: can be as simple as 'Help!'").max(1000),
 		desiredRole: z.enum(["developer", "admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
+		themePreference: z.enum(["light", "dark", "system"]).default("system"),
+		accepted: z.boolean().nullable(),
 	})
 	.superRefine((data, ctx) => {
 		const hasPhone = !!data.phone;
@@ -44,42 +53,3 @@ export const userSchema = z
 			});
 		}
 	});
-
-// export const userAdminSchema = userSchema.extend({
-// 	id: z.string().uuid(),
-// 	role: z.enum(userRoles).nullable(),
-// 	coachAuthorized: z.boolean().nullable(),
-// 	isReentryClient: z.boolean().nullable(),
-// 	followUpNeeded: z.boolean().nullable(),
-// 	followUpDate: z.date().nullable(),
-// 	accepted: z.boolean().nullable(),
-// 	notes: z.string().max(1000).nullable(),
-// });
-
-export type UserType =
-	| {
-			role: "developer" | "admin" | "coach" | "client" | "volunteer" | "client-volunteer";
-			accepted: boolean | null;
-			coachAuthorized: boolean | null;
-			firstName: string;
-			lastName: string;
-			phone: string | null;
-			siteId: string | null;
-			address: string | null;
-			id: string;
-			email: string | null;
-			birthMonth: number | null;
-			birthDay: number | null;
-			notes: string | null;
-			desiredRole: "developer" | "admin" | "coach" | "client" | "volunteer" | "client-volunteer" | null;
-			clerkUserId: string;
-			photoUrl: string | null;
-			createdAt: Date;
-			updatedAt: Date;
-			deletedAt: Date | null;
-			isReentryClient: boolean | null;
-			followUpNeeded: boolean | null;
-			followUpDate: Date | null;
-			roleAssigned: boolean | null;
-	  }
-	| undefined;

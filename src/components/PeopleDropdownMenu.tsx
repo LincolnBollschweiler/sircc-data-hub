@@ -14,25 +14,37 @@ export default function PeopleDropdownMenu({ role }: { role: string }) {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50 text-inherit">
-				<span className="hover:border-b">People</span>
+				<span className="hover-underline-border">People</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="bg-background-dark border-transparent -translate-y-3 min-w-fit">
 				{/* <DropdownMenuLabel>My Account</DropdownMenuLabel>
 				<DropdownMenuSeparator /> */}
+				<DropdownMenuItem onSelect={() => redirect("/admin/applicants")}>
+					<span className="hover-underline-border">Applicants</span>
+				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/clients")}>
-					<span className="hover:border-b">Clients</span>
+					<span className="hover-underline-border">Clients</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/coaches")}>
-					<span className="hover:border-b">Coaches</span>
+					<span className="hover-underline-border">Coaches</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/volunteers")}>
-					<span className="hover:border-b">Volunteers</span>
+					<span className="hover-underline-border">Volunteers</span>
+				</DropdownMenuItem>
+				<DropdownMenuItem onSelect={() => redirect("/admin/admins")}>
+					<span className="hover-underline-border">Admins</span>
 				</DropdownMenuItem>
 				{role === "developer" ? (
 					<DropdownMenuItem onSelect={() => redirect("/admin/dev")}>
-						<span className="hover:border-b">Dev</span>
+						<span className="hover-underline-border">Dev</span>
 					</DropdownMenuItem>
 				) : null}
+				<DropdownMenuItem onSelect={() => redirect("/admin/rejected-applicants")}>
+					<span className="hover-underline-border">
+						<div>Rejected</div>
+						<div>Applicants</div>
+					</span>
+				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

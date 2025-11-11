@@ -18,11 +18,11 @@ export default function VolunteerTypesFormDialog({
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			{children}
-			<DialogContent className="sm:max-w-[550px]">
+			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
 					<DialogTitle>{volunteerType ? "Edit Volunteer Type" : "Add New Volunteer Type"}</DialogTitle>
 				</DialogHeader>
-				<div className="grid gap-4">
+				<div className="mt-4 grid gap-4">
 					<VolunteerTypesForm volunteerType={volunteerType} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>

@@ -59,3 +59,14 @@ export const revalidateClientServiceCache = async (id: string) => {
 	revalidatePath("/admin/data-types/client-services");
 	revalidatePath(`/admin/data-types/client-services/${id}/edit`);
 };
+
+export const revalidateUserCache = async (id: string) => {
+	revalidateTag(cacheTags.getAllUsersGlobalTag(), "max");
+	revalidateTag(cacheTags.getUserIdTag(id), "max");
+	revalidatePath("/");
+	// revalidatePath("/admin/applicants");
+};
+
+export const revalidateUserSitesCache = async () => {
+	// revalidatePath("/admin/applicants");
+};
