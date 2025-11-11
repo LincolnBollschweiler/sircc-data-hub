@@ -31,6 +31,9 @@ export default function PeopleDropdownMenu({ role }: { role: string }) {
 				<DropdownMenuItem onSelect={() => redirect("/admin/volunteers")}>
 					<span className="hover-underline-border">Volunteers</span>
 				</DropdownMenuItem>
+				<DropdownMenuItem onSelect={() => redirect("/admin/admins")}>
+					<span className="hover-underline-border">Admins</span>
+				</DropdownMenuItem>
 				{role === "developer" ? (
 					<DropdownMenuItem onSelect={() => redirect("/admin/dev")}>
 						<span className="hover-underline-border">Dev</span>

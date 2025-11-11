@@ -31,7 +31,7 @@ export default function DataTable<TData, TValue>({
 	data,
 	sites,
 	userType,
-}: DataTableProps<TData, TValue> & { sites: { id: string; name: string }[]; userType?: string }) {
+}: DataTableProps<TData, TValue> & { sites: { id: string; name: string }[]; userType: string }) {
 	const columns = applicantsColumns(userType) as ColumnDef<TData, TValue>[];
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pageSize, setPageSize] = useState<number>(() => {
