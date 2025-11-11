@@ -22,7 +22,7 @@ const deletedAt = timestamp("deleted_at", { withTimezone: true });
 
 // Enum
 
-export const userRoles = ["admin", "coach", "client", "volunteer", "client-volunteer"] as const;
+export const userRoles = ["developer", "admin", "coach", "client", "volunteer", "client-volunteer"] as const;
 export type UserRole = (typeof userRoles)[number];
 const userRoleEnum = pgEnum("user_role", userRoles);
 
@@ -49,7 +49,8 @@ export const site = pgTable(
 		id: uuid("id").primaryKey().defaultRandom(),
 		name: varchar("name", { length: 100 }).notNull(),
 		address: varchar("address", { length: 255 }).notNull(),
-		phone: varchar("phone", { length: 10 }).notNull(),
+		phone: varchar("phone", { length: 12 }).notNull(),
+		order: integer("order").notNull().default(9999),
 		createdAt,
 		updatedAt,
 		deletedAt,
@@ -62,6 +63,8 @@ export const location = pgTable(
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		name: varchar("name", { length: 100 }).notNull(),
+		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
 		createdAt,
 		updatedAt,
 		deletedAt,
@@ -78,7 +81,7 @@ export const coach = pgTable(
 			.notNull(),
 		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
 		authorized: boolean("authorized").default(false),
-		phone: varchar("phone", { length: 10 }),
+		phone: varchar("phone", { length: 12 }),
 		address: varchar("address", { length: 255 }),
 		createdAt,
 		updatedAt,
@@ -134,7 +137,7 @@ export const client = pgTable(
 		coachId: uuid("coach_id").references(() => coach.id, {
 			onDelete: "set null",
 		}),
-		phone: varchar("phone", { length: 10 }),
+		phone: varchar("phone", { length: 12 }),
 		address: varchar("address", { length: 255 }),
 		dateOfBirth: timestamp("date_of_birth", { withTimezone: true }),
 		isReentryClient: boolean("is_reentry_client").default(false),
@@ -160,6 +163,7 @@ export const service = pgTable(
 		name: varchar("name", { length: 100 }).notNull(),
 		description: varchar("description", { length: 1000 }),
 		dispersesFunds: boolean("disperses_funds").default(false),
+		order: integer("order").notNull().default(9999),
 		createdAt,
 		updatedAt,
 		deletedAt,
@@ -173,6 +177,7 @@ export const training = pgTable(
 		id: uuid("id").primaryKey().defaultRandom(),
 		name: varchar("name", { length: 100 }).notNull(),
 		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
 		createdAt,
 		updatedAt,
 		deletedAt,
@@ -184,8 +189,9 @@ export const reentryCheckListItem = pgTable(
 	"reentry_check_list_item",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
-		name: varchar("name", { length: 255 }).notNull(),
+		name: varchar("name", { length: 100 }).notNull(),
 		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
 		createdAt,
 		updatedAt,
 		deletedAt,
@@ -203,7 +209,7 @@ export const volunteer = pgTable(
 		coachId: uuid("coach_id").references(() => coach.id, {
 			onDelete: "set null",
 		}),
-		phone: varchar("phone", { length: 10 }),
+		phone: varchar("phone", { length: 12 }),
 		address: varchar("address", { length: 255 }),
 		dateOfBirth: timestamp("date_of_birth", { withTimezone: true }),
 		createdAt,
@@ -223,6 +229,7 @@ export const volunteeringType = pgTable(
 		id: uuid("id").primaryKey().defaultRandom(),
 		name: varchar("name", { length: 100 }).notNull(),
 		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
 		createdAt,
 		updatedAt,
 		deletedAt,
@@ -258,6 +265,7 @@ export const referralSource = pgTable(
 		id: uuid("id").primaryKey().defaultRandom(),
 		name: varchar("name", { length: 100 }).notNull(),
 		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
 		createdAt,
 		updatedAt,
 		deletedAt,
