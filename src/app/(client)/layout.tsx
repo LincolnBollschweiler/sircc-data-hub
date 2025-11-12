@@ -63,7 +63,7 @@ const HeaderLinks = async () => {
 };
 
 const AdminLink = (user: User) => {
-	if (!canAccessAdminPages(user)) return null;
+	if (!user || !canAccessAdminPages(user)) return null;
 	return (
 		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin">
 			<span className="hover-underline-border">Admin</span>
@@ -72,6 +72,7 @@ const AdminLink = (user: User) => {
 };
 
 const ProfileLink = (user: User, sites: Site[]) => {
+	if (!user) return null;
 	return (
 		<ProfileDialog user={user} sites={sites}>
 			<DialogTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">

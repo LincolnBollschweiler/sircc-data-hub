@@ -5,6 +5,7 @@ export const assignRoleSchema = z.object({
 	lastName: z.string(),
 	desiredRole: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
 	role: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]),
+	isReentryClient: z.boolean().optional(),
 });
 
 export const userSchema = z
@@ -31,7 +32,11 @@ export const userSchema = z
 			.transform((val) => (val === "none" ? null : val)),
 		birthMonth: z.number().min(1).max(12).nullable(),
 		birthDay: z.number().min(1).max(31).nullable(),
-		notes: z.string().min(2, "Required: can be as simple as 'Help!'").max(1000),
+		notes: z.preprocess((val) => {
+			if (val == null) return ""; // convert null/undefined → ""
+			if (typeof val === "string") return val.trim();
+			return val;
+		}, z.string().min(2, "Required: can be as simple as 'Help!'").max(1000)),
 		desiredRole: z.enum(["developer", "admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
 		themePreference: z.enum(["light", "dark", "system"]).default("system"),
 		accepted: z.boolean().nullable(),

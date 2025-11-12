@@ -64,9 +64,4 @@ export const revalidateUserCache = async (id: string) => {
 	revalidateTag(cacheTags.getAllUsersGlobalTag(), "max");
 	revalidateTag(cacheTags.getUserIdTag(id), "max");
 	revalidatePath("/");
-	// revalidatePath("/admin/applicants");
-};
-
-export const revalidateUserSitesCache = async () => {
-	// revalidatePath("/admin/applicants");
 };

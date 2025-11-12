@@ -1,5 +1,5 @@
 import { db } from "@/drizzle/db";
-import { site, user } from "@/drizzle/schema";
+import { client, coach, site, user, volunteer } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
@@ -37,15 +37,82 @@ export async function updateUser({ clerkUserId }: { clerkUserId: string }, data:
 	return updatedUser;
 }
 
-export async function updateUserById(id: string, data: Partial<typeof user.$inferInsert>) {
-	console.log("Updating user with user id:", id, "Data:", data);
-	const [updatedUser] = await db.update(user).set(data).where(eq(user.id, id)).returning();
+export async function updateUserById(
+	id: string,
+	data: Partial<typeof user.$inferInsert> & { isReentryClient?: boolean }
+) {
+	try {
+		const updatedUser = await db.transaction(async (tx) => {
+			const [userUpdated] = await tx.update(user).set(data).where(eq(user.id, id)).returning();
 
-	if (updatedUser == null) throw new Error("Failed to update user");
-	if (Object.keys(data).includes("role")) await syncClerkUserMetadata(updatedUser);
+			if (!userUpdated) throw new Error("Failed to update user");
 
-	revalidateUserCache(updatedUser.id);
-	return updatedUser;
+			if ("role" in data) {
+				if (data.role === "client" || data.role === "client-volunteer") {
+					const [newClient] = await tx
+						.insert(client)
+						.values({
+							id: userUpdated.id,
+							isReentryClient: data.isReentryClient ?? false,
+							siteId: data.siteId ?? null,
+						})
+						.onConflictDoUpdate({
+							target: [client.id],
+							set: {
+								isReentryClient: data.isReentryClient,
+								siteId: data.siteId ?? null,
+							},
+						})
+						.returning();
+
+					if (!newClient) throw new Error("Failed to create client for user");
+				}
+
+				if (data.role === "volunteer" || data.role === "client-volunteer") {
+					const [newVolunteer] = await tx
+						.insert(volunteer)
+						.values({
+							id: userUpdated.id,
+							siteId: data.siteId ?? null,
+						})
+						.onConflictDoUpdate({
+							target: [volunteer.id],
+							set: {
+								siteId: data.siteId ?? null,
+							},
+						})
+						.returning();
+
+					if (!newVolunteer) throw new Error("Failed to create volunteer for user");
+				} else if (data.role === "coach") {
+					const [newCoach] = await tx
+						.insert(coach)
+						.values({
+							id: userUpdated.id,
+							siteId: data.siteId ?? null,
+						})
+						.onConflictDoUpdate({
+							target: [coach.id],
+							set: {
+								siteId: data.siteId ?? null,
+							},
+						})
+						.returning();
+
+					if (!newCoach) throw new Error("Failed to create coach for user");
+				}
+
+				await syncClerkUserMetadata(userUpdated);
+			}
+			return userUpdated; // returned if successfull
+		});
+
+		revalidateUserCache(updatedUser.id);
+		return { error: false, message: "User updated successfully" };
+	} catch (error) {
+		console.error(error);
+		return { error: true, message: (error as Error).message };
+	}
 }
 
 export async function updateUserFull({ id }: { id: string }, data: Partial<typeof user.$inferInsert>) {

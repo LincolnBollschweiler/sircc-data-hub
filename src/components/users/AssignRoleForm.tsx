@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import RequiredLabelIcon from "@/components/RequiredLabelIcon";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { assignRoleSchema } from "@/userInteractions/schema";
 import { updateUserRoleAndAccept } from "./actions";
+import { Checkbox } from "../ui/checkbox";
+import { useState } from "react";
 
 export default function ProfileForm({
 	profile,
@@ -21,10 +23,7 @@ export default function ProfileForm({
 }) {
 	const form = useForm<z.infer<typeof assignRoleSchema>>({
 		resolver: zodResolver(assignRoleSchema),
-		defaultValues: {
-			...profile,
-			role: undefined,
-		},
+		defaultValues: profile,
 	});
 
 	const onSubmit = async (values: z.infer<typeof assignRoleSchema>) => {
@@ -44,6 +43,10 @@ export default function ProfileForm({
 		{ id: "admin", name: "Admin" },
 	];
 
+	const [showReentryClientOption, setShowReentryClientOption] = useState(
+		profile.role === "client" || profile.role === "client-volunteer"
+	);
+
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-6 flex-col">
@@ -54,14 +57,15 @@ export default function ProfileForm({
 						<FormItem>
 							<RequiredLabelIcon />
 							<FormLabel className="mb-2">
-								Assign Role for {profile.firstName} {profile.lastName}
-							</FormLabel>
-							<FormDescription>
+								Assign Role for {profile.firstName} {profile.lastName}.{" "}
 								{profile.desiredRole && `Desired role: ${profile.desiredRole}`}
-							</FormDescription>
+							</FormLabel>
 							<FormControl>
 								<RadioGroup
-									onValueChange={field.onChange}
+									onValueChange={(value) => {
+										setShowReentryClientOption(value === "client" || value === "client-volunteer");
+										return field.onChange(value);
+									}}
 									value={field.value}
 									className="flex flex-wrap gap-2 justify-between"
 								>
@@ -85,6 +89,28 @@ export default function ProfileForm({
 						</FormItem>
 					)}
 				/>
+				{showReentryClientOption && (
+					<FormField
+						control={form.control}
+						name="isReentryClient"
+						render={({ field }) => (
+							<FormItem>
+								<div className="flex items-center gap-3">
+									<FormLabel className="m-0 leading-none">Is Reentry Client?</FormLabel>
+									<FormControl>
+										<Checkbox
+											className="mt-0 align-middle size-5"
+											checked={!!field.value}
+											onCheckedChange={(checked) => field.onChange(checked)}
+											ref={field.ref}
+											name={field.name}
+										/>
+									</FormControl>
+								</div>
+							</FormItem>
+						)}
+					/>
+				)}
 
 				<div className="self-end gap-2 flex">
 					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>

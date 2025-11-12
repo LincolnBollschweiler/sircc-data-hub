@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { generalSchema } from "../../tableInteractions/schemas";
 import { createCoachTraining, updateCoachTraining } from "@/tableInteractions/actions";
-import { on } from "events";
 
 export default function CoachTrainingsForm({
 	coachTraining,

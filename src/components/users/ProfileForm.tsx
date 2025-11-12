@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import PhoneInput from "react-phone-number-input/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { userSchema } from "@/userInteractions/schema";
 import { updateUser } from "./actions";
 import { redirect } from "next/navigation";
@@ -31,6 +31,7 @@ export default function ProfileForm({
 	onSuccess?: () => void;
 	intakeNotes?: boolean;
 }) {
+	// if (!profile) redirect("/");
 	const form = useForm<z.infer<typeof userSchema>>({
 		resolver: zodResolver(userSchema),
 		defaultValues: {
@@ -61,7 +62,7 @@ export default function ProfileForm({
 		form.setValue("phone", value);
 	};
 
-	const { setTheme } = useTheme();
+	const { setTheme, theme } = useTheme();
 
 	const [focusedField, setFocusedField] = useState<string | null>(null);
 	const roles = [
@@ -76,6 +77,16 @@ export default function ProfileForm({
 		{ id: "dark", name: "Dark" },
 		{ id: "system", name: "System" },
 	];
+
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => setMounted(true), []);
+	if (!mounted) return null; // prevents hydration mismatch
+
+	if (!profile) {
+		setTimeout(() => window.location.reload(), 1);
+		return <></>;
+	}
 
 	return (
 		<Form {...form}>
@@ -270,21 +281,19 @@ export default function ProfileForm({
 									<Select
 										onValueChange={(value) => {
 											field.onChange(value);
-											setTheme(value); // 👈 instantly update the UI theme
+											setTheme(value);
 										}}
-										value={field.value ?? ""}
+										value={mounted ? field.value ?? theme ?? "system" : "system"} // ✅ safe fallback
 									>
 										<SelectTrigger className="max-w-[150px]">
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
-											{[
-												...themePreferences.map((theme) => (
-													<SelectItem key={theme.id} value={theme.id ?? ""}>
-														{theme.name}
-													</SelectItem>
-												)),
-											]}
+											{themePreferences.map((theme) => (
+												<SelectItem key={theme.id} value={theme.id}>
+													{theme.name}
+												</SelectItem>
+											))}
 										</SelectContent>
 									</Select>
 								</FormControl>

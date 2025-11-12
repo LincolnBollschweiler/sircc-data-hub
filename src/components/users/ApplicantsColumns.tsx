@@ -10,17 +10,13 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { updateUser } from "./actions";
 import { actionToast } from "@/hooks/use-toast";
-import ProfileDialog from "./ProfileDialog";
 import { DialogTrigger } from "../ui/dialog";
-import ProfileFormDialog from "./ProfileFormDialog";
 import AssignRoleFormDialog from "./AssignRoleFormDialog";
-import { user } from "@/drizzle/schema";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -141,8 +137,8 @@ export const applicantsColumns = (userType: string): ColumnDef<Partial<User>>[] 
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
 								{userType !== "rejected" && (
-									<DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email ?? "")}>
-										Copy Email
+									<DropdownMenuItem asChild>
+										<a href={`mailto:${user.email}`}>Send Email</a>
 									</DropdownMenuItem>
 								)}
 								{userType === "rejected" && (
@@ -150,18 +146,12 @@ export const applicantsColumns = (userType: string): ColumnDef<Partial<User>>[] 
 										Undecided Applicant
 									</DropdownMenuItem>
 								)}
-								<DropdownMenuItem
-									className="hover:!bg-green-600"
-									onClick={() => processAcceptance(user, true)}
-								>
-									Accept
-								</DropdownMenuItem>
 								{userType !== "rejected" && (
 									<>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem asChild>
 											<AssignRoleFormDialog profile={user as User}>
-												<DialogTrigger className="hover:!bg-green-600">
+												<DialogTrigger className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 hover:!bg-green-600">
 													Assign Role & Accept
 												</DialogTrigger>
 											</AssignRoleFormDialog>
