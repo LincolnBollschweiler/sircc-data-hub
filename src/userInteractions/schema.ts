@@ -36,7 +36,7 @@ export const userSchema = z
 			if (val == null) return ""; // convert null/undefined → ""
 			if (typeof val === "string") return val.trim();
 			return val;
-		}, z.string().min(2, "Required: can be as simple as 'Help!'").max(1000)),
+		}, z.string().min(2).max(1000).optional()),
 		desiredRole: z.enum(["developer", "admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
 		themePreference: z.enum(["light", "dark", "system"]).default("system"),
 		accepted: z.boolean().nullable(),

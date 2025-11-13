@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "../ui/input";
 import { applicantsColumns } from "./ApplicantsColumns";
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends { siteId?: string | null }> {
 	data: TData[];
 	userType?: string;
 }
@@ -27,12 +27,12 @@ interface DataTableProps<TData, TValue> {
 const PAGE_SIZE_KEY = "datatable_page_size";
 const USER_SITE_ID = "global_user_site_id";
 
-export default function DataTable<TData, TValue>({
+export default function DataTable<TData extends { siteId?: string | null }>({
 	data,
 	sites,
 	userType,
-}: DataTableProps<TData, TValue> & { sites: { id: string; name: string }[]; userType: string }) {
-	const columns = applicantsColumns(userType) as ColumnDef<TData, TValue>[];
+}: DataTableProps<TData> & { sites: { id: string; name: string }[]; userType: string }) {
+	const columns = applicantsColumns(userType) as ColumnDef<TData, unknown>[];
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pageSize, setPageSize] = useState<number>(() => {
 		// Load from localStorage on first render (client only)
@@ -44,7 +44,7 @@ export default function DataTable<TData, TValue>({
 	});
 
 	const [siteId, setSiteId] = useState("all");
-	const [loadinOrNone, setLoadingOrNone] = useState((<div></div>) as React.ReactNode);
+	const [loadingOrNone, setLoadingOrNone] = useState((<div></div>) as React.ReactNode);
 
 	useEffect(() => {
 		const saved = localStorage.getItem(USER_SITE_ID);
@@ -57,10 +57,10 @@ export default function DataTable<TData, TValue>({
 		localStorage.setItem(USER_SITE_ID, value);
 		const filteredData =
 			value === "all"
-				? data.filter((item: any) => item.siteId)
+				? data.filter((item) => item.siteId)
 				: value === "none"
-				? data.filter((item: any) => !item.siteId)
-				: data.filter((item: any) => item.siteId === value);
+				? data.filter((item) => !item.siteId)
+				: data.filter((item) => item.siteId === value);
 		setSiteFilteredData(filteredData);
 		if (filteredData.length === 0) {
 			setLoadingOrNone(<div className="w-full text-center p-20">No matching applicants</div>);
@@ -247,7 +247,7 @@ export default function DataTable<TData, TValue>({
 					</div>
 				</div>
 			) : (
-				loadinOrNone
+				loadingOrNone
 			)}
 		</>
 	);

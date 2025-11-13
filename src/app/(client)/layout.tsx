@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ApplyUserTheme } from "@/components/users/ApplyUserTheme";
-import ProfileDialog from "@/components/users/ProfileDialog";
+import ProfileDialog from "@/components/users/profile/ProfileDialog";
 import { Site, User } from "@/drizzle/types";
 import { canAccessAdminPages } from "@/permissions/general";
 import { getCurrentUser } from "@/services/clerk";

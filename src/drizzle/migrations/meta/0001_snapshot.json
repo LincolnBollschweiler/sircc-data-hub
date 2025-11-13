@@ -1,6 +1,6 @@
 {
-  "id": "ff948445-d14e-46a2-b35b-8c1011b02dd3",
-  "prevId": "1416b4dd-eb4c-4a94-91c1-2c12d91745d5",
+  "id": "3094ef36-d4fe-4b94-a494-4357c14c5905",
+  "prevId": "5f33f131-2659-440f-90f3-819d3db94bdc",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -16,12 +16,6 @@
         },
         "coach_id": {
           "name": "coach_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "site_id": {
-          "name": "site_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -59,30 +53,9 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
-        "client_deleted_at_idx": {
-          "name": "client_deleted_at_idx",
-          "columns": [
-            {
-              "expression": "deleted_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "client_coach_id_idx": {
           "name": "client_coach_id_idx",
           "columns": [
@@ -113,25 +86,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "client_coach_id_coach_id_fk": {
-          "name": "client_coach_id_coach_id_fk",
+        "client_coach_id_user_id_fk": {
+          "name": "client_coach_id_user_id_fk",
           "tableFrom": "client",
-          "tableTo": "coach",
+          "tableTo": "user",
           "columnsFrom": [
             "coach_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "client_site_id_site_id_fk": {
-          "name": "client_site_id_site_id_fk",
-          "tableFrom": "client",
-          "tableTo": "site",
-          "columnsFrom": [
-            "site_id"
           ],
           "columnsTo": [
             "id"
@@ -187,10 +147,10 @@
         }
       },
       "foreignKeys": {
-        "client_reentry_check_list_item_client_id_client_id_fk": {
-          "name": "client_reentry_check_list_item_client_id_client_id_fk",
+        "client_reentry_check_list_item_client_id_user_id_fk": {
+          "name": "client_reentry_check_list_item_client_id_user_id_fk",
           "tableFrom": "client_reentry_check_list_item",
-          "tableTo": "client",
+          "tableTo": "user",
           "columnsFrom": [
             "client_id"
           ],
@@ -413,10 +373,10 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "client_service_client_id_client_id_fk": {
-          "name": "client_service_client_id_client_id_fk",
+        "client_service_client_id_user_id_fk": {
+          "name": "client_service_client_id_user_id_fk",
           "tableFrom": "client_service",
-          "tableTo": "client",
+          "tableTo": "user",
           "columnsFrom": [
             "client_id"
           ],
@@ -458,101 +418,6 @@
           "tableTo": "referral_source",
           "columnsFrom": [
             "referral_source_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.coach": {
-      "name": "coach",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "site_id": {
-          "name": "site_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "authorized": {
-          "name": "authorized",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "coach_deleted_at_idx": {
-          "name": "coach_deleted_at_idx",
-          "columns": [
-            {
-              "expression": "deleted_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "coach_id_user_id_fk": {
-          "name": "coach_id_user_id_fk",
-          "tableFrom": "coach",
-          "tableTo": "user",
-          "columnsFrom": [
-            "id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "coach_site_id_site_id_fk": {
-          "name": "coach_site_id_site_id_fk",
-          "tableFrom": "coach",
-          "tableTo": "site",
-          "columnsFrom": [
-            "site_id"
           ],
           "columnsTo": [
             "id"
@@ -629,10 +494,10 @@
         }
       },
       "foreignKeys": {
-        "coach_hours_coach_id_coach_id_fk": {
-          "name": "coach_hours_coach_id_coach_id_fk",
+        "coach_hours_coach_id_user_id_fk": {
+          "name": "coach_hours_coach_id_user_id_fk",
           "tableFrom": "coach_hours",
-          "tableTo": "coach",
+          "tableTo": "user",
           "columnsFrom": [
             "coach_id"
           ],
@@ -726,10 +591,10 @@
         }
       },
       "foreignKeys": {
-        "coach_mileage_coach_id_coach_id_fk": {
-          "name": "coach_mileage_coach_id_coach_id_fk",
+        "coach_mileage_coach_id_user_id_fk": {
+          "name": "coach_mileage_coach_id_user_id_fk",
           "tableFrom": "coach_mileage",
-          "tableTo": "coach",
+          "tableTo": "user",
           "columnsFrom": [
             "coach_id"
           ],
@@ -787,10 +652,10 @@
         }
       },
       "foreignKeys": {
-        "coach_training_coach_id_coach_id_fk": {
-          "name": "coach_training_coach_id_coach_id_fk",
+        "coach_training_coach_id_user_id_fk": {
+          "name": "coach_training_coach_id_user_id_fk",
           "tableFrom": "coach_training",
-          "tableTo": "coach",
+          "tableTo": "user",
           "columnsFrom": [
             "coach_id"
           ],
@@ -1327,15 +1192,15 @@
           "primaryKey": false,
           "notNull": false
         },
-        "photo_url": {
-          "name": "photo_url",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": false
-        },
         "email": {
           "name": "email",
           "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "photo_url": {
+          "name": "photo_url",
+          "type": "varchar(500)",
           "primaryKey": false,
           "notNull": false
         },
@@ -1344,13 +1209,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "coach_authorized": {
-          "name": "coach_authorized",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
         },
         "phone": {
           "name": "phone",
@@ -1493,94 +1351,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.volunteer": {
-      "name": "volunteer",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "site_id": {
-          "name": "site_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "volunteer_deleted_at_idx": {
-          "name": "volunteer_deleted_at_idx",
-          "columns": [
-            {
-              "expression": "deleted_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "volunteer_id_user_id_fk": {
-          "name": "volunteer_id_user_id_fk",
-          "tableFrom": "volunteer",
-          "tableTo": "user",
-          "columnsFrom": [
-            "id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "volunteer_site_id_site_id_fk": {
-          "name": "volunteer_site_id_site_id_fk",
-          "tableFrom": "volunteer",
-          "tableTo": "site",
-          "columnsFrom": [
-            "site_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.volunteer_hours": {
       "name": "volunteer_hours",
       "schema": "",
@@ -1679,10 +1449,10 @@
         }
       },
       "foreignKeys": {
-        "volunteer_hours_volunteer_id_volunteer_id_fk": {
-          "name": "volunteer_hours_volunteer_id_volunteer_id_fk",
+        "volunteer_hours_volunteer_id_user_id_fk": {
+          "name": "volunteer_hours_volunteer_id_user_id_fk",
           "tableFrom": "volunteer_hours",
-          "tableTo": "volunteer",
+          "tableTo": "user",
           "columnsFrom": [
             "volunteer_id"
           ],

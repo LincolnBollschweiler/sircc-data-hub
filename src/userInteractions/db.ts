@@ -1,5 +1,5 @@
 import { db } from "@/drizzle/db";
-import { client, coach, site, user, volunteer } from "@/drizzle/schema";
+import { client, site, user } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
@@ -54,54 +54,15 @@ export async function updateUserById(
 						.values({
 							id: userUpdated.id,
 							isReentryClient: data.isReentryClient ?? false,
-							siteId: data.siteId ?? null,
 						})
 						.onConflictDoUpdate({
 							target: [client.id],
-							set: {
-								isReentryClient: data.isReentryClient,
-								siteId: data.siteId ?? null,
-							},
+							set: { isReentryClient: data.isReentryClient ?? false },
 						})
 						.returning();
 
 					if (!newClient) throw new Error("Failed to create client for user");
 				}
-
-				if (data.role === "volunteer" || data.role === "client-volunteer") {
-					const [newVolunteer] = await tx
-						.insert(volunteer)
-						.values({
-							id: userUpdated.id,
-							siteId: data.siteId ?? null,
-						})
-						.onConflictDoUpdate({
-							target: [volunteer.id],
-							set: {
-								siteId: data.siteId ?? null,
-							},
-						})
-						.returning();
-
-					if (!newVolunteer) throw new Error("Failed to create volunteer for user");
-				} else if (data.role === "coach") {
-					const [newCoach] = await tx
-						.insert(coach)
-						.values({
-							id: userUpdated.id,
-							siteId: data.siteId ?? null,
-						})
-						.onConflictDoUpdate({
-							target: [coach.id],
-							set: {
-								siteId: data.siteId ?? null,
-							},
-						})
-						.returning();
-
-					if (!newCoach) throw new Error("Failed to create coach for user");
-				}
-
 				await syncClerkUserMetadata(userUpdated);
 			}
 			return userUpdated; // returned if successfull

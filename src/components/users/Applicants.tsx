@@ -11,41 +11,15 @@ export default async function Applicants({ userType }: { userType: string }) {
 
 	let applicants;
 	let title = "";
-	switch (userType) {
-		case "applicant":
-			applicants = users.filter((user) => user.accepted == null);
-			title = "Applicants";
-			break;
-		case "rejected":
-			applicants = users.filter((user) => user.accepted === false);
-			title = "Rejected Applicants";
-			break;
-		case "client":
-			applicants = users.filter(
-				(user) => (user.role === "client" || user.role === "client-volunteer") && user.accepted
-			);
-			title = "Clients";
-			break;
-		case "volunteer":
-			applicants = users.filter(
-				(user) => (user.role === "volunteer" || user.role === "client-volunteer") && user.accepted
-			);
-			title = "Volunteers";
-			break;
-		// case "staff": applicants = users.filter((user) => user.role === "staff" && user.accepted); break;
-		case "coach":
-			applicants = users.filter((user) => user.role === "coach" && user.accepted);
-			title = "Coaches";
-			break;
-		case "admin":
-			applicants = users.filter((user) => user.role === "admin" && user.accepted);
-			title = "Admins";
-			break;
-		default:
-			applicants = users;
-	}
 
-	console.log(`${userType} found:`, applicants.length);
+	if (userType === "applicant") {
+		applicants = users.filter((user) => user.accepted == null);
+		title = "Applicants";
+	} else {
+		// rejected applicant
+		applicants = users.filter((user) => user.accepted === false);
+		title = "Rejected Applicants";
+	}
 
 	return (
 		<div className="container py-4 mx-auto">

@@ -14,9 +14,9 @@ import { actionToast } from "@/hooks/use-toast";
 import PhoneInput from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
 import { userSchema } from "@/userInteractions/schema";
-import { updateUser } from "./actions";
+import { updateUser } from "../actions";
 import { redirect } from "next/navigation";
-import { Textarea } from "../ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Site } from "@/drizzle/types";
 import { useTheme } from "next-themes";
 
@@ -24,12 +24,12 @@ export default function ProfileForm({
 	profile,
 	sites,
 	onSuccess,
-	intakeNotes,
+	isIntake,
 }: {
 	profile: z.infer<typeof userSchema> & { id: string };
 	sites: Partial<Site>[];
 	onSuccess?: () => void;
-	intakeNotes?: boolean;
+	isIntake?: boolean;
 }) {
 	// if (!profile) redirect("/");
 	const form = useForm<z.infer<typeof userSchema>>({
@@ -51,7 +51,7 @@ export default function ProfileForm({
 		}
 
 		if (!actionData?.error) {
-			if (!intakeNotes) onSuccess?.();
+			if (!isIntake) onSuccess?.();
 			else redirect("/");
 		}
 	};
@@ -301,7 +301,7 @@ export default function ProfileForm({
 						</FormItem>
 					)}
 				/>
-				{intakeNotes && (
+				{isIntake && (
 					<>
 						<FormField
 							control={form.control}
