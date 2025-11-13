@@ -17,7 +17,7 @@ import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "../ui/input";
-import { applicantsColumns } from "./ApplicantsColumns";
+import { userDataTableColumns } from "./UserDataTableColumns";
 
 interface DataTableProps<TData extends { siteId?: string | null }> {
 	data: TData[];
@@ -32,7 +32,7 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 	sites,
 	userType,
 }: DataTableProps<TData> & { sites: { id: string; name: string }[]; userType: string }) {
-	const columns = applicantsColumns(userType) as ColumnDef<TData, unknown>[];
+	const columns = userDataTableColumns(userType) as ColumnDef<TData, unknown>[];
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pageSize, setPageSize] = useState<number>(() => {
 		// Load from localStorage on first render (client only)

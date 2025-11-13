@@ -16,7 +16,7 @@ import {
 import { updateUser } from "./actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
-import AssignRoleFormDialog from "./AssignRoleFormDialog";
+import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -28,7 +28,7 @@ const processAcceptance = async (user: Partial<User>, accepted: boolean | null) 
 	if (!actionData?.error) requestAnimationFrame(() => window.location.reload());
 };
 
-export const applicantsColumns = (userType: string): ColumnDef<Partial<User>>[] => {
+export const userDataTableColumns = (userType: string): ColumnDef<Partial<User>>[] => {
 	if (userType === "rejected" || userType === "applicant")
 		return [
 			{
