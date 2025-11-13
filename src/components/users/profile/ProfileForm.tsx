@@ -14,7 +14,7 @@ import { actionToast } from "@/hooks/use-toast";
 import PhoneInput from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
 import { userSchema } from "@/userInteractions/schema";
-import { updateUser } from "../actions";
+import { updateUser } from "@/userInteractions/actions";
 import { redirect } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { Site } from "@/drizzle/types";

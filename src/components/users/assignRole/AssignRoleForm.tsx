@@ -10,7 +10,7 @@ import RequiredLabelIcon from "@/components/RequiredLabelIcon";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { assignRoleSchema } from "@/userInteractions/schema";
-import { updateUserRoleAndAccept } from "../actions";
+import { updateUserRoleAndAccept } from "../../../userInteractions/actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 

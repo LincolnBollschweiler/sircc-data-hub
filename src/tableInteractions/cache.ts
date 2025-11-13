@@ -31,7 +31,6 @@ export const revalidateLocationCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
 	revalidateTag(cacheTags.getLocationGlobalTag(), "max");
 	revalidateTag(cacheTags.getLocationIdTag(id), "max");
-	revalidateTag(cacheTags.getUserSitesGlobalTag(), "max");
 	revalidatePath("/admin/data-types/locations");
 	revalidatePath(`/admin/data-types/locations/${id}/edit`);
 };
@@ -58,10 +57,4 @@ export const revalidateClientServiceCache = async (id: string) => {
 	revalidateTag(cacheTags.getClientServiceIdTag(id), "max");
 	revalidatePath("/admin/data-types/client-services");
 	revalidatePath(`/admin/data-types/client-services/${id}/edit`);
-};
-
-export const revalidateUserCache = async (id: string) => {
-	revalidateTag(cacheTags.getAllUsersGlobalTag(), "max");
-	revalidateTag(cacheTags.getUserIdTag(id), "max");
-	revalidatePath("/");
 };

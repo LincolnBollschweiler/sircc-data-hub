@@ -13,7 +13,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { updateUser } from "./actions";
+import { updateUser } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";

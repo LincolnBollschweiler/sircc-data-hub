@@ -3,8 +3,8 @@ import { client, site, user } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
-import { getAllUsersGlobalTag, getUserSitesGlobalTag } from "@/tableInteractions/cacheTags";
-import { revalidateUserCache } from "@/tableInteractions/cache";
+import { getAllUsersGlobalTag, getUserSitesGlobalTag } from "@/userInteractions/cacheTags";
+import { revalidateUserCache } from "@/userInteractions/cache";
 import { syncClerkUserMetadata } from "@/services/clerk";
 
 export async function insertUser(data: typeof user.$inferInsert) {
