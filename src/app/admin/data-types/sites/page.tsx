@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
 import { getSites } from "@/tableInteractions/db";
-import Sites from "@/components/sites/Sites";
-import SitesFormDialog from "@/components/sites/SitesFormDialog";
+import Sites from "@/components/data-types/sites/Sites";
+import SitesFormDialog from "@/components/data-types/sites/SitesFormDialog";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 
 export default async function SitesPage() {

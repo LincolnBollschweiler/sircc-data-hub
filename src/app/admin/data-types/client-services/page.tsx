@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
-import ClientServices from "@/components/clientServices/ClientServices";
+import ClientServices from "@/components/data-types/clientServices/ClientServices";
 import { getClientServices } from "@/tableInteractions/db";
-import ClientServiceFormDialog from "@/components/clientServices/ClientServiceFormDialog";
+import ClientServiceFormDialog from "@/components/data-types/clientServices/ClientServiceFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 
 export default async function ClientServicesPage() {
