@@ -22,6 +22,13 @@
       "when": 1763000692168,
       "tag": "0002_mysterious_meteorite",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1763083796212,
+      "tag": "0003_needy_havok",
+      "breakpoints": true
     }
   ]
 }

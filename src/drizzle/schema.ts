@@ -256,7 +256,7 @@ export const clientService = pgTable(
 		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
 		locationId: uuid("location_id").references(() => location.id, { onDelete: "set null" }),
 		clientId: uuid("client_id")
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => client.id, { onDelete: "cascade" })
 			.notNull(),
 		requestedServiceId: uuid("requested_service_id").references(() => service.id, { onDelete: "restrict" }),
 		providedServiceId: uuid("provided_service_id")

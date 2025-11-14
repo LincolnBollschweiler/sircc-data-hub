@@ -5,14 +5,12 @@ export default function PageHeader({
 	title,
 	role,
 	accepted,
-	coachAuthorized,
 	className,
 	children,
 }: {
 	title: string;
 	role?: string;
 	accepted?: boolean | null;
-	coachAuthorized?: boolean | null;
 	className?: string;
 	children?: React.ReactNode;
 }) {
@@ -32,15 +30,6 @@ export default function PageHeader({
 						))}
 				</h1>
 				{children && <div>{children}</div>}
-			</div>
-			<div>
-				{role !== "Coach" ? (
-					""
-				) : (
-					<div className="text-sm text-muted">
-						{coachAuthorized ? "Authorized Coach" : "Not Yet Authorized"}
-					</div>
-				)}
 			</div>
 		</>
 	);

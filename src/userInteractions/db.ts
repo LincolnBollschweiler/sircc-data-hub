@@ -1,12 +1,24 @@
 import { db } from "@/drizzle/db";
-import { client, site, user } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import {
+	client,
+	clientService,
+	service,
+	site,
+	user,
+	location,
+	clientReentryCheckListItem,
+	reentryCheckListItem,
+	referralSource,
+} from "@/drizzle/schema";
+import { eq, and, or, sql } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { getAllUsersGlobalTag, getUserSitesGlobalTag } from "@/userInteractions/cacheTags";
 import { revalidateUserCache } from "@/userInteractions/cache";
 import { syncClerkUserMetadata } from "@/services/clerk";
+import { alias } from "drizzle-orm/pg-core";
 
+//#region User CRUD operations
 export async function insertUser(data: typeof user.$inferInsert) {
 	console.log("Inserting user:", data);
 	const [applicant] = await db
@@ -110,6 +122,19 @@ export async function deleteUser({ clerkUserId }: { clerkUserId: string }) {
 	return deletedUser;
 }
 
+const cachedUsers = unstable_cache(
+	async () => {
+		return await db.select().from(user).where(isNull(user.deletedAt)).orderBy(desc(user.updatedAt));
+	},
+	["getAllUsers"],
+	// { tags: [getAllUsersGlobalTag()] }
+	{ tags: [getAllUsersGlobalTag()], revalidate: 5 }
+);
+
+export const getAllUsers = async () => cachedUsers();
+//#endregion
+
+//#region User Sites
 const cachedUserSites = unstable_cache(
 	async () => {
 		return await db
@@ -122,20 +147,95 @@ const cachedUserSites = unstable_cache(
 			.orderBy(site.name);
 	},
 	["getUserSites"],
-	// { tags: [getUserSitesGlobalTag()] }
-	{ tags: [getUserSitesGlobalTag()], revalidate: 5 } // HOW TO: set a time-based revalidation alongside tag-based so that data is at most 5 seconds stale
+	{ tags: [getUserSitesGlobalTag()] }
+	// { tags: [getUserSitesGlobalTag()], revalidate: 5 } // HOW TO: set a time-based revalidation alongside tag-based so that data is at most 5 seconds stale
 	// requires a hard-refresh too
 );
 
 export const getUserSites = async () => cachedUserSites();
+//#endregion
 
-const cachedUsers = unstable_cache(
-	async () => {
-		return await db.select().from(user).where(isNull(user.deletedAt)).orderBy(desc(user.updatedAt));
+//#region CRUD Clients
+// This type represents one row returned from your join
+export type ClientWithUser = {
+	user: typeof user.$inferSelect;
+	client: typeof client.$inferSelect | null; // null because of leftJoin
+	coach: typeof user.$inferSelect | null; // null because of leftJoin
+	clientService: typeof clientService.$inferSelect | null; // null because of leftJoin
+	service: typeof service.$inferSelect | null; // null because of leftJoin
+	location: typeof location.$inferSelect | null; // null because of leftJoin
+	clientReentryCheckListItem: typeof clientReentryCheckListItem.$inferSelect | null;
+	reentryCheckListItem: typeof reentryCheckListItem.$inferSelect | null;
+	referralSource: typeof referralSource.$inferSelect | null;
+	serviceCount: number;
+	openRequestsCount: number;
+	requestsUpdatedAt: Date | null;
+};
+
+const coachUser = alias(user, "coachUser");
+// --- CACHED QUERY ---
+const cachedClients = unstable_cache(
+	async (): Promise<ClientWithUser[]> => {
+		// async (): Promise<ClientWithUser[]> => {
+		return await db
+			.select({
+				user,
+				client,
+				coach: coachUser,
+				clientService,
+				service,
+				location,
+				clientReentryCheckListItem,
+				reentryCheckListItem,
+				referralSource,
+				serviceCount: sql<number>`
+					(SELECT COUNT(*)
+					FROM client_service cs
+					WHERE cs.client_id = ${client.id})
+				`,
+				openRequestsCount: sql<number>`
+					(SELECT COUNT(*)
+					FROM client_service csr
+					WHERE csr.client_id = ${client.id}
+					AND csr.requested_service_id IS NOT NULL
+					AND csr.provided_service_id IS NULL)
+				 `,
+				requestsUpdatedAt: sql<Date | null>`
+					(SELECT MAX(csr.updated_at)
+					FROM client_service csr
+					WHERE csr.client_id = ${client.id})
+				`,
+			})
+			.from(user)
+			.leftJoin(client, eq(user.id, client.id)) // join user.id to client.id
+			.leftJoin(coachUser, eq(client.coachId, coachUser.id))
+			.leftJoin(clientService, eq(client.id, clientService.clientId))
+			.leftJoin(
+				service,
+				or(eq(clientService.requestedServiceId, service.id), eq(clientService.providedServiceId, service.id))
+			)
+			.leftJoin(location, eq(clientService.locationId, location.id))
+			.leftJoin(clientReentryCheckListItem, eq(client.id, clientReentryCheckListItem.clientId))
+			.leftJoin(
+				reentryCheckListItem,
+				eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItem.id)
+			)
+			.leftJoin(referralSource, eq(clientService.referralSourceId, referralSource.id))
+			.where(and(isNull(user.deletedAt), eq(user.accepted, true), eq(user.role, "client")))
+			.orderBy(
+				desc(
+					sql`
+						COALESCE(
+						(SELECT MAX(csr.updated_at)
+						FROM client_service csr
+						WHERE csr.client_id = ${client.id}),
+						${client.updatedAt}
+					)`
+				)
+			);
 	},
-	["getAllUsers"],
-	// { tags: [getAllUsersGlobalTag()] }
-	{ tags: [getAllUsersGlobalTag()], revalidate: 5 }
+	["getAllClients"],
+	{ tags: [getAllUsersGlobalTag()] }
 );
 
-export const getAllUsers = async () => cachedUsers();
+export const getAllClients = async () => cachedClients();

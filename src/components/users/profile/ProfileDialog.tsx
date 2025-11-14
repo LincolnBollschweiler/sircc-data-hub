@@ -25,13 +25,7 @@ export default function ProfileDialog({ user, sites, children }: { user: User; s
 				<DialogContent className="dialog-mobile-safe">
 					<DialogHeader>
 						<DialogTitle>
-							<PageHeader
-								title="Profile"
-								role={role}
-								accepted={user?.accepted}
-								coachAuthorized={user?.coachAuthorized}
-								className="mb-0"
-							/>
+							<PageHeader title="Profile" role={role} accepted={user?.accepted} className="mb-0" />
 						</DialogTitle>
 					</DialogHeader>
 					<div className="">
