@@ -235,6 +235,34 @@ export const referralSource = pgTable(
 	(table) => [index("referral_source_deleted_at_idx").on(table.deletedAt)]
 );
 
+export const referredOut = pgTable(
+	"referred_out",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		name: varchar("name", { length: 100 }).notNull(),
+		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("referred_out_deleted_at_idx").on(table.deletedAt)]
+);
+
+export const visit = pgTable(
+	"visit",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		name: varchar("name", { length: 100 }).notNull(),
+		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("visit_deleted_at_idx").on(table.deletedAt)]
+);
+
 export const location = pgTable(
 	"location",
 	{
@@ -263,6 +291,8 @@ export const clientService = pgTable(
 			.references(() => service.id, { onDelete: "restrict" })
 			.notNull(),
 		referralSourceId: uuid("referral_source_id").references(() => referralSource.id, { onDelete: "set null" }),
+		referredOutId: uuid("referred_out_id").references(() => referredOut.id, { onDelete: "set null" }),
+		visitId: uuid("visit_id").references(() => visit.id, { onDelete: "set null" }),
 		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,

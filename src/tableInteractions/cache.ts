@@ -35,6 +35,14 @@ export const revalidateLocationCache = async (id: string) => {
 	revalidatePath(`/admin/data-types/locations/${id}/edit`);
 };
 
+export const revalidateVisitsCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(cacheTags.getVisitGlobalTag(), "max");
+	revalidateTag(cacheTags.getVisitIdTag(id), "max");
+	revalidatePath("/admin/data-types/visits");
+	revalidatePath(`/admin/data-types/visits/${id}/edit`);
+};
+
 export const revalidateSiteCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
 	revalidateTag(cacheTags.getSiteGlobalTag(), "max");
@@ -49,6 +57,14 @@ export const revalidateReferralSourceCache = async (id: string) => {
 	revalidateTag(cacheTags.getReferralSourceIdTag(id), "max");
 	revalidatePath("/admin/data-types/referral-sources");
 	revalidatePath(`/admin/data-types/referral-sources/${id}/edit`);
+};
+
+export const revalidateReferredOutCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(cacheTags.getReferredOutGlobalTag(), "max");
+	revalidateTag(cacheTags.getReferredOutIdTag(id), "max");
+	revalidatePath("/admin/data-types/referred-out");
+	revalidatePath(`/admin/data-types/referred-out/${id}/edit`);
 };
 
 export const revalidateClientServiceCache = async (id: string) => {

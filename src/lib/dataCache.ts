@@ -11,7 +11,9 @@ type CACHE_TAG =
 	| "reentry-checklist-items"
 	| "coach-trainings"
 	| "locations"
+	| "visits"
 	| "referral-sources"
+	| "referred-out"
 	| "sites"
 	| "user-sites";
 

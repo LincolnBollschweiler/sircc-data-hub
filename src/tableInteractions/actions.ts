@@ -169,6 +169,42 @@ export const updateLocationOrders = async (orderedIds: string[]) => {
 };
 //#endregion
 
+//#region Visits
+export const createVisit = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+	const rv = await dbTable.insertVisit(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create visit" : "Visit created successfully",
+	};
+};
+export const updateVisit = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+	const rv = await dbTable.updateVisitById(id, data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to update visit" : "Visit updated successfully",
+	};
+};
+
+export const removeVisit = async (id: string) => {
+	const rv = await dbTable.deleteVisit(id);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to remove visit" : "Visit removed successfully",
+	};
+};
+export const updateVisitOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No visits to update" };
+	await dbTable.updateVisitOrders(orderedIds);
+	return { error: false, message: "Visit orders updated successfully" };
+};
+//#endregion
+
 //#region Referral Sources
 export const createReferralSource = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
 	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
@@ -204,6 +240,41 @@ export const updateReferralSourceOrders = async (orderedIds: string[]) => {
 	if (orderedIds.length === 0) return { error: true, message: "No referral sources to update" };
 	await dbTable.updateReferralSourceOrders(orderedIds);
 	return { error: false, message: "Referral source orders updated successfully" };
+};
+//#endregion
+
+//#region Referred Out
+export const createReferredOut = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+	const rv = await dbTable.insertReferredOut(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create referred out" : "Referred out created successfully",
+	};
+};
+export const updateReferredOut = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+	const rv = await dbTable.updateReferredOutById(id, data);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to update referred out" : "Referred out updated successfully",
+	};
+};
+
+export const removeReferredOut = async (id: string) => {
+	const rv = await dbTable.deleteReferredOut(id);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to remove referred out" : "Referred out removed successfully",
+	};
+};
+export const updateReferredOutOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No referred out items to update" };
+	await dbTable.updateReferredOutOrders(orderedIds);
+	return { error: false, message: "Referred out orders updated successfully" };
 };
 //#endregion
 

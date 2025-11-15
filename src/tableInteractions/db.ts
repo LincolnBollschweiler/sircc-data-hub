@@ -359,6 +359,83 @@ export const updateLocationOrders = async (orderedIds: string[]) => {
 };
 //#endregion Locations DB Interactions
 
+//#region Visits DB Interactions
+export const insertVisit = async (data: typeof dbTable.visit.$inferInsert) => {
+	const [newVisit] = await db.insert(dbTable.visit).values(data).returning();
+	if (!newVisit) return;
+	cache.revalidateVisitsCache(newVisit.id);
+	return newVisit;
+};
+export const getVisitById = async (id: string) => {
+	const visit = await db.query.visit.findFirst({
+		columns: { id: true, name: true, description: true },
+		where: eq(dbTable.visit.id, id),
+	});
+
+	if (!visit) throw new Error("Visit not found");
+	return visit;
+};
+export const updateVisitById = async (id: string, data: Partial<typeof dbTable.visit.$inferInsert>) => {
+	const [updatedVisit] = await db.update(dbTable.visit).set(data).where(eq(dbTable.visit.id, id)).returning();
+	if (!updatedVisit) {
+		return { error: true, message: "Failed to update visit" };
+	}
+	cache.revalidateVisitsCache(id);
+	return { error: false, message: "Visit updated successfully" };
+};
+export const deleteVisit = async (id: string) => {
+	const [deletedVisit] = await db
+		.update(dbTable.visit)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.visit.id, id))
+		.returning();
+	if (!deletedVisit) return;
+	cache.revalidateVisitsCache(id);
+	return deletedVisit;
+};
+export type Visit = typeof dbTable.visit.$inferSelect | null;
+const cachedVisits = unstable_cache(
+	async () => {
+		console.log("Fetching visits from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.visit.id,
+				name: dbTable.visit.name,
+				description: dbTable.visit.description,
+				createdAt: dbTable.visit.createdAt,
+				updatedAt: dbTable.visit.updatedAt,
+			})
+			.from(dbTable.visit)
+			.where(isNull(dbTable.visit.deletedAt))
+			.orderBy(dbTable.visit.order);
+	},
+	["getVisits"],
+	{ tags: [cacheTags.getVisitGlobalTag()] }
+);
+export const getVisits = async () => cachedVisits();
+
+export const updateVisitOrders = async (orderedIds: string[]) => {
+	const visits = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db
+				.update(dbTable.visit)
+				.set({ order: index })
+				.where(eq(dbTable.visit.id, id))
+				.returning();
+			return rv;
+		})
+	);
+
+	visits.flat().forEach((visit) => {
+		if (visit) {
+			cache.revalidateVisitsCache(visit.id);
+		}
+	});
+
+	return visits;
+};
+//#endregion Visits DB Interactions
+
 //#region Referral Sources DB Interactions
 export const insertReferralSource = async (data: typeof dbTable.referralSource.$inferInsert) => {
 	const [newReferralSource] = await db.insert(dbTable.referralSource).values(data).returning();
@@ -450,6 +527,93 @@ export const updateReferralSourceOrders = async (orderedIds: string[]) => {
 	return sources;
 };
 //#endregion Referral Sources DB Interactions
+
+//#region Referred Out DB Interactions
+export const insertReferredOut = async (data: typeof dbTable.referredOut.$inferInsert) => {
+	const [newReferredOut] = await db.insert(dbTable.referredOut).values(data).returning();
+	if (!newReferredOut) return;
+	cache.revalidateReferredOutCache(newReferredOut.id);
+	return newReferredOut;
+};
+
+export const getReferredOutById = async (id: string) => {
+	const referredOut = await db.query.referredOut.findFirst({
+		columns: { id: true, name: true, description: true },
+		where: eq(dbTable.referredOut.id, id),
+	});
+
+	if (!referredOut) throw new Error("Referred out not found");
+	return referredOut;
+};
+
+export const updateReferredOutById = async (id: string, data: Partial<typeof dbTable.referredOut.$inferInsert>) => {
+	const [updatedReferredOut] = await db
+		.update(dbTable.referredOut)
+		.set(data)
+		.where(eq(dbTable.referredOut.id, id))
+		.returning();
+	if (!updatedReferredOut) {
+		return { error: true, message: "Failed to update referred out" };
+	}
+	cache.revalidateReferredOutCache(id);
+	return { error: false, message: "Referred out updated successfully" };
+};
+
+export const deleteReferredOut = async (id: string) => {
+	const [deletedReferredOut] = await db
+		.update(dbTable.referredOut)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.referredOut.id, id))
+		.returning();
+
+	if (!deletedReferredOut) return;
+
+	cache.revalidateReferredOutCache(id);
+	return deletedReferredOut;
+};
+
+export type ReferredOut = typeof dbTable.referredOut.$inferSelect | null;
+const cachedReferredOut = unstable_cache(
+	async () => {
+		console.log("Fetching referred out from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.referredOut.id,
+				name: dbTable.referredOut.name,
+				description: dbTable.referredOut.description,
+				createdAt: dbTable.referredOut.createdAt,
+				updatedAt: dbTable.referredOut.updatedAt,
+			})
+			.from(dbTable.referredOut)
+			.where(isNull(dbTable.referredOut.deletedAt))
+			.orderBy(dbTable.referredOut.order);
+	},
+	["getReferredOut"],
+	{ tags: [cacheTags.getReferredOutGlobalTag()] }
+);
+export const getReferredOut = async () => cachedReferredOut();
+
+export const updateReferredOutOrders = async (orderedIds: string[]) => {
+	const referredOuts = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db
+				.update(dbTable.referredOut)
+				.set({ order: index })
+				.where(eq(dbTable.referredOut.id, id))
+				.returning();
+			return rv;
+		})
+	);
+
+	referredOuts.flat().forEach((referredOut) => {
+		if (referredOut) {
+			cache.revalidateReferredOutCache(referredOut.id);
+		}
+	});
+
+	return referredOuts;
+};
+//#endregion Referred Out DB Interactions
 
 //#region Sites DB Interactions
 export const insertSite = async (data: typeof dbTable.site.$inferInsert) => {
