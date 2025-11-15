@@ -4,3 +4,5 @@ export const getUserSitesGlobalTag = () => getGlobalTag("user-sites");
 export const getAllUsersGlobalTag = () => getGlobalTag("users");
 export const getUserGlobalTag = () => getGlobalTag("users");
 export const getUserIdTag = (id: string) => getIdTag("users", id);
+export const getClientGlobalTag = () => getGlobalTag("clients");
+export const getClientIdTag = (id: string) => getIdTag("clients", id);

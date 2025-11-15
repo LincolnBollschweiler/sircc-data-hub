@@ -17,12 +17,12 @@ import { updateUser } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
-import { ClientWithUser } from "@/userInteractions/db";
+import { ClientList } from "@/userInteractions/db";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
 // helpers.ts (or in same file)
-const asClient = (row: unknown): ClientWithUser => row as ClientWithUser;
+const asClient = (row: unknown): ClientList => row as ClientList;
 const asUser = (row: unknown): User => row as User;
 const asUserRow = (row: unknown) => row as User;
 
@@ -280,11 +280,7 @@ export const userDataTableColumns = (userType: string): ColumnDef<unknown>[] => 
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
-										<AssignRoleFormDialog profile={user}>
-											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-green-600">
-												View Client
-											</DialogTrigger>
-										</AssignRoleFormDialog>
+										<a href={`/admin/clients/${user.id}/edit`}>View Client</a>
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>

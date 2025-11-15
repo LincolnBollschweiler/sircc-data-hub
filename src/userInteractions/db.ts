@@ -13,8 +13,13 @@ import {
 import { eq, and, or, sql } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
-import { getAllUsersGlobalTag, getUserSitesGlobalTag } from "@/userInteractions/cacheTags";
-import { revalidateUserCache } from "@/userInteractions/cache";
+import {
+	getAllUsersGlobalTag,
+	getClientIdTag,
+	getUserIdTag,
+	getUserSitesGlobalTag,
+} from "@/userInteractions/cacheTags";
+import { revalidateClientCache, revalidateUserCache } from "@/userInteractions/cache";
 import { syncClerkUserMetadata } from "@/services/clerk";
 import { alias } from "drizzle-orm/pg-core";
 
@@ -156,8 +161,8 @@ export const getUserSites = async () => cachedUserSites();
 //#endregion
 
 //#region CRUD Clients
-// This type represents one row returned from your join
-export type ClientWithUser = {
+// types represent one row returned from joins
+export type ClientFull = {
 	user: typeof user.$inferSelect;
 	client: typeof client.$inferSelect | null; // null because of leftJoin
 	coach: typeof user.$inferSelect | null; // null because of leftJoin
@@ -172,22 +177,95 @@ export type ClientWithUser = {
 	requestsUpdatedAt: Date | null;
 };
 
+export type ClientList = {
+	user: typeof user.$inferSelect;
+	client: typeof client.$inferSelect | null; // null because of leftJoin
+	coach: typeof user.$inferSelect | null; // null because of leftJoin
+	serviceCount: number;
+	openRequestsCount: number;
+	requestsUpdatedAt: Date | null;
+};
+
 const coachUser = alias(user, "coachUser");
-// --- CACHED QUERY ---
+
+const getCachedClient = (id: string) => {
+	const cachedFn = unstable_cache(
+		async (): Promise<ClientFull | null> => {
+			const results = await db
+				.select({
+					user,
+					client,
+					coach: coachUser,
+					clientService,
+					service,
+					location,
+					clientReentryCheckListItem,
+					reentryCheckListItem,
+					referralSource,
+					serviceCount: sql<number>`
+					(SELECT COUNT(*)
+					FROM client_service cs
+					WHERE cs.client_id = ${id})
+				`,
+					openRequestsCount: sql<number>`
+					(SELECT COUNT(*)
+					FROM client_service csr
+					WHERE csr.client_id = ${id}
+					AND csr.requested_service_id IS NOT NULL
+					AND csr.provided_service_id IS NULL)
+				 `,
+					requestsUpdatedAt: sql<Date | null>`
+					(SELECT MAX(csr.updated_at)
+					FROM client_service csr
+					WHERE csr.client_id = ${id})
+				`,
+				})
+				.from(user)
+				.leftJoin(client, eq(user.id, client.id)) // join user.id to client.id
+				.leftJoin(coachUser, eq(client.coachId, coachUser.id))
+				.leftJoin(clientService, eq(client.id, clientService.clientId))
+				.leftJoin(
+					service,
+					or(
+						eq(clientService.requestedServiceId, service.id),
+						eq(clientService.providedServiceId, service.id)
+					)
+				)
+				.leftJoin(location, eq(clientService.locationId, location.id))
+				.leftJoin(clientReentryCheckListItem, eq(client.id, clientReentryCheckListItem.clientId))
+				.leftJoin(
+					reentryCheckListItem,
+					eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItem.id)
+				)
+				.leftJoin(referralSource, eq(clientService.referralSourceId, referralSource.id))
+				.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "client")))
+				.orderBy(
+					desc(
+						sql`
+						COALESCE(
+						(SELECT MAX(csr.updated_at)
+						FROM client_service csr
+						WHERE csr.client_id = ${client.id}),
+						${client.updatedAt}
+					)`
+					)
+				);
+			return (results.at(0) as ClientFull) ?? null;
+		},
+		["getClientById", id],
+		{ tags: [getClientIdTag(id), getUserIdTag(id)] }
+	);
+	return cachedFn(); // execute it only when this function is called
+};
+export const getClientById = async (id: string) => getCachedClient(id);
+
 const cachedClients = unstable_cache(
-	async (): Promise<ClientWithUser[]> => {
-		// async (): Promise<ClientWithUser[]> => {
+	async (): Promise<ClientList[]> => {
 		return await db
 			.select({
 				user,
 				client,
 				coach: coachUser,
-				clientService,
-				service,
-				location,
-				clientReentryCheckListItem,
-				reentryCheckListItem,
-				referralSource,
 				serviceCount: sql<number>`
 					(SELECT COUNT(*)
 					FROM client_service cs
@@ -209,18 +287,6 @@ const cachedClients = unstable_cache(
 			.from(user)
 			.leftJoin(client, eq(user.id, client.id)) // join user.id to client.id
 			.leftJoin(coachUser, eq(client.coachId, coachUser.id))
-			.leftJoin(clientService, eq(client.id, clientService.clientId))
-			.leftJoin(
-				service,
-				or(eq(clientService.requestedServiceId, service.id), eq(clientService.providedServiceId, service.id))
-			)
-			.leftJoin(location, eq(clientService.locationId, location.id))
-			.leftJoin(clientReentryCheckListItem, eq(client.id, clientReentryCheckListItem.clientId))
-			.leftJoin(
-				reentryCheckListItem,
-				eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItem.id)
-			)
-			.leftJoin(referralSource, eq(clientService.referralSourceId, referralSource.id))
 			.where(and(isNull(user.deletedAt), eq(user.accepted, true), eq(user.role, "client")))
 			.orderBy(
 				desc(
@@ -237,5 +303,29 @@ const cachedClients = unstable_cache(
 	["getAllClients"],
 	{ tags: [getAllUsersGlobalTag()] }
 );
-
 export const getAllClients = async () => cachedClients();
+//#endregion
+
+//#region CRUD Coaches
+
+export const updateClientCoachById = async (clientId: string, data: Partial<typeof client.$inferInsert>) => {
+	console.log("Updating client coach with id:", clientId, "Data:", data);
+	const [updatedClient] = await db.update(client).set(data).where(eq(client.id, clientId)).returning();
+	revalidateClientCache(clientId);
+	return updatedClient;
+};
+
+export const cachedCoaches = unstable_cache(
+	async () => {
+		return await db
+			.select()
+			.from(user)
+			.where(and(eq(user.role, "coach"), isNull(user.deletedAt)))
+			.orderBy(user.lastName);
+	},
+	["getAllCoaches"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
+
+export const getAllCoaches = async () => cachedCoaches();
+//#endregion

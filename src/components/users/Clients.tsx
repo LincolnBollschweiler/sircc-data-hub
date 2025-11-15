@@ -1,4 +1,4 @@
-import { ClientWithUser, getAllClients, getUserSites } from "@/userInteractions/db";
+import { ClientList, getAllClients, getUserSites } from "@/userInteractions/db";
 import DataTable from "./DataTable";
 import PageHeader from "../PageHeader";
 import { Button } from "../ui/button";
@@ -15,11 +15,7 @@ export default async function Clients() {
 					<Link href="/admin">Admin Dashboard</Link>
 				</Button>
 			</PageHeader>
-			<DataTable
-				data={clients as ClientWithUser[] & { siteId?: string | null }[]}
-				sites={sites}
-				userType="client"
-			/>
+			<DataTable data={clients as ClientList[] & { siteId?: string | null }[]} sites={sites} userType="client" />
 		</div>
 	);
 }

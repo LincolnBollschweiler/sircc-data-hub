@@ -315,6 +315,7 @@ export const deleteLocation = async (id: string) => {
 	return deletedLocation;
 };
 
+export type Location = typeof dbTable.location.$inferSelect | null;
 const cachedLocations = unstable_cache(
 	async () => {
 		console.log("Fetching locations from DB (not cache)");
@@ -406,6 +407,7 @@ export const deleteReferralSource = async (id: string) => {
 	return deletedReferralSource;
 };
 
+export type ReferralSource = typeof dbTable.referralSource.$inferSelect | null;
 const cachedReferralSources = unstable_cache(
 	async () => {
 		console.log("Fetching referral sources from DB (not cache)");
@@ -489,6 +491,7 @@ export const deleteSite = async (id: string) => {
 	return deletedSite;
 };
 
+export type Site = typeof dbTable.site.$inferSelect | null;
 const cachedSites = unstable_cache(
 	async () => {
 		console.log("Fetching sites from DB (not cache)");
@@ -577,6 +580,8 @@ export const deleteClientService = async (id: string) => {
 	cache.revalidateClientServiceCache(id);
 	return deletedClientService;
 };
+
+export type ClientService = typeof dbTable.service.$inferSelect | null;
 
 const cachedClientServices = unstable_cache(
 	async () => {
