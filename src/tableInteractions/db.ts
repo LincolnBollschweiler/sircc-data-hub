@@ -315,7 +315,7 @@ export const deleteLocation = async (id: string) => {
 	return deletedLocation;
 };
 
-export type Location = typeof dbTable.location.$inferSelect | null;
+export type Location = typeof dbTable.location.$inferSelect;
 const cachedLocations = unstable_cache(
 	async () => {
 		console.log("Fetching locations from DB (not cache)");
@@ -393,7 +393,7 @@ export const deleteVisit = async (id: string) => {
 	cache.revalidateVisitsCache(id);
 	return deletedVisit;
 };
-export type Visit = typeof dbTable.visit.$inferSelect | null;
+export type Visit = typeof dbTable.visit.$inferSelect;
 const cachedVisits = unstable_cache(
 	async () => {
 		console.log("Fetching visits from DB (not cache)");
@@ -484,7 +484,7 @@ export const deleteReferralSource = async (id: string) => {
 	return deletedReferralSource;
 };
 
-export type ReferralSource = typeof dbTable.referralSource.$inferSelect | null;
+export type ReferralSource = typeof dbTable.referralSource.$inferSelect;
 const cachedReferralSources = unstable_cache(
 	async () => {
 		console.log("Fetching referral sources from DB (not cache)");
@@ -572,7 +572,7 @@ export const deleteReferredOut = async (id: string) => {
 	return deletedReferredOut;
 };
 
-export type ReferredOut = typeof dbTable.referredOut.$inferSelect | null;
+export type ReferredOut = typeof dbTable.referredOut.$inferSelect;
 const cachedReferredOut = unstable_cache(
 	async () => {
 		console.log("Fetching referred out from DB (not cache)");
@@ -655,7 +655,7 @@ export const deleteSite = async (id: string) => {
 	return deletedSite;
 };
 
-export type Site = typeof dbTable.site.$inferSelect | null;
+export type Site = typeof dbTable.site.$inferSelect;
 const cachedSites = unstable_cache(
 	async () => {
 		console.log("Fetching sites from DB (not cache)");
@@ -745,7 +745,7 @@ export const deleteClientService = async (id: string) => {
 	return deletedClientService;
 };
 
-export type ClientService = typeof dbTable.service.$inferSelect | null;
+export type ClientService = typeof dbTable.service.$inferSelect;
 
 const cachedClientServices = unstable_cache(
 	async () => {

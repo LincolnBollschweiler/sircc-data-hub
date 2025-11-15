@@ -2,12 +2,28 @@ import {
 	ClientService,
 	Location,
 	ReferralSource,
-	Site,
+	ReferredOut,
+	Visit,
 	getClientServices,
 	getLocations,
 	getReferralSources,
-	getSites,
+	getReferredOut,
+	getVisits,
 } from "@/tableInteractions/db";
+// import {
+// 	ClientService,
+// 	Location,
+// 	ReferralSource,
+// 	ReferredOut,
+// 	Site,
+// 	Visit,
+// 	getClientServices,
+// 	getLocations,
+// 	getReferralSources,
+// 	getReferredOut,
+// 	getSites,
+// 	getVisits,
+// } from "@/tableInteractions/db";
 import ClientServices from "./ClientServices";
 import { ClientFull } from "@/userInteractions/db";
 
@@ -15,7 +31,9 @@ export default async function ClientServicesWrapper({ client }: { client: Client
 	const services = await getClientServices();
 	const locations = await getLocations();
 	const referralSources = await getReferralSources();
-	const sites = await getSites();
+	const referredOut = await getReferredOut();
+	const visits = await getVisits();
+	// const sites = await getSites();
 
 	return (
 		<ClientServices
@@ -23,7 +41,9 @@ export default async function ClientServicesWrapper({ client }: { client: Client
 			services={services as ClientService[]}
 			locations={locations as Location[]}
 			referralSources={referralSources as ReferralSource[]}
-			sites={sites as Site[]}
+			referredOut={referredOut as ReferredOut[]}
+			visits={visits as Visit[]}
+			// sites={sites as Site[]}
 		/>
 	);
 }

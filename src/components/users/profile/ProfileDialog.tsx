@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableRow } from "../../ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
 import { formatPhoneNumber } from "react-phone-number-input";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { Site, User } from "@/drizzle/types";
+import { Site, User } from "@/types";
 import ProfileFormDialog from "./ProfileFormDialog";
 
 export default function ProfileDialog({ user, sites, children }: { user: User; sites: Site[]; children?: ReactNode }) {

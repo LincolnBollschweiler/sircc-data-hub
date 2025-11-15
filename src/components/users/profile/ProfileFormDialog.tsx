@@ -4,7 +4,7 @@ import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { z } from "zod";
 import { userSchema } from "@/userInteractions/schema";
-import { User, Site } from "@/drizzle/types";
+import { User, Site } from "@/types";
 import ProfileForm from "./ProfileForm";
 
 export default function ProfileFormDialog({

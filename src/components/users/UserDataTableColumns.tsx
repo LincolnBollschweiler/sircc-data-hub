@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@/drizzle/types";
+import { User } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { formatPhoneNumber } from "react-phone-number-input";

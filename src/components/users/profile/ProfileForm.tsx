@@ -17,7 +17,7 @@ import { userSchema } from "@/userInteractions/schema";
 import { updateUser } from "@/userInteractions/actions";
 import { redirect } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
-import { Site } from "@/drizzle/types";
+import { Site } from "@/types";
 import { useTheme } from "next-themes";
 
 export default function ProfileForm({

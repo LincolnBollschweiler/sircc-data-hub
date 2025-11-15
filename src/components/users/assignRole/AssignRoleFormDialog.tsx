@@ -4,7 +4,7 @@ import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { z } from "zod";
 import { assignRoleSchema } from "@/userInteractions/schema";
-import { User } from "@/drizzle/types";
+import { User } from "@/types";
 import AssignRoleForm from "./AssignRoleForm";
 
 export default function AssignRoleFormDialog({ profile, children }: { profile: User; children: ReactNode }) {

@@ -1,6 +1,6 @@
 import { getAllUsers, getUserSites } from "@/userInteractions/db";
 import DataTable from "./DataTable";
-import { User } from "@/drizzle/types";
+import { User } from "@/types";
 import PageHeader from "../PageHeader";
 import { Button } from "../ui/button";
 import Link from "next/link";
