@@ -1,7 +1,7 @@
 import { ClientList, getAllClients, getUserSites } from "@/userInteractions/db";
-import DataTable from "./DataTable";
-import PageHeader from "../PageHeader";
-import { Button } from "../ui/button";
+import DataTable from "../DataTable";
+import PageHeader from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default async function Clients() {
