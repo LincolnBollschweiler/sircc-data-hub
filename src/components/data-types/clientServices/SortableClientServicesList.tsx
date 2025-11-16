@@ -36,7 +36,7 @@ export function SortableClientServicesList({
 									<div>{item.name}</div>
 								</div>
 								<div className="px-1 pt-2">{item.description}</div>
-								<div className="text-center pt-2">{item.dispersesFunds ? "Yes" : "No"}</div>
+								<div className="text-center pt-2">{item.requiresFunding ? "Yes" : "No"}</div>
 								<div className="text-center pt-2">
 									{new Date(item.createdAt).toLocaleDateString("en-US", dateOptions)}
 								</div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
 	City,
@@ -10,13 +11,15 @@ import {
 	Visit,
 	ClientServiceInsert,
 } from "@/tableInteractions/db";
-import { ReactNode, useState } from "react";
 import { ClientCombobox } from "./ClientCombobox";
 import { Button } from "@/components/ui/button";
-import { Label } from "@radix-ui/react-label";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createClientService } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { DollarSign } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function ClientServiceFormDialog({
 	clientId,
@@ -35,40 +38,54 @@ export default function ClientServiceFormDialog({
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
-
-	const [serviceValue, setServiceValue] = useState<string | null>(null);
-	const [locationValue, setLocationValue] = useState<string | null>(null);
-	const [cityValue, setCityValue] = useState<string | null>(null);
-	const [referralSourceValue, setReferralSourceValue] = useState<string | null>(null);
-	const [referredOutValue, setReferredOutValue] = useState<string | null>(null);
-	const [visitValue, setVisitValue] = useState<string | null>(null);
+	const [requestedServiceId, setRequestedServiceId] = useState<string | null>(null);
+	const [providedServiceId, setProvidedServiceId] = useState<string | null>(null);
+	const [locationId, setLocationId] = useState<string | null>(null);
+	const [cityId, setCityId] = useState<string | null>(null);
+	const [referralSourceId, setReferralSourceId] = useState<string | null>(null);
+	const [referredOutId, setReferredOutId] = useState<string | null>(null);
+	const [visitTypeId, setVisitTypeId] = useState<string | null>(null);
 	const [clientNotes, setClientNotes] = useState<string>("");
+	const [funds, setFunds] = useState<string>("");
+	const [fundsVisible, setFundsVisible] = useState(false);
+	const fundsInputRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		if (providedServiceId) {
+			const selectedService = newServiceProps.services.find((service) => service.id === providedServiceId);
+			if (selectedService && selectedService.requiresFunding) {
+				setFundsVisible(true);
+			} else {
+				setFundsVisible(false);
+			}
+		} else {
+			setFundsVisible(false);
+		}
+	}, [providedServiceId, newServiceProps.services]);
+
+	useEffect(() => {
+		if (fundsVisible) fundsInputRef.current?.focus();
+	}, [fundsVisible]);
 
 	const [action, setAction] = useState<"save" | "cancel" | "dismiss" | null>(null);
 
 	const handleCancel = () => {
 		setAction("cancel");
 		setIsOpen(false);
-		setServiceValue(null);
-		setCityValue(null);
-		setLocationValue(null);
-		setReferralSourceValue(null);
-		setReferredOutValue(null);
-		setVisitValue(null);
+		setProvidedServiceId(null);
+		setRequestedServiceId(null);
+		setCityId(null);
+		setLocationId(null);
+		setReferralSourceId(null);
+		setReferredOutId(null);
+		setVisitTypeId(null);
+		setFunds("");
 		setClientNotes("");
 	};
 
 	const handleSave = async () => {
 		setAction("save");
 		setIsOpen(false);
-		console.log("Client service saved with the following details:");
-		console.log("Service ID:", serviceValue);
-		console.log("City ID:", cityValue);
-		console.log("Location ID:", locationValue);
-		console.log("Referral Source ID:", referralSourceValue);
-		console.log("Referred Out ID:", referredOutValue);
-		console.log("Visit ID:", visitValue);
-		console.log("Client Notes:", clientNotes);
 
 		if (!clientId) {
 			console.error("Client ID is null. Cannot create client service.");
@@ -76,12 +93,13 @@ export default function ClientServiceFormDialog({
 		}
 		const clientService = {
 			clientId,
-			cityId: cityValue,
-			locationId: locationValue,
-			providedServiceId: serviceValue,
-			referralSourceId: referralSourceValue,
-			referredOutId: referredOutValue,
-			visitId: visitValue,
+			cityId: cityId,
+			locationId: locationId,
+			requestedServiceId: requestedServiceId,
+			providedServiceId: providedServiceId,
+			referralSourceId: referralSourceId,
+			referredOutId: referredOutId,
+			visitId: visitTypeId,
 			notes: clientNotes,
 		} as ClientServiceInsert;
 
@@ -110,21 +128,51 @@ export default function ClientServiceFormDialog({
 				</DialogHeader>
 				<div className="my-4 flex flex-col gap-2">
 					<div className="flex gap-2 items-center">
-						<Label className="font-medium text-right w-[30%]">Service</Label>
+						<Label className="font-medium text-right w-[30%]">Requested Service</Label>
 						<ClientCombobox
 							label="Select Service"
 							items={newServiceProps.services}
-							value={serviceValue}
-							onChange={setServiceValue}
+							value={requestedServiceId}
+							onChange={setRequestedServiceId}
 						/>
 					</div>
+					<div className="flex gap-2 items-center">
+						<Label className="font-medium text-right w-[30%]">Provided Service</Label>
+						<ClientCombobox
+							label="Select Service"
+							items={newServiceProps.services}
+							value={providedServiceId}
+							onChange={setProvidedServiceId}
+						/>
+					</div>
+					<div className="flex gap-2 items-center">
+						<Label className={cn("font-medium text-right w-[30%]", !fundsVisible && "opacity-50")}>
+							Funds Disbursed
+						</Label>
+						<div className="relative">
+							<DollarSign className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+							<Input
+								id="newServiceFunds"
+								ref={fundsInputRef}
+								disabled={!fundsVisible}
+								type="number"
+								value={funds}
+								onChange={(e) => setFunds(e.target.value)}
+								min="0"
+								step="0.01"
+								placeholder="0"
+								className="w-[60%] pl-9"
+							/>
+						</div>
+					</div>
+
 					<div className="flex gap-2 items-center">
 						<Label className="font-medium text-right w-[30%]">City</Label>
 						<ClientCombobox
 							label="Select City"
 							items={newServiceProps.cities}
-							value={cityValue}
-							onChange={setCityValue}
+							value={cityId}
+							onChange={setCityId}
 						/>
 					</div>
 					<div className="flex gap-2 items-center">
@@ -132,8 +180,8 @@ export default function ClientServiceFormDialog({
 						<ClientCombobox
 							label="Select Location"
 							items={newServiceProps.locations}
-							value={locationValue}
-							onChange={setLocationValue}
+							value={locationId}
+							onChange={setLocationId}
 						/>
 					</div>
 					<div className="flex gap-2 items-center">
@@ -141,8 +189,8 @@ export default function ClientServiceFormDialog({
 						<ClientCombobox
 							label="Select Referral Source"
 							items={newServiceProps.referralSources}
-							value={referralSourceValue}
-							onChange={setReferralSourceValue}
+							value={referralSourceId}
+							onChange={setReferralSourceId}
 						/>
 					</div>
 					<div className="flex gap-2 items-center">
@@ -150,8 +198,8 @@ export default function ClientServiceFormDialog({
 						<ClientCombobox
 							label="Select Referred Out"
 							items={newServiceProps.referredOut}
-							value={referredOutValue}
-							onChange={setReferredOutValue}
+							value={referredOutId}
+							onChange={setReferredOutId}
 						/>
 					</div>
 					<div className="flex gap-2 items-center">
@@ -159,8 +207,8 @@ export default function ClientServiceFormDialog({
 						<ClientCombobox
 							label="Select Visit Reason"
 							items={newServiceProps.visits}
-							value={visitValue}
-							onChange={setVisitValue}
+							value={visitTypeId}
+							onChange={setVisitTypeId}
 						/>
 					</div>
 				</div>

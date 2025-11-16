@@ -169,7 +169,7 @@ export const userDataTableColumns = (userType: string): ColumnDef<unknown>[] => 
 											<DropdownMenuSeparator />
 											<DropdownMenuItem asChild>
 												<AssignRoleFormDialog profile={user as User}>
-													<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-green-600">
+													<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
 														Assign Role & Accept
 													</DialogTrigger>
 												</AssignRoleFormDialog>
@@ -177,7 +177,7 @@ export const userDataTableColumns = (userType: string): ColumnDef<unknown>[] => 
 											<DropdownMenuSeparator />
 											<DropdownMenuSeparator />
 											<DropdownMenuItem
-												className="hover:!bg-red-500"
+												className="hover:!bg-danger"
 												onClick={() => processAcceptance(user as User, false)}
 											>
 												Reject
@@ -281,8 +281,11 @@ export const userDataTableColumns = (userType: string): ColumnDef<unknown>[] => 
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
-										<a className=" hover:!bg-green-600" href={`/admin/clients/${user.id}/edit`}>
-											View & Edit Client
+										<a
+											className="hover:!bg-success hover:!text-success-foreground"
+											href={`/admin/clients/${user.id}/edit`}
+										>
+											View or Edit Client
 										</a>
 									</DropdownMenuItem>
 								</DropdownMenuContent>

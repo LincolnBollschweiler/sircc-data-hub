@@ -157,8 +157,8 @@ const cachedUserSites = unstable_cache(
 			.orderBy(site.name);
 	},
 	["getUserSites"],
-	{ tags: [getUserSitesGlobalTag()] }
-	// { tags: [getUserSitesGlobalTag()], revalidate: 5 } // HOW TO: set a time-based revalidation alongside tag-based so that data is at most 5 seconds stale
+	// { tags: [getUserSitesGlobalTag()] }
+	{ tags: [getUserSitesGlobalTag()], revalidate: 5 } // HOW TO: set a time-based revalidation alongside tag-based so that data is at most 5 seconds stale
 	// requires a hard-refresh too
 );
 

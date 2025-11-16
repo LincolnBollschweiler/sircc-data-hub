@@ -780,7 +780,7 @@ export const insertClientService = async (data: typeof dbTable.service.$inferIns
 
 export const getClientServiceById = async (id: string) => {
 	const clientService = await db.query.service.findFirst({
-		columns: { id: true, name: true, description: true, dispersesFunds: true },
+		columns: { id: true, name: true, description: true, requiresFunding: true },
 		where: eq(dbTable.service.id, id),
 	});
 
@@ -827,7 +827,7 @@ const cachedClientServices = unstable_cache(
 				id: dbTable.service.id,
 				name: dbTable.service.name,
 				description: dbTable.service.description,
-				dispersesFunds: dbTable.service.dispersesFunds,
+				requiresFunding: dbTable.service.requiresFunding,
 				createdAt: dbTable.service.createdAt,
 				updatedAt: dbTable.service.updatedAt,
 			})

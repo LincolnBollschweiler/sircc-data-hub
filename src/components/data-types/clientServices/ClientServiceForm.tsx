@@ -25,7 +25,7 @@ export default function ClientServiceForm({
 		defaultValues: clientService ?? {
 			name: "",
 			description: "",
-			dispersesFunds: false,
+			requiresFunding: false,
 		},
 	});
 
@@ -71,7 +71,7 @@ export default function ClientServiceForm({
 				/>
 				<FormField
 					control={form.control}
-					name="dispersesFunds"
+					name="requiresFunding"
 					render={({ field }) => (
 						<FormItem>
 							<div className="flex items-center gap-3">

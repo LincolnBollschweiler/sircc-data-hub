@@ -128,12 +128,14 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 					</SelectContent>
 				</Select>
 				<div className="flex flex-wrap sm:flex-nowrap gap-1 items-center">
-					<Input
-						className="max-w-sm text-primary-foreground bg-primary"
-						placeholder={`Search by Name...`}
-						value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-						onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
-					/>
+					{userType !== "single-client" && (
+						<Input
+							className="max-w-sm text-primary-foreground bg-primary"
+							placeholder={`Search by Name...`}
+							value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+							onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
+						/>
+					)}
 					<Input
 						className="max-w-sm text-primary-foreground bg-primary"
 						placeholder="Search all columns..."

@@ -46,6 +46,19 @@ body {
 		--chart-4: 43 74% 66%;
 		--chart-5: 27 87% 67%;
 		--radius: 0.5rem;
+
+		/* Status colors */
+		--success: 142 62% 47%; /* green */
+		--success-foreground: 142 47% 95%;
+
+		--warning: 42 95% 55%; /* yellow/orange */
+		--warning-foreground: 214 7% 10%;
+
+		--danger: 0 84% 60%; /* red, similar to destructive */
+		--danger-foreground: 0 0% 98%;
+
+		--info: 197 70% 35%; /* blue/cyan */
+		--info-foreground: 214 47% 95%;
 	}
 	.dark {
 		--background: 227, 17%, 10%;
@@ -77,6 +90,19 @@ body {
 		--chart-4: 280 65% 60%;
 		--chart-5: 340 75% 55%;
 		--chart-5: 340 75% 55%;
+		--success: 142 47% 63%;
+
+		/* Status colors */
+		--success-foreground: 0 0% 100%;
+
+		--warning: 42 85% 40%;
+		--warning-foreground: 0 0% 10%;
+
+		--danger: 0 62.8% 30.6%;
+		--danger-foreground: 0 0% 98%;
+
+		--info: 197 50% 55%;
+		--info-foreground: 0 0% 10%;
 	}
 
 	.container {

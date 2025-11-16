@@ -15,7 +15,7 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 
 	// const services = await getClientServices();
 
-	console.dir(fullClient, { depth: null });
+	// console.dir(fullClient, { depth: null });
 
 	return (
 		<div className="container py-4 mx-auto">
