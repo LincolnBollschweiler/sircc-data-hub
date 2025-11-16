@@ -1,7 +1,8 @@
 "use server";
 
 import { user } from "@/drizzle/schema";
-import { updateClientCoachById, updateUserById } from "@/userInteractions/db";
+import { ClientServiceInsert } from "@/tableInteractions/db";
+import { insertClientService, updateClientCoachById, updateUserById } from "@/userInteractions/db";
 import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
 
 export const updateUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
@@ -26,4 +27,9 @@ export const updateClientsCoach = async (userId: string | null, coachId: string 
 	if (!userId) return { error: true, message: "Invalid user ID" };
 	const rv = await updateClientCoachById(userId, { coachId });
 	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
+};
+
+export const createClientService = async (userId: null, data: ClientServiceInsert) => {
+	const rv = await insertClientService(data);
+	return { error: !rv, message: rv ? "Service created successfully" : "Failed to create service" };
 };

@@ -38,15 +38,20 @@ export default async function ClientServicesWrapper({ client }: { client: Client
 	const cities = await getCities();
 	// const sites = await getSites();
 
+	const newServiceProps = {
+		services: services as ClientService[],
+		locations: locations as Location[],
+		referralSources: referralSources as ReferralSource[],
+		referredOut: referredOut as ReferredOut[],
+		visits: visits as Visit[],
+		cities: cities as City[],
+		// sites: sites as Site[],
+	};
+
 	return (
 		<ClientServices
 			client={client}
-			services={services as ClientService[]}
-			locations={locations as Location[]}
-			referralSources={referralSources as ReferralSource[]}
-			referredOut={referredOut as ReferredOut[]}
-			visits={visits as Visit[]}
-			cities={cities as City[]}
+			newServiceProps={newServiceProps}
 			// sites={sites as Site[]}
 		/>
 	);

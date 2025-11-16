@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Check, ChevronsUpDown, CircleHelp } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { createPortal } from "react-dom";
 
 type ClientComboboxProps<T extends { id: string; name: string; description?: string | null }> = {
 	label: string;
@@ -36,15 +37,10 @@ export function ClientCombobox<T extends { id: string; name: string; description
 	const handleMouseLeave = () => setHoveredItemId(null);
 
 	return (
-		<>
+		<div className="w-[60%]">
 			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
-					<Button
-						variant="outline"
-						role="combobox"
-						aria-expanded={open}
-						className="w-[200px] justify-between"
-					>
+					<Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
 						{selected ? selected.name : props.label}
 						<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 					</Button>
@@ -97,7 +93,22 @@ export function ClientCombobox<T extends { id: string; name: string; description
 			</Popover>
 
 			{/* Free-floating hover description */}
-			{hoveredItemId && (
+			{hoveredItemId &&
+				createPortal(
+					<div
+						className="z-50 max-w-xs p-2 bg-background border rounded shadow text-sm pointer-events-none"
+						style={{
+							position: "fixed",
+							top: hoverPos.y,
+							left: hoverPos.x,
+						}}
+					>
+						{props.items.find((i) => i.id === hoveredItemId)?.description}
+					</div>,
+					document.body
+				)}
+
+			{/* {hoveredItemId && (
 				<div
 					className="fixed z-50 max-w-xs p-2 bg-background border rounded shadow text-sm pointer-events-none"
 					style={{
@@ -107,7 +118,7 @@ export function ClientCombobox<T extends { id: string; name: string; description
 				>
 					{props.items.find((i) => i.id === hoveredItemId)?.description}
 				</div>
-			)}
-		</>
+			)} */}
+		</div>
 	);
 }

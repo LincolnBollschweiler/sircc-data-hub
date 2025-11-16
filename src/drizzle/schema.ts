@@ -294,11 +294,12 @@ export const clientService = pgTable(
 	"client_service",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
-		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
-		locationId: uuid("location_id").references(() => location.id, { onDelete: "set null" }),
 		clientId: uuid("client_id")
 			.references(() => client.id, { onDelete: "cascade" })
 			.notNull(),
+		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
+		cityId: uuid("city_id").references(() => city.id, { onDelete: "set null" }),
+		locationId: uuid("location_id").references(() => location.id, { onDelete: "set null" }),
 		requestedServiceId: uuid("requested_service_id").references(() => service.id, { onDelete: "restrict" }),
 		providedServiceId: uuid("provided_service_id")
 			.references(() => service.id, { onDelete: "restrict" })
@@ -313,6 +314,7 @@ export const clientService = pgTable(
 	},
 	(table) => [
 		index("client_service_site_id_idx").on(table.siteId),
+		index("client_service_city_id_idx").on(table.cityId),
 		index("client_service_deleted_at_idx").on(table.deletedAt),
 		index("client_service_client_id_idx").on(table.clientId),
 		index("client_service_requested_service_id_idx").on(table.requestedServiceId),

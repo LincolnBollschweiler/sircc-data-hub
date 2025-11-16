@@ -817,6 +817,7 @@ export const deleteClientService = async (id: string) => {
 };
 
 export type ClientService = typeof dbTable.service.$inferSelect;
+export type ClientServiceInsert = typeof dbTable.clientService.$inferInsert;
 
 const cachedClientServices = unstable_cache(
 	async () => {

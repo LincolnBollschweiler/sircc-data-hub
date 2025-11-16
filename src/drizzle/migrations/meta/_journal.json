@@ -50,6 +50,20 @@
       "when": 1763250939811,
       "tag": "0006_plain_kang",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1763307073505,
+      "tag": "0007_lying_alex_wilder",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1763311672556,
+      "tag": "0008_dear_prodigy",
+      "breakpoints": true
     }
   ]
 }

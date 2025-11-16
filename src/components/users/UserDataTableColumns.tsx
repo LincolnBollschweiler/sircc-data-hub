@@ -23,6 +23,7 @@ const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-dig
 
 // helpers.ts (or in same file)
 const asClient = (row: unknown): ClientList => row as ClientList;
+// const asSingleClient = (row: unknown) => row as ClientServiceFull;
 const asUser = (row: unknown): User => row as User;
 const asUserRow = (row: unknown) => row as User;
 
@@ -280,13 +281,53 @@ export const userDataTableColumns = (userType: string): ColumnDef<unknown>[] => 
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
-										<a href={`/admin/clients/${user.id}/edit`}>View Client</a>
+										<a className=" hover:!bg-green-600" href={`/admin/clients/${user.id}/edit`}>
+											View & Edit Client
+										</a>
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</div>
 					);
 				},
+			},
+		];
+
+	if (userType === "single-client")
+		return [
+			{
+				accessorKey: "requestedService.name",
+				header: "Requested Service",
+			},
+			{
+				accessorKey: "providedService.name",
+				header: "Provided Service",
+			},
+			{
+				accessorKey: "location.name",
+				header: "Location",
+			},
+			{
+				accessorKey: "referralSource.name",
+				header: "Referral Source",
+			},
+			{
+				accessorKey: "referredOut.name",
+				header: "Referred Out",
+			},
+			{
+				accessorKey: "visit.name",
+				header: "Visit Reason",
+			},
+			{
+				accessorKey: "clientService.createdAt",
+				header: "Created",
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				accessorKey: "clientService.updatedAt",
+				header: "Updated",
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 		];
 
