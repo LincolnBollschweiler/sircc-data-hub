@@ -359,6 +359,77 @@ export const updateLocationOrders = async (orderedIds: string[]) => {
 };
 //#endregion Locations DB Interactions
 
+//#region Cities DB Interactions
+export const insertCity = async (data: typeof dbTable.city.$inferInsert) => {
+	const [newCity] = await db.insert(dbTable.city).values(data).returning();
+	if (!newCity) return;
+	cache.revalidateCitiesCache(newCity.id);
+	return newCity;
+};
+export const getCityById = async (id: string) => {
+	const city = await db.query.city.findFirst({
+		columns: { id: true, name: true },
+		where: eq(dbTable.city.id, id),
+	});
+
+	if (!city) throw new Error("City not found");
+	return city;
+};
+export const updateCityById = async (id: string, data: Partial<typeof dbTable.city.$inferInsert>) => {
+	const [updatedCity] = await db.update(dbTable.city).set(data).where(eq(dbTable.city.id, id)).returning();
+	if (!updatedCity) {
+		return { error: true, message: "Failed to update city" };
+	}
+	cache.revalidateCitiesCache(id);
+	return { error: false, message: "City updated successfully" };
+};
+export const deleteCity = async (id: string) => {
+	const [deletedCity] = await db
+		.update(dbTable.city)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.city.id, id))
+		.returning();
+	if (!deletedCity) return;
+	cache.revalidateCitiesCache(id);
+	return deletedCity;
+};
+export type City = typeof dbTable.city.$inferSelect;
+const cachedCities = unstable_cache(
+	async () => {
+		console.log("Fetching cities from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.city.id,
+				name: dbTable.city.name,
+				createdAt: dbTable.city.createdAt,
+				updatedAt: dbTable.city.updatedAt,
+			})
+			.from(dbTable.city)
+			.where(isNull(dbTable.city.deletedAt))
+			.orderBy(dbTable.city.order);
+	},
+	["getCities"],
+	{ tags: [cacheTags.getCitiesGlobalTag()] }
+);
+export const getCities = async () => cachedCities();
+export const updateCityOrders = async (orderedIds: string[]) => {
+	const cities = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db.update(dbTable.city).set({ order: index }).where(eq(dbTable.city.id, id)).returning();
+			return rv;
+		})
+	);
+
+	cities.flat().forEach((city) => {
+		if (city) {
+			cache.revalidateCitiesCache(city.id);
+		}
+	});
+
+	return cities;
+};
+//#endregion Cities DB Interactions
+
 //#region Visits DB Interactions
 export const insertVisit = async (data: typeof dbTable.visit.$inferInsert) => {
 	const [newVisit] = await db.insert(dbTable.visit).values(data).returning();

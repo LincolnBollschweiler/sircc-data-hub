@@ -6,14 +6,14 @@ import { Check, ChevronsUpDown, CircleHelp } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-type ClientComboboxProps<T extends { id: string; name: string; description: string | null }> = {
+type ClientComboboxProps<T extends { id: string; name: string; description?: string | null }> = {
 	label: string;
 	items: T[];
 	value: string | null;
 	onChange: (v: string | null) => void;
 };
 
-export function ClientCombobox<T extends { id: string; name: string; description: string | null }>(
+export function ClientCombobox<T extends { id: string; name: string; description?: string | null }>(
 	props: ClientComboboxProps<T>
 ) {
 	const [open, setOpen] = useState(false);

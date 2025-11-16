@@ -36,6 +36,20 @@
       "when": 1763229277711,
       "tag": "0004_rapid_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1763250400798,
+      "tag": "0005_pink_mandroid",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1763250939811,
+      "tag": "0006_plain_kang",
+      "breakpoints": true
     }
   ]
 }

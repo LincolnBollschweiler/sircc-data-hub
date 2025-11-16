@@ -277,6 +277,19 @@ export const location = pgTable(
 	(table) => [index("location_deleted_at_idx").on(table.deletedAt)]
 );
 
+export const city = pgTable(
+	"city",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		name: varchar("name", { length: 100 }).notNull(),
+		order: integer("order").notNull().default(9999),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("city_deleted_at_idx").on(table.deletedAt)]
+);
+
 export const clientService = pgTable(
 	"client_service",
 	{

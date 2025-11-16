@@ -169,6 +169,40 @@ export const updateLocationOrders = async (orderedIds: string[]) => {
 };
 //#endregion
 
+//#region Cities
+export const createCity = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+	const rv = await dbTable.insertCity(data);
+
+	return {
+		error: !rv,
+		message: !rv ? "Failed to create city" : "City created successfully",
+	};
+};
+export const updateCity = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
+	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Validation failed" };
+	const rv = await dbTable.updateCityById(id, data);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to update city" : "City updated successfully",
+	};
+};
+
+export const removeCity = async (id: string) => {
+	const rv = await dbTable.deleteCity(id);
+	return {
+		error: !rv,
+		message: !rv ? "Failed to remove city" : "City removed successfully",
+	};
+};
+export const updateCityOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No cities to update" };
+	await dbTable.updateCityOrders(orderedIds);
+	return { error: false, message: "City orders updated successfully" };
+};
+
 //#region Visits
 export const createVisit = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
 	const { success, data } = schemas.generalSchema.safeParse(unsafeData);

@@ -8,6 +8,8 @@ export const getCoachTrainingGlobalTag = () => getGlobalTag("coach-trainings");
 export const getCoachTrainingIdTag = (id: string) => getIdTag("coach-trainings", id);
 export const getLocationGlobalTag = () => getGlobalTag("locations");
 export const getLocationIdTag = (id: string) => getIdTag("locations", id);
+export const getCitiesGlobalTag = () => getGlobalTag("cities");
+export const getCitiesIdTag = (id: string) => getIdTag("cities", id);
 export const getVisitGlobalTag = () => getGlobalTag("visits");
 export const getVisitIdTag = (id: string) => getIdTag("visits", id);
 export const getSiteGlobalTag = () => getGlobalTag("sites");

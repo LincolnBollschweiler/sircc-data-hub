@@ -35,6 +35,14 @@ export const revalidateLocationCache = async (id: string) => {
 	revalidatePath(`/admin/data-types/locations/${id}/edit`);
 };
 
+export const revalidateCitiesCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(cacheTags.getCitiesGlobalTag(), "max");
+	revalidateTag(cacheTags.getCitiesIdTag(id), "max");
+	revalidatePath("/admin/data-types/cities");
+	revalidatePath(`/admin/data-types/cities/${id}/edit`);
+};
+
 export const revalidateVisitsCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
 	revalidateTag(cacheTags.getVisitGlobalTag(), "max");

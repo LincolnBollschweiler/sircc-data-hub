@@ -19,6 +19,9 @@ export default function DataTypesDropdownMenu() {
 			<DropdownMenuContent className="bg-background-dark border-transparent -translate-y-3">
 				{/* <DropdownMenuLabel>My Account</DropdownMenuLabel>
 				<DropdownMenuSeparator /> */}
+				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/cities")}>
+					<span className="hover-underline-border">Cities</span>
+				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/client-services")}>
 					<span className="hover-underline-border">Client Services</span>
 				</DropdownMenuItem>

@@ -1,9 +1,11 @@
 import {
+	City,
 	ClientService,
 	Location,
 	ReferralSource,
 	ReferredOut,
 	Visit,
+	getCities,
 	getClientServices,
 	getLocations,
 	getReferralSources,
@@ -33,6 +35,7 @@ export default async function ClientServicesWrapper({ client }: { client: Client
 	const referralSources = await getReferralSources();
 	const referredOut = await getReferredOut();
 	const visits = await getVisits();
+	const cities = await getCities();
 	// const sites = await getSites();
 
 	return (
@@ -43,6 +46,7 @@ export default async function ClientServicesWrapper({ client }: { client: Client
 			referralSources={referralSources as ReferralSource[]}
 			referredOut={referredOut as ReferredOut[]}
 			visits={visits as Visit[]}
+			cities={cities as City[]}
 			// sites={sites as Site[]}
 		/>
 	);

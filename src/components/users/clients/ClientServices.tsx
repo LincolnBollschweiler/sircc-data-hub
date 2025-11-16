@@ -4,7 +4,7 @@ import { ClientFull } from "@/userInteractions/db";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 // import { ClientService, Location, ReferralSource, ReferredOut, Site, Visit } from "@/tableInteractions/db";
-import { ClientService, Location, ReferralSource, ReferredOut, Visit } from "@/tableInteractions/db";
+import { City, ClientService, Location, ReferralSource, ReferredOut, Visit } from "@/tableInteractions/db";
 import { ClientCombobox } from "./ClientCombobox";
 
 export default function ClientServices({
@@ -15,6 +15,7 @@ export default function ClientServices({
 	referralSources,
 	referredOut,
 	visits,
+	cities,
 }: // sites,
 {
 	client: ClientFull["client"];
@@ -24,10 +25,12 @@ export default function ClientServices({
 	referralSources: ReferralSource[];
 	referredOut: ReferredOut[];
 	visits: Visit[];
+	cities: City[];
 	// sites: Site[];
 }) {
 	const [serviceValue, setServiceValue] = useState<string | null>(null);
 	const [locationValue, setLocationValue] = useState<string | null>(null);
+	const [cityValue, setCityValue] = useState<string | null>(null);
 	const [referralSourceValue, setReferralSourceValue] = useState<string | null>(null);
 	const [referredOutValue, setReferredOutValue] = useState<string | null>(null);
 	const [visitValue, setVisitValue] = useState<string | null>(null);
@@ -53,6 +56,7 @@ export default function ClientServices({
 						value={serviceValue}
 						onChange={setServiceValue}
 					/>
+					<ClientCombobox label="Select City" items={cities} value={cityValue} onChange={setCityValue} />
 					<ClientCombobox
 						label="Select Location"
 						items={locations}
