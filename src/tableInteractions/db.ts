@@ -857,3 +857,26 @@ export const updateServiceOrders = async (orderedIds: string[]) => {
 	return services;
 };
 //#endregion Service DB Interactions
+
+//#region all Client Service tables
+export type CSTables = Awaited<ReturnType<typeof getAllClientServiceTables>>;
+export const getAllClientServiceTables = async () => {
+	const [services, locations, referralSources, referredOut, visits, cities] = await Promise.all([
+		getServices(),
+		getLocations(),
+		getReferralSources(),
+		getReferredOut(),
+		getVisits(),
+		getCities(),
+	]);
+
+	return {
+		services,
+		locations,
+		referralSources,
+		referredOut,
+		visits,
+		cities,
+	};
+};
+//#endregion all Client Service tables

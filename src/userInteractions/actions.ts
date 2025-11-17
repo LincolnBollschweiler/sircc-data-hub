@@ -1,7 +1,13 @@
 "use server";
 
 import { user } from "@/drizzle/schema";
-import { ClientServiceInsert, insertClientService, updateClientCoachById, updateUserById } from "@/userInteractions/db";
+import {
+	ClientServiceInsert,
+	deleteClientServiceById,
+	insertClientService,
+	updateClientCoachById,
+	updateUserById,
+} from "@/userInteractions/db";
 import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
 
 export const updateUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
@@ -31,4 +37,9 @@ export const updateClientsCoach = async (userId: string | null, coachId: string 
 export const createClientService = async (userId: null, data: ClientServiceInsert) => {
 	const rv = await insertClientService(data);
 	return { error: !rv, message: rv ? "Service created successfully" : "Failed to create service" };
+};
+
+export const deleteClientService = async (serviceId: string) => {
+	const rv = await deleteClientServiceById(serviceId);
+	return { error: !rv, message: rv ? "Service deleted successfully" : "Failed to delete service" };
 };

@@ -1,24 +1,11 @@
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { ClientCoach } from "@/components/users/clients/ClientCoach";
-import ClientServicesWrapper from "@/components/users/clients/ClientServicesWrapper";
+import ClientServices from "@/components/users/clients/ClientServices";
 import DataTable from "@/components/users/DataTable";
 import { UserDetails } from "@/components/users/UserDetails";
-import {
-	Location,
-	City,
-	getCities,
-	getLocations,
-	getReferralSources,
-	getReferredOut,
-	getServices,
-	getVisits,
-	ReferralSource,
-	ReferredOut,
-	Service,
-	Visit,
-} from "@/tableInteractions/db";
-import { ClientServiceFull, getAllCoaches, getClientById, getUserSites } from "@/userInteractions/db";
+import { getAllClientServiceTables } from "@/tableInteractions/db";
+import { getClientById, getAllCoaches, ClientServiceFull, getUserSites } from "@/userInteractions/db";
 import Link from "next/link";
 
 export default async function ViewClientPage({ params }: { params: Promise<{ clientId: string }> }) {
@@ -28,24 +15,9 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 		return <div>Client not found</div>;
 	}
 
-	const allCoaches = await getAllCoaches();
 	const sites = await getUserSites();
-	const services = await getServices();
-	const locations = await getLocations();
-	const referralSources = await getReferralSources();
-	const referredOut = await getReferredOut();
-	const visits = await getVisits();
-	const cities = await getCities();
-
-	const newServiceProps = {
-		services: services as Service[],
-		locations: locations as Location[],
-		referralSources: referralSources as ReferralSource[],
-		referredOut: referredOut as ReferredOut[],
-		visits: visits as Visit[],
-		cities: cities as City[],
-		// sites: sites as Site[],
-	};
+	const allCoaches = await getAllCoaches();
+	const csTables = await getAllClientServiceTables();
 
 	return (
 		<div className="container py-4 mx-auto">
@@ -59,12 +31,12 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 					data={fullClient.clientServices as ClientServiceFull[] & { siteId?: string | null }[]}
 					sites={sites}
 					userType="single-client"
-					newServiceProps={newServiceProps}
+					csTables={csTables}
 				/>
 			)}
 			{fullClient && <UserDetails client={fullClient.user} />}
 			{fullClient && <ClientCoach client={fullClient.client} allCoaches={allCoaches} />}
-			{fullClient && <ClientServicesWrapper clientId={clientId} />}
+			{fullClient && <ClientServices clientId={clientId} csTables={csTables} />}
 		</div>
 	);
 }

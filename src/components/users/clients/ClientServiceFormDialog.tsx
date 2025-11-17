@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { City, Location, Service, ReferralSource, ReferredOut, Visit } from "@/tableInteractions/db";
+import { CSTables } from "@/tableInteractions/db";
 import { ClientCombobox } from "./ClientCombobox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,20 +16,13 @@ import { ClientServiceInsert } from "@/userInteractions/db";
 
 export default function ClientServiceFormDialog({
 	clientId,
-	newServiceProps,
+	csTables,
 	values,
 	children,
 }: {
 	clientId: string | null;
 	values?: Partial<ClientServiceInsert>;
-	newServiceProps: {
-		services: Service[];
-		locations: Location[];
-		referralSources: ReferralSource[];
-		referredOut: ReferredOut[];
-		visits: Visit[];
-		cities: City[];
-	};
+	csTables: CSTables;
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -47,7 +40,7 @@ export default function ClientServiceFormDialog({
 
 	useEffect(() => {
 		if (providedServiceId) {
-			const selectedService = newServiceProps.services.find((service) => service.id === providedServiceId);
+			const selectedService = csTables.services.find((service) => service.id === providedServiceId);
 			if (selectedService && selectedService.requiresFunding) {
 				setFundsVisible(true);
 			} else {
@@ -56,7 +49,7 @@ export default function ClientServiceFormDialog({
 		} else {
 			setFundsVisible(false);
 		}
-	}, [providedServiceId, newServiceProps.services]);
+	}, [providedServiceId, csTables.services]);
 
 	useEffect(() => {
 		if (fundsVisible) fundsInputRef.current?.focus();
@@ -135,7 +128,7 @@ export default function ClientServiceFormDialog({
 						<Label className="font-medium text-right w-[30%]">Requested Service</Label>
 						<ClientCombobox
 							label="Select Service"
-							items={newServiceProps.services}
+							items={csTables.services}
 							value={requestedServiceId}
 							onChange={setRequestedServiceId}
 						/>
@@ -144,7 +137,7 @@ export default function ClientServiceFormDialog({
 						<Label className="font-medium text-right w-[30%]">Provided Service</Label>
 						<ClientCombobox
 							label="Select Service"
-							items={newServiceProps.services}
+							items={csTables.services}
 							value={providedServiceId}
 							onChange={setProvidedServiceId}
 						/>
@@ -174,7 +167,7 @@ export default function ClientServiceFormDialog({
 						<Label className="font-medium text-right w-[30%]">City</Label>
 						<ClientCombobox
 							label="Select City"
-							items={newServiceProps.cities}
+							items={csTables.cities}
 							value={cityId}
 							onChange={setCityId}
 						/>
@@ -183,7 +176,7 @@ export default function ClientServiceFormDialog({
 						<Label className="font-medium text-right w-[30%]">Location</Label>
 						<ClientCombobox
 							label="Select Location"
-							items={newServiceProps.locations}
+							items={csTables.locations}
 							value={locationId}
 							onChange={setLocationId}
 						/>
@@ -192,7 +185,7 @@ export default function ClientServiceFormDialog({
 						<Label className="font-medium text-right w-[30%]">Referral Source</Label>
 						<ClientCombobox
 							label="Select Referral Source"
-							items={newServiceProps.referralSources}
+							items={csTables.referralSources}
 							value={referralSourceId}
 							onChange={setReferralSourceId}
 						/>
@@ -201,7 +194,7 @@ export default function ClientServiceFormDialog({
 						<Label className="font-medium text-right w-[30%]">Referred Out To</Label>
 						<ClientCombobox
 							label="Select Referred Out"
-							items={newServiceProps.referredOut}
+							items={csTables.referredOut}
 							value={referredOutId}
 							onChange={setReferredOutId}
 						/>
@@ -210,7 +203,7 @@ export default function ClientServiceFormDialog({
 						<Label className="font-medium text-right w-[30%]">Visit Reason</Label>
 						<ClientCombobox
 							label="Select Visit Reason"
-							items={newServiceProps.visits}
+							items={csTables.visits}
 							value={visitTypeId}
 							onChange={setVisitTypeId}
 						/>

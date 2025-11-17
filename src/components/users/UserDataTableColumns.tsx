@@ -19,7 +19,7 @@ import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
 import { ClientList, ClientServiceFull } from "@/userInteractions/db";
 import ClientServiceFormDialog from "./clients/ClientServiceFormDialog";
-import { Location, City, ReferralSource, ReferredOut, Service, Visit } from "@/tableInteractions/db";
+import { CSTables } from "@/tableInteractions/db";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -39,14 +39,8 @@ const processAcceptance = async (user: Partial<User>, accepted: boolean | null) 
 
 export const userDataTableColumns = (
 	userType: string,
-	newServiceProps?: {
-		services: Service[];
-		locations: Location[];
-		referralSources: ReferralSource[];
-		referredOut: ReferredOut[];
-		visits: Visit[];
-		cities: City[];
-	}
+	csTables?: CSTables,
+	startDelete?: (id: string) => void
 ): ColumnDef<unknown>[] => {
 	if (userType === "rejected" || userType === "applicant")
 		return [
@@ -419,25 +413,24 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem
-										className="hover:bg-danger"
-										onClick={async () => {
-											// const actionData = await deleteClientService(id);
-										}}
-									>
-										Delete
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<ClientServiceFormDialog
 											clientId={service.clientId}
-											newServiceProps={newServiceProps!}
+											csTables={csTables!}
 											values={service}
 										>
 											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
-												Assign Role & Accept
+												Edit Service
 											</DialogTrigger>
 										</ClientServiceFormDialog>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => startDelete && startDelete(service.id)}
+									>
+										Delete Service
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>

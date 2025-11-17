@@ -279,7 +279,15 @@ const getCachedClient = (id: string) => {
 					reentryCheckListItem,
 					eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItem.id)
 				)
-				.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "client")))
+				.where(
+					and(
+						eq(user.id, id),
+						eq(user.accepted, true),
+						eq(user.role, "client"),
+						isNull(user.deletedAt),
+						isNull(clientService.deletedAt)
+					)
+				)
 				.orderBy(desc(clientService.updatedAt));
 
 			if (rows.length === 0) return null;
@@ -431,6 +439,23 @@ export const insertClientService = async (data: ClientServiceInsert) => {
 
 	revalidateClientCache(data.clientId);
 	return newService;
+};
+
+export const deleteClientServiceById = async (serviceId: string) => {
+	console.log("Deleting client service with id:", serviceId);
+	const [deletedService] = await db
+		.update(clientService)
+		.set({ deletedAt: new Date() })
+		.where(eq(clientService.id, serviceId))
+		.returning();
+
+	if (deletedService == null) {
+		console.error("Failed to delete client service");
+		throw new Error("Failed to delete client service");
+	}
+
+	revalidateClientCache(deletedService.clientId);
+	return deletedService;
 };
 
 //#endregion

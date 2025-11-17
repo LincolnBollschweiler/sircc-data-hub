@@ -13,12 +13,13 @@ import {
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "../ui/button";
-import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "../ui/input";
 import { userDataTableColumns } from "./UserDataTableColumns";
-import { Location, City, ReferralSource, ReferredOut, Service, Visit } from "@/tableInteractions/db";
+import { CSTables } from "@/tableInteractions/db";
+import { useDeleteClientService } from "../DeleteConfirm";
 
 interface DataTableProps<TData extends { siteId?: string | null }> {
 	data: TData[];
@@ -32,20 +33,18 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 	data,
 	sites,
 	userType,
-	newServiceProps,
+	csTables,
 }: DataTableProps<TData> & {
 	sites: { id: string; name: string }[];
 	userType: string;
-	newServiceProps?: {
-		services: Service[];
-		locations: Location[];
-		referralSources: ReferralSource[];
-		referredOut: ReferredOut[];
-		visits: Visit[];
-		cities: City[];
-	};
+	csTables?: CSTables;
 }) {
-	const columns = userDataTableColumns(userType, newServiceProps) as ColumnDef<TData, unknown>[];
+	const { startDelete, dialog } = useDeleteClientService();
+	const columns = userDataTableColumns(
+		userType,
+		csTables,
+		userType === "single-client" ? startDelete : undefined
+	) as ColumnDef<TData, unknown>[];
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pageSize, setPageSize] = useState<number>(() => {
 		// Load from localStorage on first render (client only)
@@ -57,8 +56,11 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 	});
 
 	const [siteId, setSiteId] = useState("all");
-	const [loadingOrNone, setLoadingOrNone] = useState((<div></div>) as React.ReactNode);
-
+	const [loadingOrNone, setLoadingOrNone] = useState<React.ReactNode | null>(
+		<div className="flex justify-center items-center p-20">
+			<Loader2 className="w-8 h-8 text-foreground/80 animate-spin" />
+		</div>
+	);
 	useEffect(() => {
 		const saved = localStorage.getItem(USER_SITE_ID);
 		handleSiteChange(saved || "all");
@@ -264,6 +266,7 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 			) : (
 				loadingOrNone
 			)}
+			{dialog}
 		</>
 	);
 }
