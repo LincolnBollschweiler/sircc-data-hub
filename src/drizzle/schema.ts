@@ -11,37 +11,41 @@ import {
 	uniqueIndex,
 } from "drizzle-orm/pg-core";
 
+// ---------- Reusable timestamps ----------
 const createdAt = timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
-
 const updatedAt = timestamp("updated_at", { withTimezone: true })
 	.notNull()
 	.defaultNow()
 	.$onUpdate(() => new Date());
-
 const deletedAt = timestamp("deleted_at", { withTimezone: true });
 
-// Enum
+// In your generated migration .sql, add these two CREATE TYPE lines to .sql migration (before any CREATE TABLE statements):
+// -- Enums
+// CREATE TYPE "user_role" AS ENUM ('developer', 'admin', 'coach', 'client', 'volunteer', 'client-volunteer');
+// CREATE TYPE "theme_preference" AS ENUM ('light', 'dark', 'system');
 
-export const userRoles = ["developer", "admin", "coach", "client", "volunteer", "client-volunteer"] as const;
+// When rolling back add these to .sql migration (after all DROP TABLE statements):
+// DROP TABLE IF EXISTS "user";
+// DROP TYPE IF EXISTS "user_role";
+// DROP TYPE IF EXISTS "theme_preference";
+
+// If we need to drop the DB and recreate it:
+// docker exec -it sircc-data-hub-db-1 psql -U postgres -d sircc_data_hub
+// then from the psql prompt run:
+// DROP SCHEMA public CASCADE;
+// CREATE SCHEMA public;
+// exit with \q
+
+// Enums
+const userRoles = ["developer", "admin", "coach", "client", "volunteer", "client-volunteer"] as const;
 export type UserRole = (typeof userRoles)[number];
 const userRoleEnum = pgEnum("user_role", userRoles);
 
-export const user = pgTable(
-	"user",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		clerkUserId: varchar("clerk_user_id", { length: 100 }).notNull().unique(),
-		firstName: varchar("first_name", { length: 30 }).notNull(),
-		lastName: varchar("last_name", { length: 30 }).notNull(),
-		role: userRoleEnum().notNull().default("client"),
-		photoUrl: varchar("photo_url", { length: 500 }),
-		email: varchar("email", { length: 255 }),
-		createdAt,
-		updatedAt,
-		deletedAt,
-	},
-	(table) => [index("user_role_idx").on(table.role), index("user_deleted_at_idx").on(table.deletedAt)]
-);
+const themes = ["light", "dark", "system"] as const;
+export type ThemePreference = (typeof themes)[number];
+const themePreferenceEnum = pgEnum("theme_preference", themes);
+
+// ---------- Tables ----------
 
 export const site = pgTable(
 	"site",
@@ -58,40 +62,51 @@ export const site = pgTable(
 	(table) => [index("site_deleted_at_idx").on(table.deletedAt)]
 );
 
-export const location = pgTable(
-	"location",
+export const user = pgTable(
+	"user",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
-		name: varchar("name", { length: 100 }).notNull(),
-		description: varchar("description", { length: 1000 }),
-		order: integer("order").notNull().default(9999),
-		createdAt,
-		updatedAt,
-		deletedAt,
-	},
-	(table) => [index("location_deleted_at_idx").on(table.deletedAt)]
-);
-
-export const coach = pgTable(
-	"coach",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		userId: uuid("user_id")
-			.references(() => user.id, { onDelete: "cascade" })
-			.notNull(),
+		clerkUserId: varchar("clerk_user_id", { length: 100 }).notNull().unique(),
+		firstName: varchar("first_name", { length: 30 }).notNull(),
+		lastName: varchar("last_name", { length: 30 }).notNull(),
+		role: userRoleEnum().notNull().default("client"),
+		desiredRole: userRoleEnum(),
+		email: varchar("email", { length: 255 }),
+		photoUrl: varchar("photo_url", { length: 500 }),
 		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
-		authorized: boolean("authorized").default(false),
 		phone: varchar("phone", { length: 12 }),
 		address: varchar("address", { length: 255 }),
+		birthMonth: integer("birth_month"),
+		birthDay: integer("birth_day"),
+		accepted: boolean("accepted"),
+		notes: varchar("notes", { length: 1000 }),
+		themePreference: themePreferenceEnum("theme_preference").default("system"),
 		createdAt,
 		updatedAt,
 		deletedAt,
 	},
 	(table) => [
-		index("coach_deleted_at_idx").on(table.deletedAt),
-		index("coach_user_id_idx").on(table.userId),
-		index("coach_site_id_idx").on(table.siteId),
+		index("user_role_idx").on(table.role),
+		index("user_deleted_at_idx").on(table.deletedAt),
+		index("user_site_id_idx").on(table.siteId),
 	]
+);
+
+export const client = pgTable(
+	"client",
+	{
+		id: uuid("id")
+			.references(() => user.id, { onDelete: "cascade" })
+			.primaryKey(),
+		coachId: uuid("coach_id").references(() => user.id, { onDelete: "set null" }),
+		isReentryClient: boolean("is_reentry_client").default(false),
+		followUpNeeded: boolean("follow_up_needed").default(false),
+		followUpDate: timestamp("follow_up_date", { withTimezone: true }),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("client_coach_id_idx").on(table.coachId)]
 );
 
 export const coachMileage = pgTable(
@@ -99,7 +114,7 @@ export const coachMileage = pgTable(
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		coachId: uuid("coach_id")
-			.references(() => coach.id, { onDelete: "cascade" })
+			.references(() => user.id, { onDelete: "cascade" })
 			.notNull(),
 		miles: integer("miles").notNull(),
 		createdAt,
@@ -117,7 +132,7 @@ export const coachHours = pgTable(
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		coachId: uuid("coach_id")
-			.references(() => coach.id, { onDelete: "cascade" })
+			.references(() => user.id, { onDelete: "cascade" })
 			.notNull(),
 		paidHours: decimal("paid_hours", { precision: 5, scale: 2 }),
 		volunteerHours: decimal("volunteer_hours", { precision: 5, scale: 2 }),
@@ -127,42 +142,13 @@ export const coachHours = pgTable(
 	(table) => [index("coach_hours_coach_id_idx").on(table.coachId)]
 );
 
-export const client = pgTable(
-	"client",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		userId: uuid("user_id")
-			.references(() => user.id, { onDelete: "cascade" })
-			.notNull(),
-		coachId: uuid("coach_id").references(() => coach.id, {
-			onDelete: "set null",
-		}),
-		phone: varchar("phone", { length: 12 }),
-		address: varchar("address", { length: 255 }),
-		dateOfBirth: timestamp("date_of_birth", { withTimezone: true }),
-		isReentryClient: boolean("is_reentry_client").default(false),
-		followUpNeeded: boolean("follow_up_needed").default(false),
-		followUpDate: timestamp("follow_up_date", { withTimezone: true }),
-		notes: varchar("notes", { length: 1000 }),
-		createdAt,
-		updatedAt,
-		deletedAt,
-	},
-	(table) => [
-		index("client_deleted_at_idx").on(table.deletedAt),
-		index("client_user_id_idx").on(table.userId),
-		index("client_coach_id_idx").on(table.coachId),
-	]
-);
-
-// TODO: dispersesFunds might be better as an enum if we have more options later, so we know what dispersal table or column to update
 export const service = pgTable(
 	"service",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		name: varchar("name", { length: 100 }).notNull(),
 		description: varchar("description", { length: 1000 }),
-		dispersesFunds: boolean("disperses_funds").default(false),
+		requiresFunding: boolean("disperses_funds").default(false),
 		order: integer("order").notNull().default(9999),
 		createdAt,
 		updatedAt,
@@ -199,30 +185,6 @@ export const reentryCheckListItem = pgTable(
 	(table) => [index("reentry_check_list_item_deleted_at_idx").on(table.deletedAt)]
 );
 
-export const volunteer = pgTable(
-	"volunteer",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		userId: uuid("user_id")
-			.references(() => user.id, { onDelete: "cascade" })
-			.notNull(),
-		coachId: uuid("coach_id").references(() => coach.id, {
-			onDelete: "set null",
-		}),
-		phone: varchar("phone", { length: 12 }),
-		address: varchar("address", { length: 255 }),
-		dateOfBirth: timestamp("date_of_birth", { withTimezone: true }),
-		createdAt,
-		updatedAt,
-		deletedAt,
-	},
-	(table) => [
-		index("volunteer_deleted_at_idx").on(table.deletedAt),
-		index("volunteer_user_id_idx").on(table.userId),
-		index("volunteer_coach_id_idx").on(table.coachId),
-	]
-);
-
 export const volunteeringType = pgTable(
 	"volunteering_type",
 	{
@@ -242,7 +204,7 @@ export const volunteerHours = pgTable(
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		volunteerId: uuid("volunteer_id")
-			.references(() => volunteer.id, { onDelete: "cascade" })
+			.references(() => user.id, { onDelete: "cascade" })
 			.notNull(),
 		volunteeringTypeId: uuid("volunteering_type_id")
 			.references(() => volunteeringType.id, { onDelete: "restrict" })
@@ -273,22 +235,79 @@ export const referralSource = pgTable(
 	(table) => [index("referral_source_deleted_at_idx").on(table.deletedAt)]
 );
 
+export const referredOut = pgTable(
+	"referred_out",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		name: varchar("name", { length: 100 }).notNull(),
+		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("referred_out_deleted_at_idx").on(table.deletedAt)]
+);
+
+export const visit = pgTable(
+	"visit",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		name: varchar("name", { length: 100 }).notNull(),
+		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("visit_deleted_at_idx").on(table.deletedAt)]
+);
+
+export const location = pgTable(
+	"location",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		name: varchar("name", { length: 100 }).notNull(),
+		description: varchar("description", { length: 1000 }),
+		order: integer("order").notNull().default(9999),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("location_deleted_at_idx").on(table.deletedAt)]
+);
+
+export const city = pgTable(
+	"city",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		name: varchar("name", { length: 100 }).notNull(),
+		order: integer("order").notNull().default(9999),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("city_deleted_at_idx").on(table.deletedAt)]
+);
+
 export const clientService = pgTable(
 	"client_service",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
-		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
-		locationId: uuid("location_id").references(() => location.id, {
-			onDelete: "set null",
-		}),
 		clientId: uuid("client_id")
 			.references(() => client.id, { onDelete: "cascade" })
 			.notNull(),
+		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
+		cityId: uuid("city_id").references(() => city.id, { onDelete: "set null" }),
+		locationId: uuid("location_id").references(() => location.id, { onDelete: "set null" }),
 		requestedServiceId: uuid("requested_service_id").references(() => service.id, { onDelete: "restrict" }),
 		providedServiceId: uuid("provided_service_id")
 			.references(() => service.id, { onDelete: "restrict" })
 			.notNull(),
 		referralSourceId: uuid("referral_source_id").references(() => referralSource.id, { onDelete: "set null" }),
+		referredOutId: uuid("referred_out_id").references(() => referredOut.id, { onDelete: "set null" }),
+		visitId: uuid("visit_id").references(() => visit.id, { onDelete: "set null" }),
+		funds: decimal("funds", { precision: 6, scale: 2 }),
 		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
@@ -296,6 +315,7 @@ export const clientService = pgTable(
 	},
 	(table) => [
 		index("client_service_site_id_idx").on(table.siteId),
+		index("client_service_city_id_idx").on(table.cityId),
 		index("client_service_deleted_at_idx").on(table.deletedAt),
 		index("client_service_client_id_idx").on(table.clientId),
 		index("client_service_requested_service_id_idx").on(table.requestedServiceId),
@@ -308,7 +328,7 @@ export const clientReentryCheckListItem = pgTable(
 	"client_reentry_check_list_item",
 	{
 		clientId: uuid("client_id")
-			.references(() => client.id, { onDelete: "cascade" })
+			.references(() => user.id, { onDelete: "cascade" })
 			.notNull(),
 		reentryCheckListItemId: uuid("reentry_check_list_item_id")
 			.references(() => reentryCheckListItem.id, { onDelete: "restrict" })
@@ -321,7 +341,7 @@ export const coachTraining = pgTable(
 	"coach_training",
 	{
 		coachId: uuid("coach_id")
-			.references(() => coach.id, { onDelete: "cascade" })
+			.references(() => user.id, { onDelete: "cascade" })
 			.notNull(),
 		trainingId: uuid("training_id")
 			.references(() => training.id, { onDelete: "restrict" })

@@ -1,0 +1,22 @@
+import { getGlobalTag, getIdTag } from "@/lib/dataCache";
+
+export const getVolunteeringTypeGlobalTag = () => getGlobalTag("volunteer-types");
+export const getVolunteeringTypeIdTag = (id: string) => getIdTag("volunteer-types", id);
+export const getReentryChecklistItemGlobalTag = () => getGlobalTag("reentry-checklist-items");
+export const getReentryChecklistItemIdTag = (id: string) => getIdTag("reentry-checklist-items", id);
+export const getCoachTrainingGlobalTag = () => getGlobalTag("coach-trainings");
+export const getCoachTrainingIdTag = (id: string) => getIdTag("coach-trainings", id);
+export const getLocationGlobalTag = () => getGlobalTag("locations");
+export const getLocationIdTag = (id: string) => getIdTag("locations", id);
+export const getCitiesGlobalTag = () => getGlobalTag("cities");
+export const getCitiesIdTag = (id: string) => getIdTag("cities", id);
+export const getVisitGlobalTag = () => getGlobalTag("visits");
+export const getVisitIdTag = (id: string) => getIdTag("visits", id);
+export const getSiteGlobalTag = () => getGlobalTag("sites");
+export const getSiteIdTag = (id: string) => getIdTag("sites", id);
+export const getReferralSourceGlobalTag = () => getGlobalTag("referral-sources");
+export const getReferralSourceIdTag = (id: string) => getIdTag("referral-sources", id);
+export const getReferredOutGlobalTag = () => getGlobalTag("referred-out");
+export const getReferredOutIdTag = (id: string) => getIdTag("referred-out", id);
+export const getServiceGlobalTag = () => getGlobalTag("client-services");
+export const getServiceIdTag = (id: string) => getIdTag("client-services", id);

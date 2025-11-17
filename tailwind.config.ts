@@ -11,15 +11,17 @@ export default {
 	],
 	theme: {
 		container: {
-			center: true,
-			padding: "2rem",
 			screens: {
-				sm: "1920px",
+				"2xl": "1920px", // adding 2xl so larger monitors allow more content width
 			},
 		},
 		extend: {
 			colors: {
-				background: "hsl(var(--background))",
+				background: {
+					DEFAULT: "hsl(var(--background))",
+					dark: "hsl(var(--background-dark))",
+					light: "hsl(var(--background-light))",
+				},
 				foreground: "hsl(var(--foreground))",
 				card: {
 					DEFAULT: "hsl(var(--card))",
@@ -49,7 +51,10 @@ export default {
 					DEFAULT: "hsl(var(--destructive))",
 					foreground: "hsl(var(--destructive-foreground))",
 				},
-				border: "hsl(var(--border))",
+				border: {
+					DEFAULT: "hsl(var(--border))",
+					muted: "hsl(var(--border-muted))",
+				},
 				input: "hsl(var(--input))",
 				ring: "hsl(var(--ring))",
 				chart: {
@@ -58,6 +63,22 @@ export default {
 					"3": "hsl(var(--chart-3))",
 					"4": "hsl(var(--chart-4))",
 					"5": "hsl(var(--chart-5))",
+				},
+				success: {
+					DEFAULT: "hsl(var(--success))",
+					foreground: "hsl(var(--success-foreground))",
+				},
+				warning: {
+					DEFAULT: "hsl(var(--warning))",
+					foreground: "hsl(var(--warning-foreground))",
+				},
+				danger: {
+					DEFAULT: "hsl(var(--danger))",
+					foreground: "hsl(var(--danger-foreground))",
+				},
+				info: {
+					DEFAULT: "hsl(var(--info))",
+					foreground: "hsl(var(--info-foreground))",
 				},
 			},
 			borderRadius: {

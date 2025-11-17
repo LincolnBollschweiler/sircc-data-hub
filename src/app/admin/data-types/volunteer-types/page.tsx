@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
-import Link from "next/link";
-import VolunteerTypes from "@/components/volunteerTypes/VolunteerTypes";
+import VolunteerTypes from "@/components/data-types/volunteerTypes/VolunteerTypes";
 import { getVolunteerTypes } from "@/tableInteractions/db";
+import { DialogTrigger } from "@/components/ui/dialog";
+import VolunteerTypesFormDialog from "@/components/data-types/volunteerTypes/VolunteerTypesFormDialog";
 
 export default async function VolunteerTypesPage() {
 	const volunteerTypes = await getVolunteerTypes();
@@ -10,12 +11,12 @@ export default async function VolunteerTypesPage() {
 	return (
 		<div className="container py-4 mx-auto">
 			<PageHeader title="Volunteer Types">
-				<Button asChild>
-					<Link href="/admin/data-types/volunteer-types/new">Add New Volunteer Type</Link>
-				</Button>
+				<VolunteerTypesFormDialog>
+					<DialogTrigger asChild>
+						<Button>Add New Volunteer Type</Button>
+					</DialogTrigger>
+				</VolunteerTypesFormDialog>
 			</PageHeader>
-
-			{/* scroll container handled inside ClientServices */}
 			<VolunteerTypes items={volunteerTypes} />
 		</div>
 	);

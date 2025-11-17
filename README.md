@@ -20,6 +20,13 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Run on a real device (must be on the same network)
+- Get your IPV4 (PS or CMD)
+  <code>ipconfig | findstr /i "IPv4"</code>
+- pick the first one, likely 192.168.[number][number]
+- run <code>npm run dev -- -H 0.0.0.0</code>
+- open http://IPv4:3000 on your device
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
@@ -34,3 +41,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## DB on Neon
+
+Checkout [Neon](https://neon.com/). ChatGpt says 10GB storage on the free-tier

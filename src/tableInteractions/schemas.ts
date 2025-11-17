@@ -1,14 +1,20 @@
 import { z } from "zod";
 
-export const generalSchema = z.object({
-	name: z.string().min(2, "Required").max(100),
-	description: z.string().max(500).nullable(),
+export const updateSchema = z.object({
+	id: z.string().uuid(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });
 
-export const clientServiceSchema = z.object({
+export const generalSchema = z.object({
+	name: z.string().min(2, "Required").max(100),
+	description: z.string().max(500).optional().nullable(),
+});
+
+export const servicesSchema = z.object({
 	name: z.string().min(2, "Required").max(100),
 	description: z.string().max(500).nullable(),
-	dispersesFunds: z.boolean().nullable().default(false),
+	requiresFunding: z.boolean().nullable().default(false),
 });
 
 export const siteSchema = z.object({

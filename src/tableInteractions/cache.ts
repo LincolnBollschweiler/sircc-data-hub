@@ -1,134 +1,84 @@
-import { getGlobalTag, getIdTag } from "@/lib/dataCache";
+"use server";
+
 import { revalidatePath, revalidateTag } from "next/cache";
-
-//#region Volunteer Types Cache Tags
-export const getVolunteeringTypeGlobalTag = () => {
-	return getGlobalTag("volunteer-types");
-};
-
-export const getVolunteeringTypeIdTag = (id: string) => {
-	console.log("Getting ID tag for client service ID:", id, getIdTag("volunteer-types", id));
-	return getIdTag("volunteer-types", id);
-};
+import * as cacheTags from "./cacheTags";
 
 export const revalidateVolunteeringTypeCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
-	revalidateTag(getVolunteeringTypeGlobalTag(), "max");
-	revalidateTag(getVolunteeringTypeIdTag(id), "max");
+	revalidateTag(cacheTags.getVolunteeringTypeGlobalTag(), "max");
+	revalidateTag(cacheTags.getVolunteeringTypeIdTag(id), "max");
 	revalidatePath("/admin/data-types/volunteer-types");
 	revalidatePath(`/admin/data-types/volunteer-types/${id}/edit`);
-};
-//#endregion
-
-//#region Reentry Checklist Items Cache Tags
-export const getReentryChecklistItemGlobalTag = () => {
-	return getGlobalTag("reentry-checklist-items");
-};
-
-export const getReentryChecklistItemIdTag = (id: string) => {
-	console.log("Getting ID tag for reentry checklist item ID:", id, getIdTag("reentry-checklist-items", id));
-	return getIdTag("reentry-checklist-items", id);
 };
 
 export const revalidateReentryChecklistItemCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
-	revalidateTag(getReentryChecklistItemGlobalTag(), "max");
-	revalidateTag(getReentryChecklistItemIdTag(id), "max");
+	revalidateTag(cacheTags.getReentryChecklistItemGlobalTag(), "max");
+	revalidateTag(cacheTags.getReentryChecklistItemIdTag(id), "max");
 	revalidatePath("/admin/data-types/reentry-checklist-items");
 	revalidatePath(`/admin/data-types/reentry-checklist-items/${id}/edit`);
 };
-//#endregion
 
-//#region Coach Trainings Cache Tags
-export const getCoachTrainingGlobalTag = () => {
-	return getGlobalTag("coach-trainings");
-};
-
-export const getCoachTrainingIdTag = (id: string) => {
-	console.log("Getting ID tag for coach training ID:", id, getIdTag("coach-trainings", id));
-	return getIdTag("coach-trainings", id);
-};
 export const revalidateCoachTrainingCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
-	revalidateTag(getCoachTrainingGlobalTag(), "max");
-	revalidateTag(getCoachTrainingIdTag(id), "max");
+	revalidateTag(cacheTags.getCoachTrainingGlobalTag(), "max");
+	revalidateTag(cacheTags.getCoachTrainingIdTag(id), "max");
 	revalidatePath("/admin/data-types/coach-trainings");
 	revalidatePath(`/admin/data-types/coach-trainings/${id}/edit`);
-};
-//#endregion
-
-//#region Locations Cache Tags
-export const getLocationGlobalTag = () => {
-	return getGlobalTag("locations");
-};
-
-export const getLocationIdTag = (id: string) => {
-	console.log("Getting ID tag for location ID:", id, getIdTag("locations", id));
-	return getIdTag("locations", id);
 };
 
 export const revalidateLocationCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
-	revalidateTag(getLocationGlobalTag(), "max");
-	revalidateTag(getLocationIdTag(id), "max");
+	revalidateTag(cacheTags.getLocationGlobalTag(), "max");
+	revalidateTag(cacheTags.getLocationIdTag(id), "max");
 	revalidatePath("/admin/data-types/locations");
 	revalidatePath(`/admin/data-types/locations/${id}/edit`);
 };
-//#endregion
 
-//#region Sites Cache Tags
-export const getSiteGlobalTag = () => {
-	return getGlobalTag("sites");
+export const revalidateCitiesCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(cacheTags.getCitiesGlobalTag(), "max");
+	revalidateTag(cacheTags.getCitiesIdTag(id), "max");
+	revalidatePath("/admin/data-types/cities");
+	revalidatePath(`/admin/data-types/cities/${id}/edit`);
 };
 
-export const getSiteIdTag = (id: string) => {
-	console.log("Getting ID tag for site ID:", id, getIdTag("sites", id));
-	return getIdTag("sites", id);
+export const revalidateVisitsCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(cacheTags.getVisitGlobalTag(), "max");
+	revalidateTag(cacheTags.getVisitIdTag(id), "max");
+	revalidatePath("/admin/data-types/visits");
+	revalidatePath(`/admin/data-types/visits/${id}/edit`);
 };
 
 export const revalidateSiteCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
-	revalidateTag(getSiteGlobalTag(), "max");
-	revalidateTag(getSiteIdTag(id), "max");
+	revalidateTag(cacheTags.getSiteGlobalTag(), "max");
+	revalidateTag(cacheTags.getSiteIdTag(id), "max");
 	revalidatePath("/admin/data-types/sites");
 	revalidatePath(`/admin/data-types/sites/${id}/edit`);
-};
-//#endregion
-
-//#region Referral Sources Cache Tags
-export const getReferralSourceGlobalTag = () => {
-	return getGlobalTag("referral-sources");
-};
-
-export const getReferralSourceIdTag = (id: string) => {
-	console.log("Getting ID tag for referral source ID:", id, getIdTag("referral-sources", id));
-	return getIdTag("referral-sources", id);
 };
 
 export const revalidateReferralSourceCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
-	revalidateTag(getReferralSourceGlobalTag(), "max");
-	revalidateTag(getReferralSourceIdTag(id), "max");
+	revalidateTag(cacheTags.getReferralSourceGlobalTag(), "max");
+	revalidateTag(cacheTags.getReferralSourceIdTag(id), "max");
 	revalidatePath("/admin/data-types/referral-sources");
 	revalidatePath(`/admin/data-types/referral-sources/${id}/edit`);
 };
-//#endregion
 
-//#region Client Services Cache Tags
-export const getClientServiceGlobalTag = () => {
-	return getGlobalTag("client-services");
-};
-
-export const getClientServiceIdTag = (id: string) => {
-	console.log("Getting ID tag for client service ID:", id, getIdTag("client-services", id));
-	return getIdTag("client-services", id);
-};
-
-export const revalidateClientServiceCache = async (id: string) => {
+export const revalidateReferredOutCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
-	revalidateTag(getClientServiceGlobalTag(), "max");
-	revalidateTag(getClientServiceIdTag(id), "max");
+	revalidateTag(cacheTags.getReferredOutGlobalTag(), "max");
+	revalidateTag(cacheTags.getReferredOutIdTag(id), "max");
+	revalidatePath("/admin/data-types/referred-out");
+	revalidatePath(`/admin/data-types/referred-out/${id}/edit`);
+};
+
+export const revalidateServiceCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(cacheTags.getServiceGlobalTag(), "max");
+	revalidateTag(cacheTags.getServiceIdTag(id), "max");
 	revalidatePath("/admin/data-types/client-services");
 	revalidatePath(`/admin/data-types/client-services/${id}/edit`);
 };
-//#endregion

@@ -1,21 +1,22 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
-import Link from "next/link";
 import { getCoachTrainings } from "@/tableInteractions/db";
-import CoachTrainings from "@/components/coachTrainings/CoachTrainings";
+import CoachTrainings from "@/components/data-types/coachTrainings/CoachTrainings";
+import CoachTrainingsFormDialog from "@/components/data-types/coachTrainings/CoachTrainingsFormDialog";
+import { DialogTrigger } from "@/components/ui/dialog";
 
 export default async function CoachTrainingsPage() {
 	const coachTrainings = await getCoachTrainings();
 
 	return (
-		<div className="container py-4 mx-auto">
+		<div className="container py-4">
 			<PageHeader title="Coach Trainings">
-				<Button asChild>
-					<Link href="/admin/data-types/coach-trainings/new">Add New Coach Training</Link>
-				</Button>
+				<CoachTrainingsFormDialog>
+					<DialogTrigger asChild>
+						<Button>Add New Coach Training</Button>
+					</DialogTrigger>
+				</CoachTrainingsFormDialog>
 			</PageHeader>
-
-			{/* scroll container handled inside ClientServices */}
 			<CoachTrainings items={coachTrainings} />
 		</div>
 	);
