@@ -351,9 +351,9 @@ export const updateSiteOrders = async (orderedIds: string[]) => {
 };
 //#endregion
 
-//#region Client Services
-export const createService = async (unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
-	const { success, data } = schemas.clientServiceSchema.safeParse(unsafeData);
+//#region Services
+export const createService = async (unsafeData: z.infer<typeof schemas.servicesSchema>) => {
+	const { success, data } = schemas.servicesSchema.safeParse(unsafeData);
 
 	if (!success) return { error: true, message: "Validation failed" };
 
@@ -361,30 +361,30 @@ export const createService = async (unsafeData: z.infer<typeof schemas.clientSer
 
 	return {
 		error: !rv,
-		message: !rv ? "Failed to create client service" : "Client service created successfully",
+		message: !rv ? "Failed to create service" : "Service created successfully",
 	};
 };
 
-export const updateService = async (id: string, unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
-	const { success, data } = schemas.clientServiceSchema.safeParse(unsafeData);
+export const updateService = async (id: string, unsafeData: z.infer<typeof schemas.servicesSchema>) => {
+	const { success, data } = schemas.servicesSchema.safeParse(unsafeData);
 
 	if (!success) return { error: true, message: "Validation failed" };
 	return await dbTable.updateServiceById(id, data);
 };
 
-export const removeClientService = async (id: string) => {
-	const clientService = await dbTable.deleteClientService(id);
+export const removeService = async (id: string) => {
+	const service = await dbTable.deleteService(id);
 
 	return {
-		error: !clientService,
-		message: !clientService ? "Failed to remove client service" : "Client service removed successfully",
+		error: !service,
+		message: !service ? "Failed to remove service" : "Service removed successfully",
 	};
 };
 
-export const updateClientServicesOrders = async (orderedIds: string[]) => {
-	if (orderedIds.length === 0) return { error: true, message: "No client services to update" };
+export const updateServicesOrders = async (orderedIds: string[]) => {
+	if (orderedIds.length === 0) return { error: true, message: "No services to update" };
 
-	await dbTable.updateClientServiceOrders(orderedIds);
-	return { error: false, message: "Client service orders updated successfully" };
+	await dbTable.updateServiceOrders(orderedIds);
+	return { error: false, message: "Service orders updated successfully" };
 };
 //#endregion

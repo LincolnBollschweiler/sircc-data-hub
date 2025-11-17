@@ -28,7 +28,6 @@ import {
 import { revalidateClientCache, revalidateUserCache } from "@/userInteractions/cache";
 import { syncClerkUserMetadata } from "@/services/clerk";
 import { alias } from "drizzle-orm/pg-core";
-import { ClientServiceInsert } from "@/tableInteractions/db";
 
 //#region User CRUD operations
 export async function insertUser(data: typeof user.$inferInsert) {
@@ -419,6 +418,8 @@ export const getAllCoaches = async () => cachedCoaches();
 //#endregion
 
 //#region Client Services
+export type ClientServiceInsert = typeof clientService.$inferInsert;
+
 export const insertClientService = async (data: ClientServiceInsert) => {
 	// console.log("Creating client service for clientId:", data.clientId, "Data:", data);
 	const [newService] = await db.insert(clientService).values(data).returning();

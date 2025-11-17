@@ -1,8 +1,7 @@
 "use server";
 
 import { user } from "@/drizzle/schema";
-import { ClientServiceInsert } from "@/tableInteractions/db";
-import { insertClientService, updateClientCoachById, updateUserById } from "@/userInteractions/db";
+import { ClientServiceInsert, insertClientService, updateClientCoachById, updateUserById } from "@/userInteractions/db";
 import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
 
 export const updateUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {

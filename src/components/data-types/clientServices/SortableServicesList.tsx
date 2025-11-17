@@ -4,22 +4,22 @@ import SortableList, { SortableItem } from "../../SortableList";
 import { Button } from "../../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../../ActionButton";
-import { removeClientService, updateClientServicesOrders } from "@/tableInteractions/actions";
+import { removeService, updateServicesOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
 import { DialogTrigger } from "@radix-ui/react-dialog";
-import ClientServiceFormDialog from "./ClientServiceFormDialog";
+import ServiceFormDialog from "./ServiceFormDialog";
 import { z } from "zod";
-import { clientServiceSchema, updateSchema } from "../../../tableInteractions/schemas";
+import { servicesSchema, updateSchema } from "../../../tableInteractions/schemas";
 
-export function SortableClientServicesList({
+export function SortableServicesList({
 	items,
 }: {
-	items: (z.infer<typeof clientServiceSchema> & z.infer<typeof updateSchema>)[];
+	items: (z.infer<typeof servicesSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
 	return (
-		<SortableList items={items} onOrderChange={updateClientServicesOrders}>
+		<SortableList items={items} onOrderChange={updateServicesOrders}>
 			{(sorted) =>
 				sorted.map((item, index) => (
 					<SortableItem key={item.id} id={item.id}>
@@ -45,17 +45,17 @@ export function SortableClientServicesList({
 								</div>
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<ClientServiceFormDialog clientService={item}>
+									<ServiceFormDialog clientService={item}>
 										<DialogTrigger asChild>
 											<Button>
 												<FilePenLineIcon className="w-4 h-4" />
 												<span className="sr-only">Edit</span>
 											</Button>
 										</DialogTrigger>
-									</ClientServiceFormDialog>
+									</ServiceFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
-										action={removeClientService.bind(null, item.id)}
+										action={removeService.bind(null, item.id)}
 										requireAreYouSure
 										className="mr-1"
 									>

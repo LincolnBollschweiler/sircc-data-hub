@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "../ui/input";
 import { userDataTableColumns } from "./UserDataTableColumns";
+import { Location, City, ReferralSource, ReferredOut, Service, Visit } from "@/tableInteractions/db";
 
 interface DataTableProps<TData extends { siteId?: string | null }> {
 	data: TData[];
@@ -31,8 +32,20 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 	data,
 	sites,
 	userType,
-}: DataTableProps<TData> & { sites: { id: string; name: string }[]; userType: string }) {
-	const columns = userDataTableColumns(userType) as ColumnDef<TData, unknown>[];
+	newServiceProps,
+}: DataTableProps<TData> & {
+	sites: { id: string; name: string }[];
+	userType: string;
+	newServiceProps?: {
+		services: Service[];
+		locations: Location[];
+		referralSources: ReferralSource[];
+		referredOut: ReferredOut[];
+		visits: Visit[];
+		cities: City[];
+	};
+}) {
+	const columns = userDataTableColumns(userType, newServiceProps) as ColumnDef<TData, unknown>[];
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pageSize, setPageSize] = useState<number>(() => {
 		// Load from localStorage on first render (client only)

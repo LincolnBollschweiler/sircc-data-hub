@@ -2,15 +2,7 @@
 
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-	City,
-	Location,
-	ClientService,
-	ReferralSource,
-	ReferredOut,
-	Visit,
-	ClientServiceInsert,
-} from "@/tableInteractions/db";
+import { City, Location, Service, ReferralSource, ReferredOut, Visit } from "@/tableInteractions/db";
 import { ClientCombobox } from "./ClientCombobox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -20,15 +12,18 @@ import { actionToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ClientServiceInsert } from "@/userInteractions/db";
 
 export default function ClientServiceFormDialog({
 	clientId,
 	newServiceProps,
+	values,
 	children,
 }: {
 	clientId: string | null;
+	values?: Partial<ClientServiceInsert>;
 	newServiceProps: {
-		services: ClientService[];
+		services: Service[];
 		locations: Location[];
 		referralSources: ReferralSource[];
 		referredOut: ReferredOut[];
@@ -38,16 +33,16 @@ export default function ClientServiceFormDialog({
 	children: ReactNode;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
-	const [requestedServiceId, setRequestedServiceId] = useState<string | null>(null);
-	const [providedServiceId, setProvidedServiceId] = useState<string | null>(null);
-	const [locationId, setLocationId] = useState<string | null>(null);
-	const [cityId, setCityId] = useState<string | null>(null);
-	const [referralSourceId, setReferralSourceId] = useState<string | null>(null);
-	const [referredOutId, setReferredOutId] = useState<string | null>(null);
-	const [visitTypeId, setVisitTypeId] = useState<string | null>(null);
-	const [clientNotes, setClientNotes] = useState<string>("");
-	const [funds, setFunds] = useState<string>("");
-	const [fundsVisible, setFundsVisible] = useState(false);
+	const [requestedServiceId, setRequestedServiceId] = useState<string | null>(values?.requestedServiceId || null);
+	const [providedServiceId, setProvidedServiceId] = useState<string | null>(values?.providedServiceId || null);
+	const [locationId, setLocationId] = useState<string | null>(values?.locationId || null);
+	const [cityId, setCityId] = useState<string | null>(values?.cityId || null);
+	const [referralSourceId, setReferralSourceId] = useState<string | null>(values?.referralSourceId || null);
+	const [referredOutId, setReferredOutId] = useState<string | null>(values?.referredOutId || null);
+	const [visitTypeId, setVisitTypeId] = useState<string | null>(values?.visitId || null);
+	const [clientNotes, setClientNotes] = useState<string>(values?.notes || "");
+	const [funds, setFunds] = useState<string>(values?.funds ? values.funds.toString() : "");
+	const [fundsVisible, setFundsVisible] = useState(values?.funds ? true : false);
 	const fundsInputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
@@ -133,7 +128,7 @@ export default function ClientServiceFormDialog({
 			{children}
 			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
-					<DialogTitle>{"Add New Client Service"}</DialogTitle>
+					<DialogTitle>{`${!values ? "Add New Client Service" : "Edit Client Service"}`}</DialogTitle>
 				</DialogHeader>
 				<div className="my-4 flex flex-col gap-2">
 					<div className="flex gap-2 items-center">

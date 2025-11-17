@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { City, ClientService, Location, ReferralSource, ReferredOut, Visit } from "@/tableInteractions/db";
+import { City, Service, Location, ReferralSource, ReferredOut, Visit } from "@/tableInteractions/db";
 import ClientServiceFormDialog from "./ClientServiceFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 
@@ -11,7 +11,7 @@ export default function ClientServices({
 }: {
 	clientId: string;
 	newServiceProps: {
-		services: ClientService[];
+		services: Service[];
 		locations: Location[];
 		referralSources: ReferralSource[];
 		referredOut: ReferredOut[];

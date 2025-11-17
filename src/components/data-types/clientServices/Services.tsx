@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { SortableClientServicesList } from "./SortableClientServicesList";
-import { clientServiceSchema, updateSchema } from "../../../tableInteractions/schemas";
+import { SortableServicesList } from "./SortableServicesList";
+import { servicesSchema, updateSchema } from "../../../tableInteractions/schemas";
 
-export default function ClientServices({
+export default function Services({
 	items,
 }: {
-	items: (z.infer<typeof clientServiceSchema> & z.infer<typeof updateSchema>)[];
+	items: (z.infer<typeof servicesSchema> & z.infer<typeof updateSchema>)[];
 }) {
 	return (
 		<div className="overflow-x-auto text-center">
@@ -21,7 +21,7 @@ export default function ClientServices({
 				</div>
 
 				{/* Table rows */}
-				<SortableClientServicesList items={items} />
+				<SortableServicesList items={items} />
 			</div>
 		</div>
 	);

@@ -11,7 +11,7 @@ export const generalSchema = z.object({
 	description: z.string().max(500).optional().nullable(),
 });
 
-export const clientServiceSchema = z.object({
+export const servicesSchema = z.object({
 	name: z.string().min(2, "Required").max(100),
 	description: z.string().max(500).nullable(),
 	requiresFunding: z.boolean().nullable().default(false),

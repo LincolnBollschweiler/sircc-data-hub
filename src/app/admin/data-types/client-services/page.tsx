@@ -1,23 +1,23 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
-import ClientServices from "@/components/data-types/clientServices/ClientServices";
-import { getClientServices } from "@/tableInteractions/db";
-import ClientServiceFormDialog from "@/components/data-types/clientServices/ClientServiceFormDialog";
+import Services from "@/components/data-types/clientServices/Services";
+import { getServices } from "@/tableInteractions/db";
+import ServiceFormDialog from "@/components/data-types/clientServices/ServiceFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 
-export default async function ClientServicesPage() {
-	const clientServices = await getClientServices();
+export default async function ServicesPage() {
+	const services = await getServices();
 
 	return (
 		<div className="container py-4 mx-auto">
 			<PageHeader title="Client Services">
-				<ClientServiceFormDialog>
+				<ServiceFormDialog>
 					<DialogTrigger asChild>
 						<Button>Add New Client Service</Button>
 					</DialogTrigger>
-				</ClientServiceFormDialog>
+				</ServiceFormDialog>
 			</PageHeader>
-			<ClientServices items={clientServices} />
+			<Services items={services} />
 		</div>
 	);
 }

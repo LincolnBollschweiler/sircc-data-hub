@@ -18,6 +18,8 @@ import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
 import { ClientList, ClientServiceFull } from "@/userInteractions/db";
+import ClientServiceFormDialog from "./clients/ClientServiceFormDialog";
+import { Location, City, ReferralSource, ReferredOut, Service, Visit } from "@/tableInteractions/db";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -35,7 +37,17 @@ const processAcceptance = async (user: Partial<User>, accepted: boolean | null) 
 	if (!actionData?.error) requestAnimationFrame(() => window.location.reload());
 };
 
-export const userDataTableColumns = (userType: string): ColumnDef<unknown>[] => {
+export const userDataTableColumns = (
+	userType: string,
+	newServiceProps?: {
+		services: Service[];
+		locations: Location[];
+		referralSources: ReferralSource[];
+		referredOut: ReferredOut[];
+		visits: Visit[];
+		cities: City[];
+	}
+): ColumnDef<unknown>[] => {
 	if (userType === "rejected" || userType === "applicant")
 		return [
 			{
@@ -388,6 +400,50 @@ export const userDataTableColumns = (userType: string): ColumnDef<unknown>[] => 
 				accessorKey: "clientService.updatedAt",
 				header: "Updated",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const clientRow = asSingleClient(row.original);
+					const service = clientRow.clientService;
+					// const id = clientRow.clientService.id;
+
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem
+										className="hover:bg-danger"
+										onClick={async () => {
+											// const actionData = await deleteClientService(id);
+										}}
+									>
+										Delete
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild>
+										<ClientServiceFormDialog
+											clientId={service.clientId}
+											newServiceProps={newServiceProps!}
+											values={service}
+										>
+											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
+												Assign Role & Accept
+											</DialogTrigger>
+										</ClientServiceFormDialog>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
 			},
 		];
 

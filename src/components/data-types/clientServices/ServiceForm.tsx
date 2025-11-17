@@ -11,17 +11,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { createService, updateService } from "../../../tableInteractions/actions";
-import { clientServiceSchema } from "../../../tableInteractions/schemas";
+import { servicesSchema } from "../../../tableInteractions/schemas";
 
-export default function ClientServiceForm({
+export default function ServiceForm({
 	clientService,
 	onSuccess,
 }: {
-	clientService?: z.infer<typeof clientServiceSchema> & { id: string };
+	clientService?: z.infer<typeof servicesSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
-	const form = useForm<z.infer<typeof clientServiceSchema>>({
-		resolver: zodResolver(clientServiceSchema),
+	const form = useForm<z.infer<typeof servicesSchema>>({
+		resolver: zodResolver(servicesSchema),
 		defaultValues: clientService ?? {
 			name: "",
 			description: "",
@@ -29,7 +29,7 @@ export default function ClientServiceForm({
 		},
 	});
 
-	const onSubmit = async (values: z.infer<typeof clientServiceSchema>) => {
+	const onSubmit = async (values: z.infer<typeof servicesSchema>) => {
 		const action = clientService == null ? createService : updateService.bind(null, clientService.id);
 
 		const actionData = await action(values);

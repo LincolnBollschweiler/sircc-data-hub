@@ -767,61 +767,56 @@ export const updateSiteOrders = async (orderedIds: string[]) => {
 };
 //#endregion Sites DB Interactions
 
-//#region Client Service DB Interactions
+//#region Service DB Interactions
 export const insertService = async (data: typeof dbTable.service.$inferInsert) => {
-	const [newClientService] = await db.insert(dbTable.service).values(data).returning();
+	const [newService] = await db.insert(dbTable.service).values(data).returning();
 
-	if (!newClientService) return;
+	if (!newService) return;
 
-	cache.revalidateServiceCache(newClientService.id);
+	cache.revalidateServiceCache(newService.id);
 
-	return newClientService;
+	return newService;
 };
 
-export const getClientServiceById = async (id: string) => {
-	const clientService = await db.query.service.findFirst({
+export const getServiceById = async (id: string) => {
+	const service = await db.query.service.findFirst({
 		columns: { id: true, name: true, description: true, requiresFunding: true },
 		where: eq(dbTable.service.id, id),
 	});
 
-	if (!clientService) {
-		throw new Error("Client service not found");
+	if (!service) {
+		throw new Error("Service not found");
 	}
-	return clientService;
+	return service;
 };
 
 export const updateServiceById = async (id: string, data: Partial<typeof dbTable.service.$inferInsert>) => {
-	const [updatedClientService] = await db
-		.update(dbTable.service)
-		.set(data)
-		.where(eq(dbTable.service.id, id))
-		.returning();
-	if (!updatedClientService) {
-		return { error: true, message: "Failed to update client service" };
+	const [updatedService] = await db.update(dbTable.service).set(data).where(eq(dbTable.service.id, id)).returning();
+	if (!updatedService) {
+		return { error: true, message: "Failed to update Service" };
 	}
 	cache.revalidateServiceCache(id);
-	return { error: false, message: "Client service updated successfully" };
+	return { error: false, message: "Service updated successfully" };
 };
 
-export const deleteClientService = async (id: string) => {
-	const [deletedClientService] = await db
+export const deleteService = async (id: string) => {
+	const [deletedService] = await db
 		.update(dbTable.service)
 		.set({ deletedAt: new Date() })
 		.where(eq(dbTable.service.id, id))
 		.returning();
 
-	if (!deletedClientService) return;
+	if (!deletedService) return;
 
 	cache.revalidateServiceCache(id);
-	return deletedClientService;
+	return deletedService;
 };
 
-export type ClientService = typeof dbTable.service.$inferSelect;
-export type ClientServiceInsert = typeof dbTable.clientService.$inferInsert;
+export type Service = typeof dbTable.service.$inferSelect;
 
-const cachedClientServices = unstable_cache(
+const cachedServices = unstable_cache(
 	async () => {
-		console.log("Fetching client services from DB (not cache)");
+		console.log("Fetching services from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.service.id,
@@ -835,13 +830,13 @@ const cachedClientServices = unstable_cache(
 			.where(isNull(dbTable.service.deletedAt))
 			.orderBy(dbTable.service.order);
 	},
-	["getClientServices"],
-	{ tags: [cacheTags.getClientServiceGlobalTag()] }
+	["getServices"],
+	{ tags: [cacheTags.getServiceGlobalTag()] }
 );
 
-export const getClientServices = async () => cachedClientServices();
+export const getServices = async () => cachedServices();
 
-export const updateClientServiceOrders = async (orderedIds: string[]) => {
+export const updateServiceOrders = async (orderedIds: string[]) => {
 	const services = await Promise.all(
 		orderedIds.map(async (id, index) => {
 			const [rv] = await db
@@ -861,15 +856,4 @@ export const updateClientServiceOrders = async (orderedIds: string[]) => {
 
 	return services;
 };
-
-export const getCachedClientService = (clientServiceId: string) => {
-	const cachedFn = unstable_cache(
-		async () => {
-			return await getClientServiceById(clientServiceId);
-		},
-		["getClientServiceById", clientServiceId],
-		{ tags: [cacheTags.getClientServiceIdTag(clientServiceId)] }
-	);
-	return cachedFn(); // execute it only when this function is called
-};
-//#endregion Client Service DB Interactions
+//#endregion Service DB Interactions
