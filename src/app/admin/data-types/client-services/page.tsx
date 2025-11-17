@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
-import Link from "next/link";
 import ClientServices from "@/components/clientServices/ClientServices";
 import { getClientServices } from "@/tableInteractions/db";
+import ClientServiceFormDialog from "@/components/clientServices/ClientServiceFormDialog";
+import { DialogTrigger } from "@/components/ui/dialog";
 
 export default async function ClientServicesPage() {
 	const clientServices = await getClientServices();
@@ -10,12 +11,12 @@ export default async function ClientServicesPage() {
 	return (
 		<div className="container py-4 mx-auto">
 			<PageHeader title="Client Services">
-				<Button asChild>
-					<Link href="/admin/data-types/client-services/new">Add New Client Service</Link>
-				</Button>
+				<ClientServiceFormDialog>
+					<DialogTrigger asChild>
+						<Button>Add New Client Service</Button>
+					</DialogTrigger>
+				</ClientServiceFormDialog>
 			</PageHeader>
-
-			{/* scroll container handled inside ClientServices */}
 			<ClientServices items={clientServices} />
 		</div>
 	);

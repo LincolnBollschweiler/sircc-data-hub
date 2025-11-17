@@ -64,11 +64,7 @@ export function SortableItem({
 				transform: CSS.Transform.toString(transform),
 				transition,
 			}}
-			className={cn(
-				"flex items-center bg-background rounded-md",
-				isDragging && "z-10 border shadow-md",
-				className
-			)}
+			className={cn("flex items-center rounded-md", isDragging && "z-10 border shadow-md", className)}
 		>
 			{children({ attributes, listeners })}
 		</div>

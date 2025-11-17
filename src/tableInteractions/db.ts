@@ -1,9 +1,10 @@
 import { db } from "@/drizzle/db";
 import * as dbTable from "@/drizzle/schema";
 import * as cache from "./cache";
+import * as cacheTags from "./cacheTags";
 import { eq } from "drizzle-orm";
 import { isNull } from "drizzle-orm";
-import { revalidatePath, unstable_cache } from "next/cache";
+import { unstable_cache } from "next/cache";
 
 //#region Volunteer Types
 export const insertVolunteerType = async (data: typeof dbTable.volunteeringType.$inferInsert) => {
@@ -70,7 +71,7 @@ const cachedVolunteerTypes = unstable_cache(
 			.orderBy(dbTable.volunteeringType.order);
 	},
 	["getVolunteerTypes"],
-	{ tags: [cache.getVolunteeringTypeGlobalTag()] }
+	{ tags: [cacheTags.getVolunteeringTypeGlobalTag()] }
 );
 
 export const getVolunteerTypes = async () => cachedVolunteerTypes();
@@ -92,7 +93,6 @@ export const updateVolunteerTypeOrders = async (orderedIds: string[]) => {
 			cache.revalidateVolunteeringTypeCache(svc.id);
 		}
 	});
-	revalidatePath("/admin/data-types/volunteer-types");
 
 	return services;
 };
@@ -163,7 +163,7 @@ const cachedReentryChecklistItems = unstable_cache(
 			.orderBy(dbTable.reentryCheckListItem.order);
 	},
 	["getReentryChecklistItems"],
-	{ tags: [cache.getReentryChecklistItemGlobalTag()] }
+	{ tags: [cacheTags.getReentryChecklistItemGlobalTag()] }
 );
 
 export const getReentryChecklistItems = async () => cachedReentryChecklistItems();
@@ -185,7 +185,6 @@ export const updateReentryChecklistItemOrders = async (orderedIds: string[]) => 
 			cache.revalidateReentryChecklistItemCache(item.id);
 		}
 	});
-	revalidatePath("/admin/data-types/reentry-checklist-items");
 
 	return items;
 };
@@ -246,7 +245,7 @@ const cachedCoachTrainings = unstable_cache(
 			.orderBy(dbTable.training.order);
 	},
 	["getCoachTrainings"],
-	{ tags: [cache.getCoachTrainingGlobalTag()] }
+	{ tags: [cacheTags.getCoachTrainingGlobalTag()] }
 );
 
 export const getCoachTrainings = async () => cachedCoachTrainings();
@@ -268,7 +267,6 @@ export const updateCoachTrainingOrders = async (orderedIds: string[]) => {
 			cache.revalidateCoachTrainingCache(training.id);
 		}
 	});
-	revalidatePath("/admin/data-types/coach-trainings");
 
 	return trainings;
 };
@@ -333,7 +331,7 @@ const cachedLocations = unstable_cache(
 			.orderBy(dbTable.location.order);
 	},
 	["getLocations"],
-	{ tags: [cache.getLocationGlobalTag()] }
+	{ tags: [cacheTags.getLocationGlobalTag()] }
 );
 
 export const getLocations = async () => cachedLocations();
@@ -355,7 +353,6 @@ export const updateLocationOrders = async (orderedIds: string[]) => {
 			cache.revalidateLocationCache(location.id);
 		}
 	});
-	revalidatePath("/admin/data-types/locations");
 
 	return locations;
 };
@@ -425,7 +422,7 @@ const cachedReferralSources = unstable_cache(
 			.orderBy(dbTable.referralSource.order);
 	},
 	["getReferralSources"],
-	{ tags: [cache.getReferralSourceGlobalTag()] }
+	{ tags: [cacheTags.getReferralSourceGlobalTag()] }
 );
 
 export const getReferralSources = async () => cachedReferralSources();
@@ -447,7 +444,6 @@ export const updateReferralSourceOrders = async (orderedIds: string[]) => {
 			cache.revalidateReferralSourceCache(src.id);
 		}
 	});
-	revalidatePath("/admin/data-types/referral-sources");
 
 	return sources;
 };
@@ -510,7 +506,7 @@ const cachedSites = unstable_cache(
 			.orderBy(dbTable.site.order);
 	},
 	["getSites"],
-	{ tags: [cache.getSiteGlobalTag()] }
+	{ tags: [cacheTags.getSiteGlobalTag()] }
 );
 
 export const getSites = async () => cachedSites();
@@ -528,7 +524,6 @@ export const updateSiteOrders = async (orderedIds: string[]) => {
 			cache.revalidateSiteCache(site.id);
 		}
 	});
-	revalidatePath("/admin/data-types/sites");
 
 	return sites;
 };
@@ -600,7 +595,7 @@ const cachedClientServices = unstable_cache(
 			.orderBy(dbTable.service.order);
 	},
 	["getClientServices"],
-	{ tags: [cache.getClientServiceGlobalTag()] }
+	{ tags: [cacheTags.getClientServiceGlobalTag()] }
 );
 
 export const getClientServices = async () => cachedClientServices();
@@ -622,8 +617,18 @@ export const updateClientServiceOrders = async (orderedIds: string[]) => {
 			cache.revalidateClientServiceCache(svc.id);
 		}
 	});
-	revalidatePath("/admin/data-types/client-services");
 
 	return services;
+};
+
+export const getCachedClientService = (clientServiceId: string) => {
+	const cachedFn = unstable_cache(
+		async () => {
+			return await getClientServiceById(clientServiceId);
+		},
+		["getClientServiceById", clientServiceId],
+		{ tags: [cacheTags.getClientServiceIdTag(clientServiceId)] }
+	);
+	return cachedFn(); // execute it only when this function is called
 };
 //#endregion Client Service DB Interactions

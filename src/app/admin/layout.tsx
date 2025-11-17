@@ -1,6 +1,6 @@
 import DataTypesDropdownMenu from "@/components/DataTypesDropdownMenu";
+import PeopleDropdownMenu from "@/components/PeopleDropdownMenu";
 import { Badge } from "@/components/ui/badge";
-import { canAccessAdminPages, canAccessCoachPages } from "@/permissions/general";
 import { getCurrentUser } from "@/services/clerk";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
@@ -17,19 +17,19 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
 
 const Navbar = () => {
 	return (
-		<header className="flex h-12 shadow bg-background z-10">
-			<nav className="flex gap-4 container">
-				<div className="mr-auto flex items-center gap-2">
-					<Link className="text-lg hover:underline" href="/">
+		<header className="flex h-12 shadow bg-background-dark z-10">
+			<nav className="flex container text-sm sm:text-lg lg:text-xl">
+				<div className="mr-auto flex items-center gap-1 sm:gap-2">
+					<Link className="hover:underline" href="/">
 						Sircc Data Hub
 					</Link>
-					<Badge>Admin</Badge>
+					<Badge className="bg-foreground text-background-dark hover:bg-foreground h-5 text-[10px] sm:text-xs">
+						Admin
+					</Badge>
 				</div>
-				<Coaches />
-				<Clients />
-				<Volunteers />
-				<DataTypes />
-				<div className="size-8 self-center">
+				<People />
+				<DataTypesDropdownMenu />
+				<div className="size-8 self-center ml-[1rem]">
 					<UserButton
 						appearance={{
 							elements: {
@@ -43,41 +43,7 @@ const Navbar = () => {
 	);
 };
 
-const Coaches = async () => {
+const People = async () => {
 	const user = await getCurrentUser();
-	if (!canAccessCoachPages(user)) return null;
-
-	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin/coaches">
-			Coaches
-		</Link>
-	);
-};
-
-const Clients = async () => {
-	const user = await getCurrentUser();
-	if (!canAccessAdminPages(user)) return null;
-
-	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin/clients">
-			Clients
-		</Link>
-	);
-};
-
-const Volunteers = async () => {
-	const user = await getCurrentUser();
-	if (!canAccessAdminPages(user)) return null;
-
-	return (
-		<Link className="hover:bg-accent/10 flex items-center px-2" href="/admin/volunteers">
-			Volunteers
-		</Link>
-	);
-};
-
-const DataTypes = async () => {
-	const user = await getCurrentUser();
-	if (!canAccessAdminPages(user)) return null;
-	return <DataTypesDropdownMenu />;
+	return <PeopleDropdownMenu role={user.role ?? "client"} />;
 };

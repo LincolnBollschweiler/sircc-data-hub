@@ -12,12 +12,13 @@ import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { createClientService, updateClientService } from "../../tableInteractions/actions";
 import { clientServiceSchema } from "../../tableInteractions/schemas";
-import { redirect } from "next/navigation";
 
 export default function ClientServiceForm({
 	clientService,
+	onSuccess,
 }: {
-	clientService?: { id: string; name: string; description: string | null; dispersesFunds: boolean | null };
+	clientService?: z.infer<typeof clientServiceSchema> & { id: string };
+	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof clientServiceSchema>>({
 		resolver: zodResolver(clientServiceSchema),
@@ -33,11 +34,8 @@ export default function ClientServiceForm({
 
 		const actionData = await action(values);
 
-		if (actionData) {
-			actionToast({ actionData });
-		}
-
-		redirect("/admin/data-types/client-services");
+		actionToast({ actionData });
+		if (!actionData.error) onSuccess?.();
 	};
 
 	return (
@@ -94,11 +92,7 @@ export default function ClientServiceForm({
 					)}
 				/>
 				<div className="self-end gap-2 flex">
-					<Button
-						type="button"
-						variant="destructiveOutline"
-						onClick={() => redirect("/admin/data-types/client-services")}
-					>
+					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel
 					</Button>
 					<Button type="submit" disabled={form.formState.isSubmitting}>
