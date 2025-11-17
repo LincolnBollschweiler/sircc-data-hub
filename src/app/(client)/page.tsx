@@ -5,22 +5,20 @@ import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 import { getUserSites } from "@/userInteractions/db";
 import { userSchema } from "@/userInteractions/schema";
-import ProfileForm from "@/components/users/ProfileForm";
+import ProfileForm from "@/components/users/profile/ProfileForm";
 import { z } from "zod";
 
 export default async function Home() {
 	const currentUser = await getCurrentUser({ allData: true });
 	const profile = currentUser?.data as z.infer<typeof userSchema> & { id: string };
-	const intakeNotes = profile?.notes;
-	const hasCompletedIntake = intakeNotes && intakeNotes.length > 2;
-	// console.log("User: ", profile.firstName, "Notes length:", intakeNotes?.length, "Notes:", intakeNotes);
+	const intakeComplete = (profile?.birthDay && profile?.birthMonth) || profile?.phone;
 	const sites = await getUserSites();
 
 	return (
 		<>
 			<SignedIn>
 				{/* TODO - fix up the css below, depending on if more info is added */}
-				{hasCompletedIntake && (
+				{intakeComplete && (
 					<div className="container flex gap-3">
 						<div className="flex-grow flex-shrink container mt-4 py-4 px-6 bg-background-light rounded-md shadow-md">
 							<PageHeader title="Your Client Services">
@@ -32,11 +30,11 @@ export default async function Home() {
 						</div>
 					</div>
 				)}
-				{!hasCompletedIntake && (
+				{!intakeComplete && (
 					<div className="container w-fit m-auto">
 						<div className="mt-4 py-4 px-6 bg-background-light rounded-md shadow-md">
 							<PageHeader title="Please Complete Your Intake Form" />
-							<ProfileForm profile={profile} sites={sites} intakeNotes={true} />
+							<ProfileForm profile={profile} sites={sites} isIntake={true} />
 						</div>
 					</div>
 				)}

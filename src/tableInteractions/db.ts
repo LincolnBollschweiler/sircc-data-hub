@@ -315,6 +315,7 @@ export const deleteLocation = async (id: string) => {
 	return deletedLocation;
 };
 
+export type Location = typeof dbTable.location.$inferSelect;
 const cachedLocations = unstable_cache(
 	async () => {
 		console.log("Fetching locations from DB (not cache)");
@@ -357,6 +358,154 @@ export const updateLocationOrders = async (orderedIds: string[]) => {
 	return locations;
 };
 //#endregion Locations DB Interactions
+
+//#region Cities DB Interactions
+export const insertCity = async (data: typeof dbTable.city.$inferInsert) => {
+	const [newCity] = await db.insert(dbTable.city).values(data).returning();
+	if (!newCity) return;
+	cache.revalidateCitiesCache(newCity.id);
+	return newCity;
+};
+export const getCityById = async (id: string) => {
+	const city = await db.query.city.findFirst({
+		columns: { id: true, name: true },
+		where: eq(dbTable.city.id, id),
+	});
+
+	if (!city) throw new Error("City not found");
+	return city;
+};
+export const updateCityById = async (id: string, data: Partial<typeof dbTable.city.$inferInsert>) => {
+	const [updatedCity] = await db.update(dbTable.city).set(data).where(eq(dbTable.city.id, id)).returning();
+	if (!updatedCity) {
+		return { error: true, message: "Failed to update city" };
+	}
+	cache.revalidateCitiesCache(id);
+	return { error: false, message: "City updated successfully" };
+};
+export const deleteCity = async (id: string) => {
+	const [deletedCity] = await db
+		.update(dbTable.city)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.city.id, id))
+		.returning();
+	if (!deletedCity) return;
+	cache.revalidateCitiesCache(id);
+	return deletedCity;
+};
+export type City = typeof dbTable.city.$inferSelect;
+const cachedCities = unstable_cache(
+	async () => {
+		console.log("Fetching cities from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.city.id,
+				name: dbTable.city.name,
+				createdAt: dbTable.city.createdAt,
+				updatedAt: dbTable.city.updatedAt,
+			})
+			.from(dbTable.city)
+			.where(isNull(dbTable.city.deletedAt))
+			.orderBy(dbTable.city.order);
+	},
+	["getCities"],
+	{ tags: [cacheTags.getCitiesGlobalTag()] }
+);
+export const getCities = async () => cachedCities();
+export const updateCityOrders = async (orderedIds: string[]) => {
+	const cities = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db.update(dbTable.city).set({ order: index }).where(eq(dbTable.city.id, id)).returning();
+			return rv;
+		})
+	);
+
+	cities.flat().forEach((city) => {
+		if (city) {
+			cache.revalidateCitiesCache(city.id);
+		}
+	});
+
+	return cities;
+};
+//#endregion Cities DB Interactions
+
+//#region Visits DB Interactions
+export const insertVisit = async (data: typeof dbTable.visit.$inferInsert) => {
+	const [newVisit] = await db.insert(dbTable.visit).values(data).returning();
+	if (!newVisit) return;
+	cache.revalidateVisitsCache(newVisit.id);
+	return newVisit;
+};
+export const getVisitById = async (id: string) => {
+	const visit = await db.query.visit.findFirst({
+		columns: { id: true, name: true, description: true },
+		where: eq(dbTable.visit.id, id),
+	});
+
+	if (!visit) throw new Error("Visit not found");
+	return visit;
+};
+export const updateVisitById = async (id: string, data: Partial<typeof dbTable.visit.$inferInsert>) => {
+	const [updatedVisit] = await db.update(dbTable.visit).set(data).where(eq(dbTable.visit.id, id)).returning();
+	if (!updatedVisit) {
+		return { error: true, message: "Failed to update visit" };
+	}
+	cache.revalidateVisitsCache(id);
+	return { error: false, message: "Visit updated successfully" };
+};
+export const deleteVisit = async (id: string) => {
+	const [deletedVisit] = await db
+		.update(dbTable.visit)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.visit.id, id))
+		.returning();
+	if (!deletedVisit) return;
+	cache.revalidateVisitsCache(id);
+	return deletedVisit;
+};
+export type Visit = typeof dbTable.visit.$inferSelect;
+const cachedVisits = unstable_cache(
+	async () => {
+		console.log("Fetching visits from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.visit.id,
+				name: dbTable.visit.name,
+				description: dbTable.visit.description,
+				createdAt: dbTable.visit.createdAt,
+				updatedAt: dbTable.visit.updatedAt,
+			})
+			.from(dbTable.visit)
+			.where(isNull(dbTable.visit.deletedAt))
+			.orderBy(dbTable.visit.order);
+	},
+	["getVisits"],
+	{ tags: [cacheTags.getVisitGlobalTag()] }
+);
+export const getVisits = async () => cachedVisits();
+
+export const updateVisitOrders = async (orderedIds: string[]) => {
+	const visits = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db
+				.update(dbTable.visit)
+				.set({ order: index })
+				.where(eq(dbTable.visit.id, id))
+				.returning();
+			return rv;
+		})
+	);
+
+	visits.flat().forEach((visit) => {
+		if (visit) {
+			cache.revalidateVisitsCache(visit.id);
+		}
+	});
+
+	return visits;
+};
+//#endregion Visits DB Interactions
 
 //#region Referral Sources DB Interactions
 export const insertReferralSource = async (data: typeof dbTable.referralSource.$inferInsert) => {
@@ -406,6 +555,7 @@ export const deleteReferralSource = async (id: string) => {
 	return deletedReferralSource;
 };
 
+export type ReferralSource = typeof dbTable.referralSource.$inferSelect;
 const cachedReferralSources = unstable_cache(
 	async () => {
 		console.log("Fetching referral sources from DB (not cache)");
@@ -449,6 +599,93 @@ export const updateReferralSourceOrders = async (orderedIds: string[]) => {
 };
 //#endregion Referral Sources DB Interactions
 
+//#region Referred Out DB Interactions
+export const insertReferredOut = async (data: typeof dbTable.referredOut.$inferInsert) => {
+	const [newReferredOut] = await db.insert(dbTable.referredOut).values(data).returning();
+	if (!newReferredOut) return;
+	cache.revalidateReferredOutCache(newReferredOut.id);
+	return newReferredOut;
+};
+
+export const getReferredOutById = async (id: string) => {
+	const referredOut = await db.query.referredOut.findFirst({
+		columns: { id: true, name: true, description: true },
+		where: eq(dbTable.referredOut.id, id),
+	});
+
+	if (!referredOut) throw new Error("Referred out not found");
+	return referredOut;
+};
+
+export const updateReferredOutById = async (id: string, data: Partial<typeof dbTable.referredOut.$inferInsert>) => {
+	const [updatedReferredOut] = await db
+		.update(dbTable.referredOut)
+		.set(data)
+		.where(eq(dbTable.referredOut.id, id))
+		.returning();
+	if (!updatedReferredOut) {
+		return { error: true, message: "Failed to update referred out" };
+	}
+	cache.revalidateReferredOutCache(id);
+	return { error: false, message: "Referred out updated successfully" };
+};
+
+export const deleteReferredOut = async (id: string) => {
+	const [deletedReferredOut] = await db
+		.update(dbTable.referredOut)
+		.set({ deletedAt: new Date() })
+		.where(eq(dbTable.referredOut.id, id))
+		.returning();
+
+	if (!deletedReferredOut) return;
+
+	cache.revalidateReferredOutCache(id);
+	return deletedReferredOut;
+};
+
+export type ReferredOut = typeof dbTable.referredOut.$inferSelect;
+const cachedReferredOut = unstable_cache(
+	async () => {
+		console.log("Fetching referred out from DB (not cache)");
+		return await db
+			.select({
+				id: dbTable.referredOut.id,
+				name: dbTable.referredOut.name,
+				description: dbTable.referredOut.description,
+				createdAt: dbTable.referredOut.createdAt,
+				updatedAt: dbTable.referredOut.updatedAt,
+			})
+			.from(dbTable.referredOut)
+			.where(isNull(dbTable.referredOut.deletedAt))
+			.orderBy(dbTable.referredOut.order);
+	},
+	["getReferredOut"],
+	{ tags: [cacheTags.getReferredOutGlobalTag()] }
+);
+export const getReferredOut = async () => cachedReferredOut();
+
+export const updateReferredOutOrders = async (orderedIds: string[]) => {
+	const referredOuts = await Promise.all(
+		orderedIds.map(async (id, index) => {
+			const [rv] = await db
+				.update(dbTable.referredOut)
+				.set({ order: index })
+				.where(eq(dbTable.referredOut.id, id))
+				.returning();
+			return rv;
+		})
+	);
+
+	referredOuts.flat().forEach((referredOut) => {
+		if (referredOut) {
+			cache.revalidateReferredOutCache(referredOut.id);
+		}
+	});
+
+	return referredOuts;
+};
+//#endregion Referred Out DB Interactions
+
 //#region Sites DB Interactions
 export const insertSite = async (data: typeof dbTable.site.$inferInsert) => {
 	const [newSite] = await db.insert(dbTable.site).values(data).returning();
@@ -489,6 +726,7 @@ export const deleteSite = async (id: string) => {
 	return deletedSite;
 };
 
+export type Site = typeof dbTable.site.$inferSelect;
 const cachedSites = unstable_cache(
 	async () => {
 		console.log("Fetching sites from DB (not cache)");
@@ -529,64 +767,62 @@ export const updateSiteOrders = async (orderedIds: string[]) => {
 };
 //#endregion Sites DB Interactions
 
-//#region Client Service DB Interactions
-export const insertClientService = async (data: typeof dbTable.service.$inferInsert) => {
-	const [newClientService] = await db.insert(dbTable.service).values(data).returning();
+//#region Service DB Interactions
+export const insertService = async (data: typeof dbTable.service.$inferInsert) => {
+	const [newService] = await db.insert(dbTable.service).values(data).returning();
 
-	if (!newClientService) return;
+	if (!newService) return;
 
-	cache.revalidateClientServiceCache(newClientService.id);
+	cache.revalidateServiceCache(newService.id);
 
-	return newClientService;
+	return newService;
 };
 
-export const getClientServiceById = async (id: string) => {
-	const clientService = await db.query.service.findFirst({
-		columns: { id: true, name: true, description: true, dispersesFunds: true },
+export const getServiceById = async (id: string) => {
+	const service = await db.query.service.findFirst({
+		columns: { id: true, name: true, description: true, requiresFunding: true },
 		where: eq(dbTable.service.id, id),
 	});
 
-	if (!clientService) {
-		throw new Error("Client service not found");
+	if (!service) {
+		throw new Error("Service not found");
 	}
-	return clientService;
+	return service;
 };
 
-export const updateClientServiceById = async (id: string, data: Partial<typeof dbTable.service.$inferInsert>) => {
-	const [updatedClientService] = await db
-		.update(dbTable.service)
-		.set(data)
-		.where(eq(dbTable.service.id, id))
-		.returning();
-	if (!updatedClientService) {
-		return { error: true, message: "Failed to update client service" };
+export const updateServiceById = async (id: string, data: Partial<typeof dbTable.service.$inferInsert>) => {
+	const [updatedService] = await db.update(dbTable.service).set(data).where(eq(dbTable.service.id, id)).returning();
+	if (!updatedService) {
+		return { error: true, message: "Failed to update Service" };
 	}
-	cache.revalidateClientServiceCache(id);
-	return { error: false, message: "Client service updated successfully" };
+	cache.revalidateServiceCache(id);
+	return { error: false, message: "Service updated successfully" };
 };
 
-export const deleteClientService = async (id: string) => {
-	const [deletedClientService] = await db
+export const deleteService = async (id: string) => {
+	const [deletedService] = await db
 		.update(dbTable.service)
 		.set({ deletedAt: new Date() })
 		.where(eq(dbTable.service.id, id))
 		.returning();
 
-	if (!deletedClientService) return;
+	if (!deletedService) return;
 
-	cache.revalidateClientServiceCache(id);
-	return deletedClientService;
+	cache.revalidateServiceCache(id);
+	return deletedService;
 };
 
-const cachedClientServices = unstable_cache(
+export type Service = typeof dbTable.service.$inferSelect;
+
+const cachedServices = unstable_cache(
 	async () => {
-		console.log("Fetching client services from DB (not cache)");
+		console.log("Fetching services from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.service.id,
 				name: dbTable.service.name,
 				description: dbTable.service.description,
-				dispersesFunds: dbTable.service.dispersesFunds,
+				requiresFunding: dbTable.service.requiresFunding,
 				createdAt: dbTable.service.createdAt,
 				updatedAt: dbTable.service.updatedAt,
 			})
@@ -594,13 +830,13 @@ const cachedClientServices = unstable_cache(
 			.where(isNull(dbTable.service.deletedAt))
 			.orderBy(dbTable.service.order);
 	},
-	["getClientServices"],
-	{ tags: [cacheTags.getClientServiceGlobalTag()] }
+	["getServices"],
+	{ tags: [cacheTags.getServiceGlobalTag()] }
 );
 
-export const getClientServices = async () => cachedClientServices();
+export const getServices = async () => cachedServices();
 
-export const updateClientServiceOrders = async (orderedIds: string[]) => {
+export const updateServiceOrders = async (orderedIds: string[]) => {
 	const services = await Promise.all(
 		orderedIds.map(async (id, index) => {
 			const [rv] = await db
@@ -614,21 +850,33 @@ export const updateClientServiceOrders = async (orderedIds: string[]) => {
 
 	services.flat().forEach((svc) => {
 		if (svc) {
-			cache.revalidateClientServiceCache(svc.id);
+			cache.revalidateServiceCache(svc.id);
 		}
 	});
 
 	return services;
 };
+//#endregion Service DB Interactions
 
-export const getCachedClientService = (clientServiceId: string) => {
-	const cachedFn = unstable_cache(
-		async () => {
-			return await getClientServiceById(clientServiceId);
-		},
-		["getClientServiceById", clientServiceId],
-		{ tags: [cacheTags.getClientServiceIdTag(clientServiceId)] }
-	);
-	return cachedFn(); // execute it only when this function is called
+//#region all Client Service tables
+export type CSTables = Awaited<ReturnType<typeof getAllClientServiceTables>>;
+export const getAllClientServiceTables = async () => {
+	const [services, locations, referralSources, referredOut, visits, cities] = await Promise.all([
+		getServices(),
+		getLocations(),
+		getReferralSources(),
+		getReferredOut(),
+		getVisits(),
+		getCities(),
+	]);
+
+	return {
+		services,
+		locations,
+		referralSources,
+		referredOut,
+		visits,
+		cities,
+	};
 };
-//#endregion Client Service DB Interactions
+//#endregion all Client Service tables

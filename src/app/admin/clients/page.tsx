@@ -1,5 +1,5 @@
-import Applicants from "@/components/users/Applicants";
+import Clients from "@/components/users/clients/Clients";
 
 export default function ClientsPage() {
-	return <Applicants userType="client" />;
+	return <Clients />;
 }

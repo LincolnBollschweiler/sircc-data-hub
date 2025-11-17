@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
-import VolunteerTypes from "@/components/volunteerTypes/VolunteerTypes";
+import VolunteerTypes from "@/components/data-types/volunteerTypes/VolunteerTypes";
 import { getVolunteerTypes } from "@/tableInteractions/db";
 import { DialogTrigger } from "@/components/ui/dialog";
-import VolunteerTypesFormDialog from "@/components/volunteerTypes/VolunteerTypesFormDialog";
+import VolunteerTypesFormDialog from "@/components/data-types/volunteerTypes/VolunteerTypesFormDialog";
 
 export default async function VolunteerTypesPage() {
 	const volunteerTypes = await getVolunteerTypes();

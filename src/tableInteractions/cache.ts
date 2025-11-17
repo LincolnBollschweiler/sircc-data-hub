@@ -31,9 +31,24 @@ export const revalidateLocationCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
 	revalidateTag(cacheTags.getLocationGlobalTag(), "max");
 	revalidateTag(cacheTags.getLocationIdTag(id), "max");
-	revalidateTag(cacheTags.getUserSitesGlobalTag(), "max");
 	revalidatePath("/admin/data-types/locations");
 	revalidatePath(`/admin/data-types/locations/${id}/edit`);
+};
+
+export const revalidateCitiesCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(cacheTags.getCitiesGlobalTag(), "max");
+	revalidateTag(cacheTags.getCitiesIdTag(id), "max");
+	revalidatePath("/admin/data-types/cities");
+	revalidatePath(`/admin/data-types/cities/${id}/edit`);
+};
+
+export const revalidateVisitsCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(cacheTags.getVisitGlobalTag(), "max");
+	revalidateTag(cacheTags.getVisitIdTag(id), "max");
+	revalidatePath("/admin/data-types/visits");
+	revalidatePath(`/admin/data-types/visits/${id}/edit`);
 };
 
 export const revalidateSiteCache = async (id: string) => {
@@ -52,21 +67,18 @@ export const revalidateReferralSourceCache = async (id: string) => {
 	revalidatePath(`/admin/data-types/referral-sources/${id}/edit`);
 };
 
-export const revalidateClientServiceCache = async (id: string) => {
+export const revalidateReferredOutCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
-	revalidateTag(cacheTags.getClientServiceGlobalTag(), "max");
-	revalidateTag(cacheTags.getClientServiceIdTag(id), "max");
+	revalidateTag(cacheTags.getReferredOutGlobalTag(), "max");
+	revalidateTag(cacheTags.getReferredOutIdTag(id), "max");
+	revalidatePath("/admin/data-types/referred-out");
+	revalidatePath(`/admin/data-types/referred-out/${id}/edit`);
+};
+
+export const revalidateServiceCache = async (id: string) => {
+	console.log(">>> revalidate called for id:", id);
+	revalidateTag(cacheTags.getServiceGlobalTag(), "max");
+	revalidateTag(cacheTags.getServiceIdTag(id), "max");
 	revalidatePath("/admin/data-types/client-services");
 	revalidatePath(`/admin/data-types/client-services/${id}/edit`);
-};
-
-export const revalidateUserCache = async (id: string) => {
-	revalidateTag(cacheTags.getAllUsersGlobalTag(), "max");
-	revalidateTag(cacheTags.getUserIdTag(id), "max");
-	revalidatePath("/");
-	// revalidatePath("/admin/applicants");
-};
-
-export const revalidateUserSitesCache = async () => {
-	// revalidatePath("/admin/applicants");
 };
