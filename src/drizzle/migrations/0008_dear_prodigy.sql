@@ -1,0 +1,1 @@
+CREATE INDEX "client_service_city_id_idx" ON "client_service" USING btree ("city_id");

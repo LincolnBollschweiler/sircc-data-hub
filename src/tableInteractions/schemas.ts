@@ -8,13 +8,13 @@ export const updateSchema = z.object({
 
 export const generalSchema = z.object({
 	name: z.string().min(2, "Required").max(100),
-	description: z.string().max(500).nullable(),
+	description: z.string().max(500).optional().nullable(),
 });
 
-export const clientServiceSchema = z.object({
+export const servicesSchema = z.object({
 	name: z.string().min(2, "Required").max(100),
 	description: z.string().max(500).nullable(),
-	dispersesFunds: z.boolean().nullable().default(false),
+	requiresFunding: z.boolean().nullable().default(false),
 });
 
 export const siteSchema = z.object({

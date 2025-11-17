@@ -19,6 +19,9 @@ export default function DataTypesDropdownMenu() {
 			<DropdownMenuContent className="bg-background-dark border-transparent -translate-y-3">
 				{/* <DropdownMenuLabel>My Account</DropdownMenuLabel>
 				<DropdownMenuSeparator /> */}
+				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/cities")}>
+					<span className="hover-underline-border">Cities</span>
+				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/client-services")}>
 					<span className="hover-underline-border">Client Services</span>
 				</DropdownMenuItem>
@@ -34,11 +37,17 @@ export default function DataTypesDropdownMenu() {
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/referral-sources")}>
 					<span className="hover-underline-border">Referral Sources</span>
 				</DropdownMenuItem>
+				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/referred-out")}>
+					<span className="hover-underline-border">Referred Out</span>
+				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/sites")}>
 					<span className="hover-underline-border">Sites</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/volunteer-types")}>
 					<span className="hover-underline-border">Volunteer Types</span>
+				</DropdownMenuItem>
+				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/visits")}>
+					<span className="hover-underline-border">Visit Types</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

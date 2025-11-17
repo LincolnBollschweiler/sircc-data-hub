@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
 import { getCoachTrainings } from "@/tableInteractions/db";
-import CoachTrainings from "@/components/coachTrainings/CoachTrainings";
-import CoachTrainingsFormDialog from "@/components/coachTrainings/CoachTrainingsFormDialog";
+import CoachTrainings from "@/components/data-types/coachTrainings/CoachTrainings";
+import CoachTrainingsFormDialog from "@/components/data-types/coachTrainings/CoachTrainingsFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 
 export default async function CoachTrainingsPage() {

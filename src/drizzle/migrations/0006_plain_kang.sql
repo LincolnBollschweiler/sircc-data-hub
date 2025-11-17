@@ -1,0 +1,1 @@
+ALTER TABLE "city" ADD COLUMN "order" integer DEFAULT 9999 NOT NULL;

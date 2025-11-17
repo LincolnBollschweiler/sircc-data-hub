@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
 import { getReferralSources } from "@/tableInteractions/db";
-import ReferralSources from "@/components/referralSources/ReferralSources";
-import ReferralSourcesFormDialog from "@/components/referralSources/ReferralSourcesFormDialog";
+import ReferralSources from "@/components/data-types/referralSources/ReferralSources";
+import ReferralSourcesFormDialog from "@/components/data-types/referralSources/ReferralSourcesFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 
 export default async function ReferralSourcesPage() {
