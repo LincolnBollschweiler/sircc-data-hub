@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
-import ReentryChecklistItems from "@/components/reentryChecklistItems/ReentryChecklistItems";
+import ReentryChecklistItems from "@/components/data-types/reentryChecklistItems/ReentryChecklistItems";
 import { getReentryChecklistItems } from "@/tableInteractions/db";
-import ReentryChecklistItemsFormDialog from "@/components/reentryChecklistItems/ReentryChecklistItemsFormDialog";
+import ReentryChecklistItemsFormDialog from "@/components/data-types/reentryChecklistItems/ReentryChecklistItemsFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 
 export default async function ReentryChecklistItemsPage() {
