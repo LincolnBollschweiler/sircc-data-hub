@@ -768,12 +768,12 @@ export const updateSiteOrders = async (orderedIds: string[]) => {
 //#endregion Sites DB Interactions
 
 //#region Client Service DB Interactions
-export const insertClientService = async (data: typeof dbTable.service.$inferInsert) => {
+export const insertService = async (data: typeof dbTable.service.$inferInsert) => {
 	const [newClientService] = await db.insert(dbTable.service).values(data).returning();
 
 	if (!newClientService) return;
 
-	cache.revalidateClientServiceCache(newClientService.id);
+	cache.revalidateServiceCache(newClientService.id);
 
 	return newClientService;
 };
@@ -790,7 +790,7 @@ export const getClientServiceById = async (id: string) => {
 	return clientService;
 };
 
-export const updateClientServiceById = async (id: string, data: Partial<typeof dbTable.service.$inferInsert>) => {
+export const updateServiceById = async (id: string, data: Partial<typeof dbTable.service.$inferInsert>) => {
 	const [updatedClientService] = await db
 		.update(dbTable.service)
 		.set(data)
@@ -799,7 +799,7 @@ export const updateClientServiceById = async (id: string, data: Partial<typeof d
 	if (!updatedClientService) {
 		return { error: true, message: "Failed to update client service" };
 	}
-	cache.revalidateClientServiceCache(id);
+	cache.revalidateServiceCache(id);
 	return { error: false, message: "Client service updated successfully" };
 };
 
@@ -812,7 +812,7 @@ export const deleteClientService = async (id: string) => {
 
 	if (!deletedClientService) return;
 
-	cache.revalidateClientServiceCache(id);
+	cache.revalidateServiceCache(id);
 	return deletedClientService;
 };
 
@@ -855,7 +855,7 @@ export const updateClientServiceOrders = async (orderedIds: string[]) => {
 
 	services.flat().forEach((svc) => {
 		if (svc) {
-			cache.revalidateClientServiceCache(svc.id);
+			cache.revalidateServiceCache(svc.id);
 		}
 	});
 

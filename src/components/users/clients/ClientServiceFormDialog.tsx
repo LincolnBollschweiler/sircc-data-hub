@@ -91,6 +91,13 @@ export default function ClientServiceFormDialog({
 			console.error("Client ID is null. Cannot create client service.");
 			return;
 		}
+
+		if (!providedServiceId) {
+			const actionData = { error: true, message: "Please select a provided service." };
+			actionToast({ actionData });
+			return;
+		}
+
 		const clientService = {
 			clientId,
 			cityId: cityId,
@@ -101,12 +108,14 @@ export default function ClientServiceFormDialog({
 			referredOutId: referredOutId,
 			visitId: visitTypeId,
 			notes: clientNotes,
+			funds: fundsVisible && funds ? parseFloat(funds) : null,
 		} as ClientServiceInsert;
 
 		const action = createClientService.bind(null, null);
 		const actionData = await action(clientService);
 		if (actionData) {
 			actionToast({ actionData });
+			requestAnimationFrame(() => window.location.reload());
 		}
 	};
 

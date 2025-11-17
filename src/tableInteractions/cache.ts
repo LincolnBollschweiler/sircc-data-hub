@@ -75,7 +75,7 @@ export const revalidateReferredOutCache = async (id: string) => {
 	revalidatePath(`/admin/data-types/referred-out/${id}/edit`);
 };
 
-export const revalidateClientServiceCache = async (id: string) => {
+export const revalidateServiceCache = async (id: string) => {
 	console.log(">>> revalidate called for id:", id);
 	revalidateTag(cacheTags.getClientServiceGlobalTag(), "max");
 	revalidateTag(cacheTags.getClientServiceIdTag(id), "max");

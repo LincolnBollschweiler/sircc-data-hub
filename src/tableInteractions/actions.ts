@@ -352,12 +352,12 @@ export const updateSiteOrders = async (orderedIds: string[]) => {
 //#endregion
 
 //#region Client Services
-export const createClientService = async (unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
+export const createService = async (unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
 	const { success, data } = schemas.clientServiceSchema.safeParse(unsafeData);
 
 	if (!success) return { error: true, message: "Validation failed" };
 
-	const rv = await dbTable.insertClientService(data);
+	const rv = await dbTable.insertService(data);
 
 	return {
 		error: !rv,
@@ -365,11 +365,11 @@ export const createClientService = async (unsafeData: z.infer<typeof schemas.cli
 	};
 };
 
-export const updateClientService = async (id: string, unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
+export const updateService = async (id: string, unsafeData: z.infer<typeof schemas.clientServiceSchema>) => {
 	const { success, data } = schemas.clientServiceSchema.safeParse(unsafeData);
 
 	if (!success) return { error: true, message: "Validation failed" };
-	return await dbTable.updateClientServiceById(id, data);
+	return await dbTable.updateServiceById(id, data);
 };
 
 export const removeClientService = async (id: string) => {

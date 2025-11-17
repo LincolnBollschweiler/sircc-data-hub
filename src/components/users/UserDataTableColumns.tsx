@@ -17,13 +17,13 @@ import { updateUser } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
-import { ClientList } from "@/userInteractions/db";
+import { ClientList, ClientServiceFull } from "@/userInteractions/db";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
 // helpers.ts (or in same file)
 const asClient = (row: unknown): ClientList => row as ClientList;
-// const asSingleClient = (row: unknown) => row as ClientServiceFull;
+const asSingleClient = (row: unknown) => row as ClientServiceFull;
 const asUser = (row: unknown): User => row as User;
 const asUserRow = (row: unknown) => row as User;
 
@@ -301,26 +301,83 @@ export const userDataTableColumns = (userType: string): ColumnDef<unknown>[] => 
 			{
 				accessorKey: "requestedService.name",
 				header: "Requested Service",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.requestedService ? r.requestedService.name : "";
+				},
 			},
 			{
 				accessorKey: "providedService.name",
 				header: "Provided Service",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.providedService ? r.providedService.name : "";
+				},
 			},
 			{
 				accessorKey: "location.name",
 				header: "Location",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.location ? r.location.name : "";
+				},
 			},
 			{
 				accessorKey: "referralSource.name",
 				header: "Referral Source",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.referralSource ? r.referralSource.name : "";
+				},
 			},
 			{
 				accessorKey: "referredOut.name",
 				header: "Referred Out",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.referredOut ? r.referredOut.name : "";
+				},
 			},
 			{
 				accessorKey: "visit.name",
 				header: "Visit Reason",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.visit ? r.visit.name : "";
+				},
+			},
+			{
+				accessorKey: "clientService.funds",
+				header: "Funds Provided",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					if (r.clientService.funds != null) {
+						return `$${r.clientService.funds.toString()}`;
+					}
+				},
+			},
+			{
+				accessorKey: "clientService.notes",
+				header: "Notes",
+				cell: ({ getValue }) => {
+					const notes = getValue<string>() || "";
+					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+					return (
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant="ghost"
+									className="text-left p-0 px-1 h-auto whitespace-nowrap text-ellipsis"
+								>
+									{truncated}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="max-w-sm">
+								<p className="whitespace-pre-wrap">{notes}</p>
+							</PopoverContent>
+						</Popover>
+					);
+				},
 			},
 			{
 				accessorKey: "clientService.createdAt",

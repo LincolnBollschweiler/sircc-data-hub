@@ -13,5 +13,6 @@ export const revalidateClientCache = async (id: string) => {
 	revalidateTag(cacheTags.getClientGlobalTag(), "max");
 	revalidateTag(cacheTags.getClientIdTag(id), "max");
 	revalidatePath("/admin/clients");
+	console.log("calling revalidate for client id:", id);
 	revalidatePath(`/admin/clients/${id}/edit`);
 };

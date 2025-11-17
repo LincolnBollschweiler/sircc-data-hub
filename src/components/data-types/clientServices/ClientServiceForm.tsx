@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
-import { createClientService, updateClientService } from "../../../tableInteractions/actions";
+import { createService, updateService } from "../../../tableInteractions/actions";
 import { clientServiceSchema } from "../../../tableInteractions/schemas";
 
 export default function ClientServiceForm({
@@ -30,7 +30,7 @@ export default function ClientServiceForm({
 	});
 
 	const onSubmit = async (values: z.infer<typeof clientServiceSchema>) => {
-		const action = clientService == null ? createClientService : updateClientService.bind(null, clientService.id);
+		const action = clientService == null ? createService : updateService.bind(null, clientService.id);
 
 		const actionData = await action(values);
 

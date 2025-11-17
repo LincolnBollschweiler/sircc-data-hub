@@ -19,6 +19,8 @@ import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import {
 	getAllUsersGlobalTag,
+	getClientIdTag,
+	getUserIdTag,
 	// getClientIdTag,
 	// getUserIdTag,
 	getUserSitesGlobalTag,
@@ -137,8 +139,8 @@ const cachedUsers = unstable_cache(
 		return await db.select().from(user).where(isNull(user.deletedAt)).orderBy(desc(user.updatedAt));
 	},
 	["getAllUsers"],
-	// { tags: [getAllUsersGlobalTag()] }
-	{ tags: [getAllUsersGlobalTag()], revalidate: 5 }
+	{ tags: [getAllUsersGlobalTag()] }
+	// { tags: [getAllUsersGlobalTag()], revalidate: 5 }
 );
 
 export const getAllUsers = async () => cachedUsers();
@@ -157,8 +159,8 @@ const cachedUserSites = unstable_cache(
 			.orderBy(site.name);
 	},
 	["getUserSites"],
-	// { tags: [getUserSitesGlobalTag()] }
-	{ tags: [getUserSitesGlobalTag()], revalidate: 5 } // HOW TO: set a time-based revalidation alongside tag-based so that data is at most 5 seconds stale
+	{ tags: [getUserSitesGlobalTag()] }
+	// { tags: [getUserSitesGlobalTag()], revalidate: 5 } // HOW TO: set a time-based revalidation alongside tag-based so that data is at most 5 seconds stale
 	// requires a hard-refresh too
 );
 
@@ -175,21 +177,6 @@ export type ClientList = {
 	openRequestsCount: number;
 	requestsUpdatedAt: Date | null;
 };
-
-// export type ClientFull = {
-// 	user: typeof user.$inferSelect;
-// 	client: typeof client.$inferSelect | null; // null because of leftJoin
-// 	coach: typeof user.$inferSelect | null; // null because of leftJoin
-// 	clientServices: typeof clientService.$inferSelect | null; // null because of leftJoin
-// 	service: typeof service.$inferSelect | null; // null because of leftJoin
-// 	location: typeof location.$inferSelect | null; // null because of leftJoin
-// 	clientReentryCheckListItem: typeof clientReentryCheckListItem.$inferSelect | null;
-// 	reentryCheckListItem: typeof reentryCheckListItem.$inferSelect | null;
-// 	referralSource: typeof referralSource.$inferSelect | null;
-// 	serviceCount: number;
-// 	openRequestsCount: number;
-// 	requestsUpdatedAt: Date | null;
-// };
 
 function groupBy<T, K extends string | number | symbol>(list: T[], getKey: (item: T) => K): Record<K, T[]> {
 	return list.reduce((acc, item) => {
@@ -232,191 +219,133 @@ const coachUser = alias(user, "coachUser");
 const requestedSvc = alias(service, "requestedSvc");
 const providedSvc = alias(service, "providedSvc");
 
-export const getClientById = async (id: string): Promise<ClientFull | null> => {
-	const rows = await db
-		.select({
-			user,
-			client,
-			coach: coachUser,
+const getCachedClient = (id: string) => {
+	const cachedFn = unstable_cache(
+		async (): Promise<ClientFull | null> => {
+			// console.log("Fetching from cacked client from DB (not cache):", id);
+			const rows = await db
+				.select({
+					user,
+					client,
+					coach: coachUser,
 
-			// clientService
-			clientService,
+					// clientService
+					clientService,
 
-			// joins for each clientService
-			location,
-			site,
-			city,
-			requestedService: requestedSvc,
-			providedService: providedSvc,
-			referralSource,
-			referredOut,
-			visit,
+					// joins for each clientService
+					location,
+					site,
+					city,
+					requestedService: requestedSvc,
+					providedService: providedSvc,
+					referralSource,
+					referredOut,
+					visit,
 
-			// reentry join
-			clientReentryCheckListItem,
-			reentryCheckListItem,
+					// reentry join
+					clientReentryCheckListItem,
+					reentryCheckListItem,
 
-			// computed counts
-			serviceCount: sql<number>`(
+					// computed counts
+					serviceCount: sql<number>`(
         SELECT COUNT(*) FROM client_service cs WHERE cs.client_id = ${id}
       )`,
-			openRequestsCount: sql<number>`(
+					openRequestsCount: sql<number>`(
         SELECT COUNT(*)
         FROM client_service csr
         WHERE csr.client_id = ${id}
         AND csr.requested_service_id IS NOT NULL
         AND csr.provided_service_id IS NULL
       )`,
-			requestsUpdatedAt: sql<Date | null>`(
+					requestsUpdatedAt: sql<Date | null>`(
         SELECT MAX(csr.updated_at)
         FROM client_service csr
         WHERE csr.client_id = ${id}
       )`,
-		})
-		.from(user)
-		.leftJoin(client, eq(user.id, client.id))
-		.leftJoin(coachUser, eq(client.coachId, coachUser.id))
-		.leftJoin(clientService, eq(client.id, clientService.clientId))
-		.leftJoin(location, eq(clientService.locationId, location.id))
-		.leftJoin(site, eq(clientService.siteId, site.id))
-		.leftJoin(city, eq(clientService.cityId, city.id))
-		.leftJoin(requestedSvc, eq(clientService.requestedServiceId, requestedSvc.id))
-		.leftJoin(providedSvc, eq(clientService.providedServiceId, providedSvc.id))
-		.leftJoin(referralSource, eq(clientService.referralSourceId, referralSource.id))
-		.leftJoin(referredOut, eq(clientService.referredOutId, referredOut.id))
-		.leftJoin(visit, eq(clientService.visitId, visit.id))
-		.leftJoin(clientReentryCheckListItem, eq(client.id, clientReentryCheckListItem.clientId))
-		.leftJoin(reentryCheckListItem, eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItem.id))
-		.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "client")))
-		.orderBy(desc(clientService.updatedAt));
+				})
+				.from(user)
+				.leftJoin(client, eq(user.id, client.id))
+				.leftJoin(coachUser, eq(client.coachId, coachUser.id))
+				.leftJoin(clientService, eq(client.id, clientService.clientId))
+				.leftJoin(location, eq(clientService.locationId, location.id))
+				.leftJoin(site, eq(clientService.siteId, site.id))
+				.leftJoin(city, eq(clientService.cityId, city.id))
+				.leftJoin(requestedSvc, eq(clientService.requestedServiceId, requestedSvc.id))
+				.leftJoin(providedSvc, eq(clientService.providedServiceId, providedSvc.id))
+				.leftJoin(referralSource, eq(clientService.referralSourceId, referralSource.id))
+				.leftJoin(referredOut, eq(clientService.referredOutId, referredOut.id))
+				.leftJoin(visit, eq(clientService.visitId, visit.id))
+				.leftJoin(clientReentryCheckListItem, eq(client.id, clientReentryCheckListItem.clientId))
+				.leftJoin(
+					reentryCheckListItem,
+					eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItem.id)
+				)
+				.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "client")))
+				.orderBy(desc(clientService.updatedAt));
 
-	if (rows.length === 0) return null;
+			if (rows.length === 0) return null;
 
-	// --------------------------
-	// GROUP INTO NESTED STRUCTURE
-	// --------------------------
+			// --------------------------
+			// GROUP INTO NESTED STRUCTURE
+			// --------------------------
 
-	if (!rows.length) return null;
-	const first = rows[0]!;
+			if (!rows.length) return null;
+			const first = rows[0]!;
 
-	const servicesGrouped = groupBy(
-		rows.filter((r) => r.clientService?.id),
-		(r) => r.clientService!.id
+			const servicesGrouped = groupBy(
+				rows.filter((r) => r.clientService?.id),
+				(r) => r.clientService!.id
+			);
+
+			// 1. Narrow grouped values so TS knows each group has at least one element
+			const groupedArrays = Object.values(servicesGrouped).filter(
+				(g): g is NonNullable<typeof g> & [NonNullable<(typeof g)[0]>, ...typeof g] =>
+					Array.isArray(g) && g.length > 0
+			);
+
+			// 2. Map into ClientServiceFull[]
+			const clientServices: ClientServiceFull[] = groupedArrays.map((group) => {
+				const first = group[0]; // now TS knows this exists
+
+				return {
+					clientService: first.clientService!, // required
+					site: first.site ?? null,
+					city: first.city ?? null,
+					location: first.location ?? null,
+					referralSource: first.referralSource ?? null,
+					referredOut: first.referredOut ?? null,
+					requestedService: first.requestedService ?? null,
+					providedService: first.providedService ?? null,
+					visit: first.visit ?? null,
+
+					reentryItems: group
+						.filter((r) => r.reentryCheckListItem)
+						.map((r) => ({
+							clientReentryCheckListItem: r.clientReentryCheckListItem!,
+							reentryCheckListItem: r.reentryCheckListItem!,
+						})),
+				};
+			});
+
+			// FINAL STRUCT
+			return {
+				user: first.user,
+				client: first.client!,
+				coach: first.coach,
+				referralSource: first.referralSource,
+				referredOut: first.referredOut,
+				serviceCount: first.serviceCount,
+				openRequestsCount: first.openRequestsCount,
+				requestsUpdatedAt: first.requestsUpdatedAt,
+				clientServices,
+			};
+		},
+		["getClientById", id],
+		{ tags: [getClientIdTag(id), getUserIdTag(id)] }
 	);
-
-	// 1. Narrow grouped values so TS knows each group has at least one element
-	const groupedArrays = Object.values(servicesGrouped).filter(
-		(g): g is NonNullable<typeof g> & [NonNullable<(typeof g)[0]>, ...typeof g] => Array.isArray(g) && g.length > 0
-	);
-
-	// 2. Map into ClientServiceFull[]
-	const clientServices: ClientServiceFull[] = groupedArrays.map((group) => {
-		const first = group[0]; // now TS knows this exists
-
-		return {
-			clientService: first.clientService!, // required
-			site: first.site ?? null,
-			city: first.city ?? null,
-			location: first.location ?? null,
-			referralSource: first.referralSource ?? null,
-			referredOut: first.referredOut ?? null,
-			requestedService: first.requestedService ?? null,
-			providedService: first.providedService ?? null,
-			visit: first.visit ?? null,
-
-			reentryItems: group
-				.filter((r) => r.reentryCheckListItem)
-				.map((r) => ({
-					clientReentryCheckListItem: r.clientReentryCheckListItem!,
-					reentryCheckListItem: r.reentryCheckListItem!,
-				})),
-		};
-	});
-
-	// FINAL STRUCT
-	return {
-		user: first.user,
-		client: first.client!,
-		coach: first.coach,
-		referralSource: first.referralSource,
-		referredOut: first.referredOut,
-		serviceCount: first.serviceCount,
-		openRequestsCount: first.openRequestsCount,
-		requestsUpdatedAt: first.requestsUpdatedAt,
-		clientServices,
-	};
+	return cachedFn(); // execute it only when this function is called
 };
-
-// const getCachedClient = (id: string) => {
-// 	const cachedFn = unstable_cache(
-// 		async (): Promise<ClientFull | null> => {
-// 			const results = await db
-// 				.select({
-// 					user,
-// 					client,
-// 					coach: coachUser,
-// 					clientService,
-// 					service,
-// 					location,
-// 					clientReentryCheckListItem,
-// 					reentryCheckListItem,
-// 					referralSource,
-// 					serviceCount: sql<number>`
-// 					(SELECT COUNT(*)
-// 					FROM client_service cs
-// 					WHERE cs.client_id = ${id})
-// 				`,
-// 					openRequestsCount: sql<number>`
-// 					(SELECT COUNT(*)
-// 					FROM client_service csr
-// 					WHERE csr.client_id = ${id}
-// 					AND csr.requested_service_id IS NOT NULL
-// 					AND csr.provided_service_id IS NULL)
-// 				 `,
-// 					requestsUpdatedAt: sql<Date | null>`
-// 					(SELECT MAX(csr.updated_at)
-// 					FROM client_service csr
-// 					WHERE csr.client_id = ${id})
-// 				`,
-// 				})
-// 				.from(user)
-// 				.leftJoin(client, eq(user.id, client.id)) // join user.id to client.id
-// 				.leftJoin(coachUser, eq(client.coachId, coachUser.id))
-// 				.leftJoin(clientService, eq(client.id, clientService.clientId))
-// 				.leftJoin(
-// 					service,
-// 					or(
-// 						eq(clientService.requestedServiceId, service.id),
-// 						eq(clientService.providedServiceId, service.id)
-// 					)
-// 				)
-// 				.leftJoin(location, eq(clientService.locationId, location.id))
-// 				.leftJoin(clientReentryCheckListItem, eq(client.id, clientReentryCheckListItem.clientId))
-// 				.leftJoin(
-// 					reentryCheckListItem,
-// 					eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItem.id)
-// 				)
-// 				.leftJoin(referralSource, eq(clientService.referralSourceId, referralSource.id))
-// 				.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "client")))
-// 				.orderBy(
-// 					desc(
-// 						sql`
-// 						COALESCE(
-// 						(SELECT MAX(csr.updated_at)
-// 						FROM client_service csr
-// 						WHERE csr.client_id = ${client.id}),
-// 						${client.updatedAt}
-// 					)`
-// 					)
-// 				);
-// 			return (results.at(0) as ClientFull) ?? null;
-// 		},
-// 		["getClientById", id],
-// 		{ tags: [getClientIdTag(id), getUserIdTag(id)] }
-// 	);
-// 	return cachedFn(); // execute it only when this function is called
-// };
-// export const getClientById = async (id: string) => getCachedClient(id);
+export const getClientById = async (id: string) => getCachedClient(id);
 
 const cachedClients = unstable_cache(
 	async (): Promise<ClientList[]> => {
@@ -491,7 +420,7 @@ export const getAllCoaches = async () => cachedCoaches();
 
 //#region Client Services
 export const insertClientService = async (data: ClientServiceInsert) => {
-	console.log("Creating client service for clientId:", data.clientId, "Data:", data);
+	// console.log("Creating client service for clientId:", data.clientId, "Data:", data);
 	const [newService] = await db.insert(clientService).values(data).returning();
 
 	if (newService == null) {
