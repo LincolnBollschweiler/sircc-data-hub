@@ -101,10 +101,7 @@ export default function ClientServiceFormDialog({
 
 		const action = createClientService.bind(null, null);
 		const actionData = await action(clientService);
-		if (actionData) {
-			actionToast({ actionData });
-			requestAnimationFrame(() => window.location.reload());
-		}
+		if (actionData) actionToast({ actionData });
 	};
 
 	const handleOpenChange = (open: boolean) => {

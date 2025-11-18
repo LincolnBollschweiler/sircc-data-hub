@@ -98,7 +98,7 @@ export const updateVolunteerTypeOrders = async (orderedIds: string[]) => {
 };
 //#endregion
 
-//#region Reentry Checklist Items
+//#region Re-entry Checklist Items
 export const insertReentryChecklistItem = async (data: typeof dbTable.reentryCheckListItem.$inferInsert) => {
 	const [rv] = await db.insert(dbTable.reentryCheckListItem).values(data).returning();
 	if (!rv) return;
@@ -114,7 +114,7 @@ export const getReentryChecklistItemById = async (id: string) => {
 	});
 
 	if (!reentryChecklistItem) {
-		throw new Error("Reentry checklist item not found");
+		throw new Error("Re-entry checklist item not found");
 	}
 	return reentryChecklistItem;
 };
@@ -132,7 +132,7 @@ export const updateReentryChecklistItemById = async (
 		return { error: true, message: "Failed to update reentry checklist item" };
 	}
 	cache.revalidateReentryChecklistItemCache(id);
-	return { error: false, message: "Reentry checklist item updated successfully" };
+	return { error: false, message: "Re-entry checklist item updated successfully" };
 };
 
 export const deleteReentryChecklistItem = async (id: string) => {
@@ -146,6 +146,8 @@ export const deleteReentryChecklistItem = async (id: string) => {
 	cache.revalidateReentryChecklistItemCache(id);
 	return rv;
 };
+
+export type ReentryChecklistItems = Awaited<ReturnType<typeof getReentryChecklistItems>>;
 
 const cachedReentryChecklistItems = unstable_cache(
 	async () => {

@@ -48,7 +48,7 @@ export const updateVolunteerTypeOrders = async (orderedIds: string[]) => {
 };
 //#endregion
 
-//#region Reentry Checklist Items
+//#region Re-entry Checklist Items
 export const createReentryChecklistItem = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
 	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
 
@@ -58,7 +58,7 @@ export const createReentryChecklistItem = async (unsafeData: z.infer<typeof sche
 
 	return {
 		error: !rv,
-		message: !rv ? "Failed to create reentry checklist item" : "Reentry checklist item created successfully",
+		message: !rv ? "Failed to create re-entry checklist item" : "Re-entry checklist item created successfully",
 	};
 };
 
@@ -71,7 +71,7 @@ export const updateReentryChecklistItem = async (id: string, unsafeData: z.infer
 
 	return {
 		error: !rv,
-		message: !rv ? "Failed to update reentry checklist item" : "Reentry checklist item updated successfully",
+		message: !rv ? "Failed to update re-entry checklist item" : "Re-entry checklist item updated successfully",
 	};
 };
 
@@ -80,15 +80,15 @@ export const removeReentryChecklistItem = async (id: string) => {
 
 	return {
 		error: !rv,
-		message: !rv ? "Failed to remove reentry checklist item" : "Reentry checklist item removed successfully",
+		message: !rv ? "Failed to remove re-entry checklist item" : "Re-entry checklist item removed successfully",
 	};
 };
 
 export const updateReentryChecklistItemOrders = async (orderedIds: string[]) => {
-	if (orderedIds.length === 0) return { error: true, message: "No reentry checklist items to update" };
+	if (orderedIds.length === 0) return { error: true, message: "No re-entry checklist items to update" };
 
 	await dbTable.updateReentryChecklistItemOrders(orderedIds);
-	return { error: false, message: "Reentry checklist item orders updated successfully" };
+	return { error: false, message: "Re-entry checklist item orders updated successfully" };
 };
 //#endregion
 

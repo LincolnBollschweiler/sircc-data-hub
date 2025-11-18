@@ -17,17 +17,14 @@ import { userSchema } from "@/userInteractions/schema";
 import { updateUser } from "@/userInteractions/actions";
 import { redirect } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
-import { Site } from "@/types";
 import { useTheme } from "next-themes";
 
 export default function ProfileForm({
 	profile,
-	sites,
 	onSuccess,
 	isIntake,
 }: {
 	profile: z.infer<typeof userSchema> & { id: string };
-	sites: Partial<Site>[];
 	onSuccess?: () => void;
 	isIntake?: boolean;
 }) {
@@ -37,7 +34,10 @@ export default function ProfileForm({
 		defaultValues: {
 			...profile,
 			phone: profile?.phone || "",
-			address: profile?.address || "",
+			address1: profile?.address1 || "",
+			address2: profile?.address2 || "",
+			state: profile?.state || "",
+			zip: profile?.zip || "",
 		},
 	});
 
@@ -90,7 +90,7 @@ export default function ProfileForm({
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-6 flex-col">
+			<form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2 flex-col">
 				<FormField
 					name="firstName"
 					render={() => (
@@ -141,19 +141,77 @@ export default function ProfileForm({
 						</FormItem>
 					)}
 				/>
-				<FormField
-					control={form.control}
-					name="address"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Address</FormLabel>
-							<FormControl>
-								<Input {...field} value={field.value ?? ""} placeholder="Optional" />
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
+				<div className="flex flex-col gap-1.5">
+					<FormField
+						control={form.control}
+						name="address1"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Address</FormLabel>
+								<FormControl>
+									<Input
+										{...field}
+										value={field.value ?? ""}
+										placeholder="Address Line 1 (optional)"
+									/>
+								</FormControl>
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="address2"
+						render={({ field }) => (
+							<FormItem>
+								<FormControl>
+									<Input
+										{...field}
+										value={field.value ?? ""}
+										placeholder="Address Line 2 (optional)"
+									/>
+								</FormControl>
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="city"
+						render={({ field }) => (
+							<FormItem>
+								<FormControl>
+									<Input {...field} value={field.value ?? ""} placeholder="City (required)" />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="state"
+						render={({ field }) => (
+							<FormItem>
+								<FormControl>
+									<Input
+										{...field}
+										value={field.value ?? ""}
+										placeholder="State (optional) e.g. ID"
+									/>
+								</FormControl>
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="zip"
+						render={({ field }) => (
+							<FormItem>
+								<FormControl>
+									<Input {...field} value={field.value ?? ""} placeholder="Zip Code (optional)" />
+								</FormControl>
+							</FormItem>
+						)}
+					/>
+				</div>
 				<FormField
 					control={form.control}
 					name="phone"
@@ -234,37 +292,6 @@ export default function ProfileForm({
 										</FormItem>
 									)}
 								/>
-							</div>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-				<FormField
-					control={form.control}
-					name="siteId"
-					render={({ field }) => (
-						<FormItem className="flex flex-col">
-							<div className="flex gap-2 items-center">
-								<FormLabel className="w-[100px]">Preferred Site</FormLabel>
-								<FormControl>
-									<Select onValueChange={field.onChange} value={field.value ?? ""}>
-										<SelectTrigger className="max-w-[150px]">
-											<SelectValue placeholder="Select a site" />
-										</SelectTrigger>
-										<SelectContent>
-											{[
-												<SelectItem key="none" value={"none"}>
-													No Preferred Site
-												</SelectItem>,
-												...sites.map((site) => (
-													<SelectItem key={site.id} value={site.id ?? ""}>
-														{site.name}
-													</SelectItem>
-												)),
-											]}
-										</SelectContent>
-									</Select>
-								</FormControl>
 							</div>
 							<FormMessage />
 						</FormItem>

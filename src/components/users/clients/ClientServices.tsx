@@ -7,12 +7,10 @@ import { DialogTrigger } from "@/components/ui/dialog";
 
 export default function ClientServices({ clientId, csTables }: { clientId: string; csTables: CSTables }) {
 	return (
-		<div className="mt-6">
-			<ClientServiceFormDialog clientId={clientId} csTables={csTables}>
-				<DialogTrigger asChild>
-					<Button>Add Service</Button>
-				</DialogTrigger>
-			</ClientServiceFormDialog>
-		</div>
+		<ClientServiceFormDialog clientId={clientId} csTables={csTables}>
+			<DialogTrigger asChild>
+				<Button className="mr-1">Add Service</Button>
+			</DialogTrigger>
+		</ClientServiceFormDialog>
 	);
 }

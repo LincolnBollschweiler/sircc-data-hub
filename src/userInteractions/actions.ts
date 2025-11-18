@@ -2,10 +2,12 @@
 
 import { user } from "@/drizzle/schema";
 import {
+	addClientReentryCheckListItemForClient,
 	ClientServiceInsert,
 	deleteClientServiceById,
 	insertClientService,
-	updateClientCoachById,
+	removeClientReentryCheckListItemForClient,
+	updateClientById,
 	updateUserById,
 } from "@/userInteractions/db";
 import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
@@ -30,8 +32,14 @@ export const updateUserRoleAndAccept = async (id: string, unsafeData: Partial<ty
 
 export const updateClientsCoach = async (userId: string | null, coachId: string | null) => {
 	if (!userId) return { error: true, message: "Invalid user ID" };
-	const rv = await updateClientCoachById(userId, { coachId });
+	const rv = await updateClientById(userId, { coachId });
 	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
+};
+
+export const updateClientIsReentryStatus = async (userId: string | null, isReentryClient: boolean) => {
+	if (!userId) return { error: true, message: "Invalid user ID" };
+	const rv = await updateClientById(userId, { isReentryClient });
+	return { error: !rv, message: rv ? "Re-entry status updated successfully" : "Failed to update re-entry status" };
 };
 
 export const createClientService = async (userId: null, data: ClientServiceInsert) => {
@@ -42,4 +50,15 @@ export const createClientService = async (userId: null, data: ClientServiceInser
 export const deleteClientService = async (serviceId: string) => {
 	const rv = await deleteClientServiceById(serviceId);
 	return { error: !rv, message: rv ? "Service deleted successfully" : "Failed to delete service" };
+};
+
+export const addClientChecklistItem = async (clientId: string, itemId: string) => {
+	const rv = await addClientReentryCheckListItemForClient(clientId, itemId);
+	return { error: !rv, message: rv ? "Checklist item added successfully" : "Failed to add checklist item" };
+};
+
+export const deleteClientChecklistItem = async (clientId: string, itemId: string) => {
+	console.log("Deleting checklist item:", clientId, itemId);
+	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId);
+	return { error: !rv, message: rv ? "Checklist item deleted successfully" : "Failed to delete checklist item" };
 };

@@ -20,31 +20,33 @@ import { Input } from "../ui/input";
 import { userDataTableColumns } from "./UserDataTableColumns";
 import { CSTables } from "@/tableInteractions/db";
 import { useDeleteClientService } from "../DeleteConfirm";
+import ClientServices from "./clients/ClientServices";
 
-interface DataTableProps<TData extends { siteId?: string | null }> {
+interface DataTableProps<TData> {
 	data: TData[];
 	userType?: string;
 }
 
 const PAGE_SIZE_KEY = "datatable_page_size";
-const USER_SITE_ID = "global_user_site_id";
 
-export default function DataTable<TData extends { siteId?: string | null }>({
+export default function DataTable<TData>({
 	data,
-	sites,
 	userType,
 	csTables,
+	clientId,
 }: DataTableProps<TData> & {
-	sites: { id: string; name: string }[];
 	userType: string;
 	csTables?: CSTables;
+	clientId?: string;
 }) {
 	const { startDelete, dialog } = useDeleteClientService();
+
 	const columns = userDataTableColumns(
 		userType,
 		csTables,
 		userType === "single-client" ? startDelete : undefined
 	) as ColumnDef<TData, unknown>[];
+
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pageSize, setPageSize] = useState<number>(() => {
 		// Load from localStorage on first render (client only)
@@ -55,40 +57,17 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 		return 10;
 	});
 
-	const [siteId, setSiteId] = useState("all");
 	const [loadingOrNone, setLoadingOrNone] = useState<React.ReactNode | null>(
 		<div className="flex justify-center items-center p-20">
 			<Loader2 className="w-8 h-8 text-foreground/80 animate-spin" />
 		</div>
 	);
-	useEffect(() => {
-		const saved = localStorage.getItem(USER_SITE_ID);
-		handleSiteChange(saved || "all");
-	}, []);
-
-	const handleSiteChange = async (value: string) => {
-		console.log("Site changed to:", value);
-		setSiteId(value);
-		localStorage.setItem(USER_SITE_ID, value);
-		const filteredData =
-			value === "all"
-				? data.filter((item) => item.siteId)
-				: value === "none"
-				? data.filter((item) => !item.siteId)
-				: data.filter((item) => item.siteId === value);
-		setSiteFilteredData(filteredData);
-		if (filteredData.length === 0) {
-			setLoadingOrNone(<div className="w-full text-center p-20">No matching applicants</div>);
-		} else {
-			setLoadingOrNone(null);
-		}
-	};
 
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
-	const [siteFilteredData, setSiteFilteredData] = useState<TData[]>([]);
+
 	const table = useReactTable({
-		data: siteFilteredData,
+		data,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
@@ -117,31 +96,12 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 	// Sync table state if user has a cached size
 	useEffect(() => {
 		table.setPageSize(pageSize);
+		setLoadingOrNone(null);
 	}, [pageSize, table]);
 
 	return (
-		<>
-			<div className="flex flex-wrap gap-1 items-center justify-between my-1">
-				<Select onValueChange={handleSiteChange} value={siteId}>
-					<SelectTrigger className="w-[160px] text-primary-foreground bg-primary">
-						<SelectValue placeholder="Select a site" />
-					</SelectTrigger>
-					<SelectContent>
-						{[
-							<SelectItem key="all" value={"all"}>
-								All Sites
-							</SelectItem>,
-							<SelectItem key="none" value={"none"}>
-								No Preferred Site
-							</SelectItem>,
-							...sites.map((site) => (
-								<SelectItem key={site.id} value={site.id ?? ""}>
-									{site.name}
-								</SelectItem>
-							)),
-						]}
-					</SelectContent>
-				</Select>
+		<div className="container mx-auto  border border-[border-muted/50] p-2 rounded-lg shadow-md">
+			<div className="flex flex-wrap gap-1 items-center justify-between mb-2">
 				<div className="flex flex-wrap sm:flex-nowrap gap-1 items-center">
 					{userType !== "single-client" && (
 						<Input
@@ -158,8 +118,9 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 						onChange={(e) => setGlobalFilter(e.target.value)}
 					/>
 				</div>
+				{userType === "single-client" && <ClientServices clientId={clientId!} csTables={csTables!} />}
 			</div>
-			{siteFilteredData.length > 0 ? (
+			{data.length > 0 ? (
 				<div className="container mx-auto [&_table_tr:hover]:bg-background-light [&_table_th:hover]:bg-background-light border border-[border-muted/50] p-1 rounded-lg shadow-md">
 					<Table className="bg-background-light rounded-t-md overflow-hidden">
 						<TableHeader className="bg-background-dark">
@@ -267,6 +228,6 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 				loadingOrNone
 			)}
 			{dialog}
-		</>
+		</div>
 	);
 }

@@ -403,7 +403,7 @@ export const getAllClients = async () => cachedClients();
 
 //#region CRUD Coaches
 
-export const updateClientCoachById = async (clientId: string, data: Partial<typeof client.$inferInsert>) => {
+export const updateClientById = async (clientId: string, data: Partial<typeof client.$inferInsert>) => {
 	console.log("Updating client coach with id:", clientId, "Data:", data);
 	const [updatedClient] = await db.update(client).set(data).where(eq(client.id, clientId)).returning();
 	revalidateClientCache(clientId);
@@ -457,5 +457,53 @@ export const deleteClientServiceById = async (serviceId: string) => {
 	revalidateClientCache(deletedService.clientId);
 	return deletedService;
 };
-
 //#endregion
+
+//#region Client Checklist Items
+export const addClientReentryCheckListItemForClient = async (clientId: string, reentryCheckListItemId: string) => {
+	const [newItem] = await db
+		.insert(clientReentryCheckListItem)
+		.values({
+			clientId,
+			reentryCheckListItemId,
+		})
+		.returning();
+
+	if (newItem == null) {
+		console.error("Failed to add client reentry checklist item");
+		throw new Error("Failed to add client reentry checklist item");
+	}
+
+	revalidateClientCache(clientId);
+	return newItem;
+};
+
+export const removeClientReentryCheckListItemForClient = async (clientId: string, reentryCheckListItemId: string) => {
+	const [deletedItem] = await db
+		.delete(clientReentryCheckListItem)
+		.where(
+			and(
+				eq(clientReentryCheckListItem.clientId, clientId),
+				eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItemId)
+			)
+		)
+		.returning();
+	if (deletedItem == null) {
+		console.error("Failed to remove client reentry checklist item");
+		throw new Error("Failed to remove client reentry checklist item");
+	}
+	revalidateClientCache(clientId);
+	return deletedItem;
+};
+
+export type ClientReentryCheckListItem = typeof clientReentryCheckListItem.$inferSelect;
+export const getClientReentryCheckListItemsForClient = async (clientId: string) => {
+	const items = await db
+		.select({
+			reentryCheckListItemId: clientReentryCheckListItem.reentryCheckListItemId,
+			clientId: clientReentryCheckListItem.clientId,
+		})
+		.from(clientReentryCheckListItem)
+		.where(eq(clientReentryCheckListItem.clientId, clientId));
+	return items;
+};
