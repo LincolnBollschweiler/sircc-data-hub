@@ -2,16 +2,58 @@
 
 import { ClientFull } from "@/userInteractions/db";
 import { formatPhoneNumber } from "react-phone-number-input";
+import { ClientCoach } from "./clients/ClientCoach";
+import BigIconCheckbox from "../BigIconCheckbox";
+import { useState } from "react";
+import { updateClientIsReentryStatus } from "@/userInteractions/actions";
+import { actionToast } from "@/hooks/use-toast";
 
-export const UserDetails = ({ client }: { client: ClientFull["user"] }) => {
+export const UserDetails = ({
+	user,
+	client,
+	allCoaches,
+}: {
+	user: ClientFull["user"];
+	client: ClientFull["client"];
+	allCoaches: ClientFull["coach"][];
+}) => {
+	const [isReentry, setIsReentry] = useState(client.isReentryClient);
+
+	const setIsReentryClient = async (checked: boolean) => {
+		// Here you would typically call an action to update the client's re-entry status in the backend
+		setIsReentry(checked);
+
+		const action = updateClientIsReentryStatus.bind(null, client.id);
+		const actionData = await action(checked);
+		if (actionData) {
+			actionToast({ actionData });
+		}
+	};
+
 	return (
-		<div className="flex flex-wrap">
-			<div className="px-3">
-				{client?.firstName} {client?.lastName}
+		<div className="flex flex-wrap gap-3 items-center container mx-auto mb-6 border border-[border-muted/50] py-2 px-4 rounded-lg shadow-md">
+			<div>
+				{user?.firstName} {user?.lastName}
 			</div>
-			{client?.email && <div className="px-3">{client.email}</div>}
-			{client?.phone && <div className="px-3">{formatPhoneNumber(client.phone)}</div>}
-			{client?.address && <div className="px-3">{client.address}</div>}
+			{user?.email && <div>{user.email}</div>}
+			{user?.phone && <div>{formatPhoneNumber(user.phone)}</div>}
+			{user?.address1 && (
+				<div>
+					{user?.address1 && <span>{user.address1} </span>}
+					{user?.address2 && <span>{user.address2} </span>}
+					{user?.city && (
+						<span>
+							{user.city}
+							{user?.state && `, ${user.state}`} {user?.zip ?? ""}
+						</span>
+					)}
+				</div>
+			)}
+			<ClientCoach client={client} allCoaches={allCoaches} />
+			<div className="flex items-center gap-1">
+				<BigIconCheckbox checked={!!isReentry} onChange={(checked) => setIsReentryClient(checked)} />
+				<span>Re-entry Client</span>
+			</div>
 		</div>
 	);
 };

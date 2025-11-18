@@ -1,5 +1,3 @@
-// import { getAllUsers, getUserSites } from "@/userInteractions/db";
-
 export default async function AdminPage() {
 	return (
 		<div className="container py-4">

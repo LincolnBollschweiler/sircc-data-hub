@@ -1,4 +1,4 @@
-import { getAllUsers, getUserSites } from "@/userInteractions/db";
+import { getAllUsers } from "@/userInteractions/db";
 import DataTable from "./DataTable";
 import { User } from "@/types";
 import PageHeader from "../PageHeader";
@@ -6,7 +6,6 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 
 export default async function Applicants({ userType }: { userType: string }) {
-	const sites = await getUserSites();
 	const users = await getAllUsers();
 
 	let applicants;
@@ -28,7 +27,7 @@ export default async function Applicants({ userType }: { userType: string }) {
 					<Link href="/admin">Admin Dashboard</Link>
 				</Button>
 			</PageHeader>
-			<DataTable data={applicants as Partial<User>[]} sites={sites} userType={userType} />
+			<DataTable data={applicants as Partial<User>[]} userType={userType} />
 		</div>
 	);
 }

@@ -71,6 +71,27 @@
       "when": 1763323556918,
       "tag": "0009_hard_squirrel_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1763390797544,
+      "tag": "0010_spicy_the_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1763390820573,
+      "tag": "0011_complete_loners",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1763420212864,
+      "tag": "0012_fancy_thor_girl",
+      "breakpoints": true
     }
   ]
 }

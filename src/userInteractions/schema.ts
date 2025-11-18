@@ -13,11 +13,11 @@ export const userSchema = z
 		firstName: z.string().min(2, "Required").max(30),
 		lastName: z.string().min(1, "Required").max(30),
 		email: z.string().email().max(255).nullable(),
-		address: z
-			.string()
-			.max(255)
-			.nullable()
-			.transform((val) => (val === "" ? null : val)),
+		address1: z.string().max(100).optional(),
+		address2: z.string().max(100).optional(),
+		city: z.string().min(2, "City is required"),
+		state: z.string().max(2, "Two letter state abbreviation").optional(),
+		zip: z.string().max(5, "Five digit zip code").optional(),
 		phone: z
 			.string()
 			.nullable()

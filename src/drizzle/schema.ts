@@ -75,7 +75,11 @@ export const user = pgTable(
 		photoUrl: varchar("photo_url", { length: 500 }),
 		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
 		phone: varchar("phone", { length: 12 }),
-		address: varchar("address", { length: 255 }),
+		address1: varchar("address1", { length: 100 }),
+		address2: varchar("address2", { length: 100 }),
+		city: varchar("city", { length: 50 }),
+		state: varchar("state", { length: 2 }),
+		zip: varchar("zip", { length: 5 }),
 		birthMonth: integer("birth_month"),
 		birthDay: integer("birth_day"),
 		accepted: boolean("accepted"),
@@ -328,7 +332,7 @@ export const clientReentryCheckListItem = pgTable(
 	"client_reentry_check_list_item",
 	{
 		clientId: uuid("client_id")
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => client.id, { onDelete: "cascade" })
 			.notNull(),
 		reentryCheckListItemId: uuid("reentry_check_list_item_id")
 			.references(() => reentryCheckListItem.id, { onDelete: "restrict" })

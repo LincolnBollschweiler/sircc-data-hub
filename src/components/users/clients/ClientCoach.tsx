@@ -28,8 +28,8 @@ export const ClientCoach = ({
 	};
 
 	return (
-		<div className="mt-4">
-			<h2 className="text-xl font-semibold mb-2">Assigned Coach</h2>
+		<div className="flex items-center gap-2">
+			<h2 className="font-semibold m-0 underline">Assigned Coach</h2>
 			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
 					<Button
@@ -48,7 +48,7 @@ export const ClientCoach = ({
 						<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 					</Button>
 				</PopoverTrigger>
-				<PopoverContent className="w-[200px] p-0">
+				<PopoverContent className="w-[200px] p-0 m-0">
 					<Command>
 						<CommandInput placeholder="Search coach..." />
 						<CommandEmpty>No coach found.</CommandEmpty>
@@ -61,7 +61,7 @@ export const ClientCoach = ({
 										setOpen(false);
 									}}
 									className="text-sm"
-									value={coach?.id}
+									value={`${coach?.firstName} ${coach?.lastName}`}
 								>
 									{coach?.firstName} {coach?.lastName}
 									{value === coach?.id && <Check className="ml-auto h-4 w-4" />}

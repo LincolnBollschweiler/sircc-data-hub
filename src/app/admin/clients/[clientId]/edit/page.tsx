@@ -1,11 +1,10 @@
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import { ClientCoach } from "@/components/users/clients/ClientCoach";
-import ClientServices from "@/components/users/clients/ClientServices";
+import ReentryCheckListWrapper from "@/components/users/clients/ReentryCheckListWrapper";
 import DataTable from "@/components/users/DataTable";
 import { UserDetails } from "@/components/users/UserDetails";
 import { getAllClientServiceTables } from "@/tableInteractions/db";
-import { getClientById, getAllCoaches, ClientServiceFull, getUserSites } from "@/userInteractions/db";
+import { getClientById, getAllCoaches, ClientServiceFull } from "@/userInteractions/db";
 import Link from "next/link";
 
 export default async function ViewClientPage({ params }: { params: Promise<{ clientId: string }> }) {
@@ -15,7 +14,6 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 		return <div>Client not found</div>;
 	}
 
-	const sites = await getUserSites();
 	const allCoaches = await getAllCoaches();
 	const csTables = await getAllClientServiceTables();
 
@@ -26,17 +24,16 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 					<Link href="/admin/clients">Back to Clients</Link>
 				</Button>
 			</PageHeader>
+			{fullClient && <UserDetails user={fullClient.user} client={fullClient.client} allCoaches={allCoaches} />}
+			{fullClient && fullClient.client.isReentryClient && <ReentryCheckListWrapper clientId={clientId} />}
 			{fullClient && (
 				<DataTable
 					data={fullClient.clientServices as ClientServiceFull[] & { siteId?: string | null }[]}
-					sites={sites}
 					userType="single-client"
 					csTables={csTables}
+					clientId={clientId}
 				/>
 			)}
-			{fullClient && <UserDetails client={fullClient.user} />}
-			{fullClient && <ClientCoach client={fullClient.client} allCoaches={allCoaches} />}
-			{fullClient && <ClientServices clientId={clientId} csTables={csTables} />}
 		</div>
 	);
 }

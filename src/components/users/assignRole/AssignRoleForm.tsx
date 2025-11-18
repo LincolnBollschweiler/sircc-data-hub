@@ -96,7 +96,7 @@ export default function ProfileForm({
 						render={({ field }) => (
 							<FormItem>
 								<div className="flex items-center gap-3">
-									<FormLabel className="m-0 leading-none">Is Reentry Client?</FormLabel>
+									<FormLabel className="m-0 leading-none">Is Re-entry Client?</FormLabel>
 									<FormControl>
 										<Checkbox
 											className="mt-0 align-middle size-5"

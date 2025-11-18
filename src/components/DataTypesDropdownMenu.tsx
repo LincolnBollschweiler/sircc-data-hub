@@ -32,7 +32,7 @@ export default function DataTypesDropdownMenu() {
 					<span className="hover-underline-border">Locations</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/reentry-checklist-items")}>
-					<span className="hover-underline-border">Reentry Checklist Items</span>
+					<span className="hover-underline-border">Re-entry Checklist Items</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/referral-sources")}>
 					<span className="hover-underline-border">Referral Sources</span>
