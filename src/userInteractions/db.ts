@@ -264,14 +264,13 @@ const getCachedClient = (id: string) => {
 
 					// computed counts
 					serviceCount: sql<number>`
-						(SELECT COUNT(*) FROM client_service cs WHERE cs.client_id = ${id} AND cs.deleted_at IS NULL)`,
+						(SELECT COUNT(*) FROM client_service cs WHERE cs.client_id = ${id})`,
 					openRequestsCount: sql<number>`
 						(SELECT COUNT(*)
 						FROM client_service csr
 						WHERE csr.client_id = ${id}
 						AND csr.requested_service_id IS NOT NULL
-						AND csr.provided_service_id IS NULL
-						AND csr.deleted_at IS NULL)`,
+						AND csr.provided_service_id IS NULL)`,
 					requestsUpdatedAt: sql<Date | null>`
 						(SELECT MAX(csr.updated_at)
 						FROM client_service csr
@@ -294,15 +293,7 @@ const getCachedClient = (id: string) => {
 					reentryCheckListItem,
 					eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItem.id)
 				)
-				.where(
-					and(
-						eq(user.id, id),
-						eq(user.accepted, true),
-						eq(user.role, "client"),
-						isNull(user.deletedAt),
-						isNull(clientService.deletedAt)
-					)
-				)
+				.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "client"), isNull(user.deletedAt)))
 				.orderBy(desc(clientService.updatedAt));
 
 			if (rows.length === 0) return null;
@@ -386,16 +377,14 @@ const cachedClients = unstable_cache(
 				serviceCount: sql<number>`
 					(SELECT COUNT(*)
 					FROM client_service cs
-					WHERE cs.client_id = ${client.id}
-					AND cs.deleted_at IS NULL)
+					WHERE cs.client_id = ${client.id})
 				`,
 				openRequestsCount: sql<number>`
 					(SELECT COUNT(*)
 					FROM client_service csr
 					WHERE csr.client_id = ${client.id}
 					AND csr.requested_service_id IS NOT NULL
-					AND csr.provided_service_id IS NULL
-					AND csr.deleted_at IS NULL)
+					AND csr.provided_service_id IS NULL)
 				 `,
 				requestsUpdatedAt: sql<Date | null>`
 					(SELECT MAX(csr.updated_at)
@@ -533,7 +522,6 @@ const getCachedCoach = (id: string) => {
 						SELECT COUNT(*)::int AS "serviceCount"
 						FROM client_service cs
 						WHERE cs.client_id = ${clientId}
-						AND cs.deleted_at IS NULL
 					`);
 
 					const serviceCount = serviceCountResult.rows[0]?.serviceCount ?? 0;
@@ -546,7 +534,6 @@ const getCachedCoach = (id: string) => {
 						WHERE csr.client_id = ${clientId}
 						AND csr.requested_service_id IS NOT NULL
 						AND csr.provided_service_id IS NULL
-						AND csr.deleted_at IS NULL
 					`);
 
 					const openRequestsCount = openRequestsResult.rows[0]?.openRequestsCount ?? 0;
@@ -596,11 +583,7 @@ export const insertClientService = async (data: ClientServiceInsert) => {
 
 export const deleteClientServiceById = async (serviceId: string) => {
 	console.log("Deleting client service with id:", serviceId);
-	const [deletedService] = await db
-		.update(clientService)
-		.set({ deletedAt: new Date() })
-		.where(eq(clientService.id, serviceId))
-		.returning();
+	const [deletedService] = await db.delete(clientService).where(eq(clientService.id, serviceId)).returning();
 
 	if (deletedService == null) {
 		console.error("Failed to delete client service");

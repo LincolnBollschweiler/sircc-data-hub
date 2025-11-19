@@ -137,14 +137,11 @@ export const coachMileage = pgTable(
 			.references(() => coach.id, { onDelete: "cascade" })
 			.notNull(),
 		miles: integer("miles").notNull(),
+		date: timestamp("date", { withTimezone: true }).notNull().defaultNow(),
 		createdAt,
 		updatedAt,
-		deletedAt,
 	},
-	(table) => [
-		index("coach_mileage_coach_id_idx").on(table.coachId),
-		index("coach_mileage_deleted_at_idx").on(table.deletedAt),
-	]
+	(table) => [index("coach_mileage_coach_id_idx").on(table.coachId)]
 );
 
 export const coachHours = pgTable(
@@ -156,6 +153,7 @@ export const coachHours = pgTable(
 			.notNull(),
 		paidHours: decimal("paid_hours", { precision: 5, scale: 2 }),
 		volunteerHours: decimal("volunteer_hours", { precision: 5, scale: 2 }),
+		date: timestamp("date", { withTimezone: true }).notNull().defaultNow(),
 		createdAt,
 		updatedAt,
 	},
@@ -329,12 +327,10 @@ export const clientService = pgTable(
 		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
-		deletedAt,
 	},
 	(table) => [
 		index("client_service_site_id_idx").on(table.siteId),
 		index("client_service_city_id_idx").on(table.cityId),
-		index("client_service_deleted_at_idx").on(table.deletedAt),
 		index("client_service_client_id_idx").on(table.clientId),
 		index("client_service_requested_service_id_idx").on(table.requestedServiceId),
 		index("client_service_provided_service_id_idx").on(table.providedServiceId),
@@ -364,6 +360,7 @@ export const coachTraining = pgTable(
 		trainingId: uuid("training_id")
 			.references(() => training.id, { onDelete: "restrict" })
 			.notNull(),
+		createdAt,
 	},
 	(table) => [uniqueIndex("coach_id_training_id").on(table.coachId, table.trainingId)]
 );
