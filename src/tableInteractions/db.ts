@@ -814,7 +814,7 @@ export const deleteService = async (id: string) => {
 	return deletedService;
 };
 
-export type Service = typeof dbTable.service.$inferSelect;
+export type Service = Awaited<ReturnType<typeof getServices>>[number];
 
 const cachedServices = unstable_cache(
 	async () => {

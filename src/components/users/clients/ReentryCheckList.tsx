@@ -11,10 +11,12 @@ export default function ReentryCheckList({
 	clientId,
 	clientCheckListItems,
 	checkListItems,
+	isClientView,
 }: {
 	clientId: string;
 	clientCheckListItems: ClientReentryCheckListItem[];
 	checkListItems: ReentryChecklistItems;
+	isClientView?: boolean;
 }) {
 	// Local state
 	const [checkedItems, setCheckedItems] = useState(clientCheckListItems.map((item) => item.reentryCheckListItemId));
@@ -27,7 +29,7 @@ export default function ReentryCheckList({
 
 	// Debounced DB sync effect
 	useEffect(() => {
-		if (!pendingOps.current) return;
+		if (!pendingOps.current || isClientView) return;
 
 		if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -44,10 +46,11 @@ export default function ReentryCheckList({
 		return () => {
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 		};
-	}, [checkedItems, clientId]);
+	}, [checkedItems, clientId, isClientView]);
 
 	// Handle UI toggle instantly
 	const handleCheckboxChange = (itemId: string) => {
+		if (isClientView) return;
 		const adding = !checkedItems.includes(itemId);
 
 		setCheckedItems((prev) => (adding ? [...prev, itemId] : prev.filter((id) => id !== itemId)));
@@ -71,9 +74,10 @@ export default function ReentryCheckList({
 	}, [checkListItems]);
 
 	return (
-		<div className="container border rounded-lg shadow-md mb-6">
+		<div className="container border py-1 rounded-lg shadow-md mb-6 bg-background-light">
+			{isClientView && <h2 className="font-semibold mb-2 mt-1">Your Re-entry Checklist</h2>}
 			<div
-				className="grid justify-center gap-4 p-4 mx-auto"
+				className="grid justify-center gap-x-2 gap-y-0 mx-auto"
 				style={{
 					gridTemplateColumns: `repeat(auto-fit, minmax(${maxWidth}px, auto))`,
 				}}
@@ -83,7 +87,11 @@ export default function ReentryCheckList({
 
 					return (
 						<div key={item.id} className="flex items-center gap-1 justify-start">
-							<BigIconCheckbox checked={isChecked} onChange={() => handleCheckboxChange(item.id)} />
+							<BigIconCheckbox
+								checked={isChecked}
+								onChange={() => handleCheckboxChange(item.id)}
+								noHover={isClientView}
+							/>
 							<span
 								ref={(el) => {
 									measureRefs.current[item.id] = el;

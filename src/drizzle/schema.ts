@@ -305,9 +305,7 @@ export const clientService = pgTable(
 		cityId: uuid("city_id").references(() => city.id, { onDelete: "set null" }),
 		locationId: uuid("location_id").references(() => location.id, { onDelete: "set null" }),
 		requestedServiceId: uuid("requested_service_id").references(() => service.id, { onDelete: "restrict" }),
-		providedServiceId: uuid("provided_service_id")
-			.references(() => service.id, { onDelete: "restrict" })
-			.notNull(),
+		providedServiceId: uuid("provided_service_id").references(() => service.id, { onDelete: "restrict" }),
 		referralSourceId: uuid("referral_source_id").references(() => referralSource.id, { onDelete: "set null" }),
 		referredOutId: uuid("referred_out_id").references(() => referredOut.id, { onDelete: "set null" }),
 		visitId: uuid("visit_id").references(() => visit.id, { onDelete: "set null" }),

@@ -1,16 +1,20 @@
 "use client";
 import { useState } from "react";
 import { Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function BigIconCheckbox({
+	// add an opitonal noHover prop to disable hover effects
 	checked: controlled,
 	defaultChecked,
 	onChange,
+	noHover = false,
 	size = 28,
 }: {
 	checked?: boolean;
 	defaultChecked?: boolean;
 	onChange?: (checked: boolean) => void;
+	noHover?: boolean;
 	size?: number;
 }) {
 	const [uncontrolled, setUncontrolled] = useState(defaultChecked ?? false);
@@ -27,7 +31,10 @@ export default function BigIconCheckbox({
 			onClick={toggle}
 			type="button"
 			aria-pressed={checked}
-			className="flex items-center justify-center rounded-md p-1 transition-colors cursor-pointer select-none"
+			className={cn(
+				"flex items-center justify-center rounded-md p-1 transition-colors select-none",
+				noHover ? "cursor-default" : "cursor-pointer"
+			)}
 			style={{ width: size + 8, height: size + 8 }}
 		>
 			{checked ? (

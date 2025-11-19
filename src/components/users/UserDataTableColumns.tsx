@@ -18,7 +18,7 @@ import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
 import { ClientList, ClientServiceFull } from "@/userInteractions/db";
-import ClientServiceFormDialog from "./clients/ClientServiceFormDialog";
+import ClientServicesDialog from "./clients/ClientServicesDialog";
 import { CSTables } from "@/tableInteractions/db";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
@@ -42,7 +42,7 @@ export const userDataTableColumns = (
 	csTables?: CSTables,
 	startDelete?: (id: string) => void
 ): ColumnDef<unknown>[] => {
-	if (userType === "rejected" || userType === "applicant")
+	if (userType === "rejected" || userType === "applicant") {
 		return [
 			{
 				id: "name",
@@ -162,7 +162,12 @@ export const userDataTableColumns = (
 								<DropdownMenuContent align="end">
 									{userType !== "rejected" && (
 										<DropdownMenuItem asChild>
-											<a href={`mailto:${(user as User).email}`}>Send Email</a>
+											<a
+												className="hover:!bg-background-dark"
+												href={`mailto:${(user as User).email}`}
+											>
+												Send Email
+											</a>
 										</DropdownMenuItem>
 									)}
 									{userType === "rejected" && (
@@ -197,8 +202,9 @@ export const userDataTableColumns = (
 				},
 			},
 		];
+	}
 
-	if (userType === "client" || userType === "client-volunteer")
+	if (userType === "client" || userType === "client-volunteer") {
 		return [
 			{
 				accessorKey: "name",
@@ -283,7 +289,9 @@ export const userDataTableColumns = (
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
 									<DropdownMenuItem asChild>
-										<a href={`mailto:${user.email}`}>Send Email</a>
+										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
+											Send Email
+										</a>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
@@ -301,8 +309,9 @@ export const userDataTableColumns = (
 				},
 			},
 		];
+	}
 
-	if (userType === "single-client")
+	if (userType === "single-client") {
 		return [
 			{
 				accessorKey: "requestedService.name",
@@ -414,7 +423,7 @@ export const userDataTableColumns = (
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
 									<DropdownMenuItem asChild>
-										<ClientServiceFormDialog
+										<ClientServicesDialog
 											clientId={service.clientId}
 											csTables={csTables!}
 											values={service}
@@ -422,7 +431,7 @@ export const userDataTableColumns = (
 											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
 												Edit Service
 											</DialogTrigger>
-										</ClientServiceFormDialog>
+										</ClientServicesDialog>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuSeparator />
@@ -439,8 +448,105 @@ export const userDataTableColumns = (
 				},
 			},
 		];
+	}
 
-	if (userType === "volunteer" || userType === "client-volunteer")
+	if (userType === "single-client-view") {
+		return [
+			{
+				accessorKey: "requestedService.name",
+				header: "Requested Service",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.requestedService ? r.requestedService.name : "";
+				},
+			},
+			{
+				accessorKey: "providedService.name",
+				header: "Provided Service",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.providedService ? r.providedService.name : "";
+				},
+			},
+			{
+				accessorKey: "location.name",
+				header: "Location",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.location ? r.location.name : "";
+				},
+			},
+			{
+				accessorKey: "referralSource.name",
+				header: "Referral Source",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.referralSource ? r.referralSource.name : "";
+				},
+			},
+			{
+				accessorKey: "referredOut.name",
+				header: "Referred Out",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.referredOut ? r.referredOut.name : "";
+				},
+			},
+			{
+				accessorKey: "visit.name",
+				header: "Visit Reason",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.visit ? r.visit.name : "";
+				},
+			},
+			{
+				accessorKey: "clientService.funds",
+				header: "Funds Provided",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					if (r.clientService.funds != null) {
+						return `$${r.clientService.funds.toString()}`;
+					}
+				},
+			},
+			{
+				accessorKey: "clientService.notes",
+				header: "Notes",
+				cell: ({ getValue }) => {
+					const notes = getValue<string>() || "";
+					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+					return (
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant="ghost"
+									className="text-left p-0 px-1 h-auto whitespace-nowrap text-ellipsis"
+								>
+									{truncated}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="max-w-sm">
+								<p className="whitespace-pre-wrap">{notes}</p>
+							</PopoverContent>
+						</Popover>
+					);
+				},
+			},
+			{
+				accessorKey: "clientService.createdAt",
+				header: "Created",
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				accessorKey: "clientService.updatedAt",
+				header: "Updated",
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+		];
+	}
+
+	if (userType === "volunteer" || userType === "client-volunteer") {
 		return [
 			{
 				accessorKey: "name",
@@ -492,8 +598,9 @@ export const userDataTableColumns = (
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 		];
+	}
 
-	if (userType === "coach")
+	if (userType === "coach") {
 		return [
 			{
 				accessorKey: "name",
@@ -545,8 +652,9 @@ export const userDataTableColumns = (
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 		];
+	}
 
-	if (userType === "admin")
+	if (userType === "admin") {
 		return [
 			{
 				accessorKey: "name",
@@ -598,6 +706,7 @@ export const userDataTableColumns = (
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 		];
+	}
 
 	// should never happen but needed for TS
 	return [];

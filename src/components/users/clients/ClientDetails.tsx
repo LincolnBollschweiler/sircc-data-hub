@@ -2,13 +2,13 @@
 
 import { ClientFull } from "@/userInteractions/db";
 import { formatPhoneNumber } from "react-phone-number-input";
-import { ClientCoach } from "./clients/ClientCoach";
-import BigIconCheckbox from "../BigIconCheckbox";
+import { ClientCoach } from "./ClientCoach";
+import BigIconCheckbox from "../../BigIconCheckbox";
 import { useState } from "react";
 import { updateClientIsReentryStatus } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 
-export const UserDetails = ({
+export const ClientDetails = ({
 	user,
 	client,
 	allCoaches,
@@ -31,7 +31,7 @@ export const UserDetails = ({
 	};
 
 	return (
-		<div className="flex flex-wrap gap-3 items-center container mx-auto mb-6 border border-[border-muted/50] py-2 px-4 rounded-lg shadow-md">
+		<div className="flex flex-wrap gap-x-2 gap-y-0 items-center container mx-auto mb-6 border border-[border-muted/50] py-2 px-4 rounded-lg shadow-md  bg-background-light">
 			<div>
 				{user?.firstName} {user?.lastName}
 			</div>

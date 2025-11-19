@@ -246,21 +246,19 @@ const getCachedClient = (id: string) => {
 					reentryCheckListItem,
 
 					// computed counts
-					serviceCount: sql<number>`(
-        SELECT COUNT(*) FROM client_service cs WHERE cs.client_id = ${id}
-      )`,
-					openRequestsCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM client_service csr
-        WHERE csr.client_id = ${id}
-        AND csr.requested_service_id IS NOT NULL
-        AND csr.provided_service_id IS NULL
-      )`,
-					requestsUpdatedAt: sql<Date | null>`(
-        SELECT MAX(csr.updated_at)
-        FROM client_service csr
-        WHERE csr.client_id = ${id}
-      )`,
+					serviceCount: sql<number>`
+						(SELECT COUNT(*) FROM client_service cs WHERE cs.client_id = ${id} AND cs.deleted_at IS NULL)`,
+					openRequestsCount: sql<number>`
+						(SELECT COUNT(*)
+						FROM client_service csr
+						WHERE csr.client_id = ${id}
+						AND csr.requested_service_id IS NOT NULL
+						AND csr.provided_service_id IS NULL
+						AND csr.deleted_at IS NULL)`,
+					requestsUpdatedAt: sql<Date | null>`
+						(SELECT MAX(csr.updated_at)
+						FROM client_service csr
+						WHERE csr.client_id = ${id})`,
 				})
 				.from(user)
 				.leftJoin(client, eq(user.id, client.id))
@@ -364,14 +362,16 @@ const cachedClients = unstable_cache(
 				serviceCount: sql<number>`
 					(SELECT COUNT(*)
 					FROM client_service cs
-					WHERE cs.client_id = ${client.id})
+					WHERE cs.client_id = ${client.id}
+					AND cs.deleted_at IS NULL)
 				`,
 				openRequestsCount: sql<number>`
 					(SELECT COUNT(*)
 					FROM client_service csr
 					WHERE csr.client_id = ${client.id}
 					AND csr.requested_service_id IS NOT NULL
-					AND csr.provided_service_id IS NULL)
+					AND csr.provided_service_id IS NULL
+					AND csr.deleted_at IS NULL)
 				 `,
 				requestsUpdatedAt: sql<Date | null>`
 					(SELECT MAX(csr.updated_at)
