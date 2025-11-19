@@ -18,9 +18,9 @@ import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "../ui/input";
 import { userDataTableColumns } from "./UserDataTableColumns";
-import { CSTables } from "@/tableInteractions/db";
+import { CSTables, Service } from "@/tableInteractions/db";
 import { useDeleteClientService } from "../DeleteConfirm";
-import ClientServices from "./clients/ClientServices";
+import { ClientServices, NewClientService } from "./clients/ClientServices";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -32,12 +32,14 @@ const PAGE_SIZE_KEY = "datatable_page_size";
 export default function DataTable<TData>({
 	data,
 	userType,
-	csTables,
 	clientId,
+	csTables,
+	services,
 }: DataTableProps<TData> & {
 	userType: string;
-	csTables?: CSTables;
 	clientId?: string;
+	csTables?: CSTables;
+	services?: Service[] | undefined;
 }) {
 	const { startDelete, dialog } = useDeleteClientService();
 
@@ -100,10 +102,10 @@ export default function DataTable<TData>({
 	}, [pageSize, table]);
 
 	return (
-		<div className="container mx-auto  border border-[border-muted/50] p-2 rounded-lg shadow-md">
+		<div className="container mx-auto border border-[border-muted/50] p-2 rounded-lg shadow-md bg-background-light">
 			<div className="flex flex-wrap gap-1 items-center justify-between mb-2">
 				<div className="flex flex-wrap sm:flex-nowrap gap-1 items-center">
-					{userType !== "single-client" && (
+					{userType !== "single-client" && userType !== "single-client-view" && (
 						<Input
 							className="max-w-sm text-primary-foreground bg-primary"
 							placeholder={`Search by Name...`}
@@ -119,6 +121,7 @@ export default function DataTable<TData>({
 					/>
 				</div>
 				{userType === "single-client" && <ClientServices clientId={clientId!} csTables={csTables!} />}
+				{userType === "single-client-view" && <NewClientService clientId={clientId!} services={services!} />}
 			</div>
 			{data.length > 0 ? (
 				<div className="container mx-auto [&_table_tr:hover]:bg-background-light [&_table_th:hover]:bg-background-light border border-[border-muted/50] p-1 rounded-lg shadow-md">

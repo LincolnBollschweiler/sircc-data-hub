@@ -1,16 +1,27 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CSTables } from "@/tableInteractions/db";
-import ClientServiceFormDialog from "./ClientServiceFormDialog";
+import { CSTables, Service } from "@/tableInteractions/db";
+import ClientServicesDialog from "./ClientServicesDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
+import ClientServiceDialog from "./ClientServiceDialog";
 
-export default function ClientServices({ clientId, csTables }: { clientId: string; csTables: CSTables }) {
+export const ClientServices = ({ clientId, csTables }: { clientId: string; csTables: CSTables }) => {
 	return (
-		<ClientServiceFormDialog clientId={clientId} csTables={csTables}>
+		<ClientServicesDialog clientId={clientId} csTables={csTables}>
 			<DialogTrigger asChild>
 				<Button className="mr-1">Add Service</Button>
 			</DialogTrigger>
-		</ClientServiceFormDialog>
+		</ClientServicesDialog>
 	);
-}
+};
+
+export const NewClientService = ({ clientId, services }: { clientId: string; services: Service[] }) => {
+	return (
+		<ClientServiceDialog clientId={clientId} services={services}>
+			<DialogTrigger asChild>
+				<Button className="mr-1">Request a Service</Button>
+			</DialogTrigger>
+		</ClientServiceDialog>
+	);
+};

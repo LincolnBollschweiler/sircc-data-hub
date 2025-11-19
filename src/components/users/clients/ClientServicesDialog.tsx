@@ -14,7 +14,7 @@ import { DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ClientServiceInsert } from "@/userInteractions/db";
 
-export default function ClientServiceFormDialog({
+export default function ClientServicesDialog({
 	clientId,
 	csTables,
 	values,
