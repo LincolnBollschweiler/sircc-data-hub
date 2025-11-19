@@ -96,6 +96,22 @@ export const user = pgTable(
 	]
 );
 
+export const coach = pgTable(
+	"coach",
+	{
+		id: uuid("id")
+			.references(() => user.id, { onDelete: "cascade" })
+			.primaryKey(),
+		isActive: boolean("is_active").default(true),
+		llc: varchar("llc", { length: 100 }),
+		website: varchar("website", { length: 255 }),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("coach_deleted_at_idx").on(table.deletedAt)]
+);
+
 export const client = pgTable(
 	"client",
 	{
@@ -118,7 +134,7 @@ export const coachMileage = pgTable(
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		coachId: uuid("coach_id")
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => coach.id, { onDelete: "cascade" })
 			.notNull(),
 		miles: integer("miles").notNull(),
 		createdAt,
@@ -136,7 +152,7 @@ export const coachHours = pgTable(
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		coachId: uuid("coach_id")
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => coach.id, { onDelete: "cascade" })
 			.notNull(),
 		paidHours: decimal("paid_hours", { precision: 5, scale: 2 }),
 		volunteerHours: decimal("volunteer_hours", { precision: 5, scale: 2 }),
@@ -343,7 +359,7 @@ export const coachTraining = pgTable(
 	"coach_training",
 	{
 		coachId: uuid("coach_id")
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => coach.id, { onDelete: "cascade" })
 			.notNull(),
 		trainingId: uuid("training_id")
 			.references(() => training.id, { onDelete: "restrict" })

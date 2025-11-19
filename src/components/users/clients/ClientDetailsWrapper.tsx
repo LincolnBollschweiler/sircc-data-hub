@@ -16,7 +16,7 @@ export default async function ClientDetailsWrapper({ clientId }: { clientId: str
 					{fullClient.coach && <CoachDetails coach={fullClient.coach} />}
 					<ReentryCheckListWrapper clientId={clientId} isClientView={true} />
 					<DataTable
-						data={fullClient.clientServices as ClientServiceFull[] & { siteId?: string | null }[]}
+						data={fullClient.clientServices as ClientServiceFull[]}
 						userType="single-client-view"
 						clientId={clientId}
 						services={services}

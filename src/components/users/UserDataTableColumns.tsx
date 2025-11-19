@@ -17,7 +17,7 @@ import { updateUser } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
-import { ClientList, ClientServiceFull } from "@/userInteractions/db";
+import { ClientList, ClientServiceFull, CoachList } from "@/userInteractions/db";
 import ClientServicesDialog from "./clients/ClientServicesDialog";
 import { CSTables } from "@/tableInteractions/db";
 
@@ -28,6 +28,7 @@ const asClient = (row: unknown): ClientList => row as ClientList;
 const asSingleClient = (row: unknown) => row as ClientServiceFull;
 const asUser = (row: unknown): User => row as User;
 const asUserRow = (row: unknown) => row as User;
+const asCoach = (row: unknown) => row as CoachList;
 
 const processAcceptance = async (user: Partial<User>, accepted: boolean | null) => {
 	const action = user.id ? updateUser.bind(null, user.id) : undefined;
@@ -606,49 +607,214 @@ export const userDataTableColumns = (
 				accessorKey: "name",
 				header: "Name",
 				cell: (info) => {
-					const r = asUserRow(info.row.original);
-					return `${r.firstName} ${r.lastName}`;
+					const r = asCoach(info.row.original);
+					return `${r.user.firstName} ${r.user.lastName}`;
 				},
 			},
 			{
-				accessorKey: "phone",
-				header: "Phone",
+				accessorKey: "user.phone",
+				header: () => <div className="text-center">Phone</div>,
 				cell: (info) => {
 					const phone = formatPhoneNumber(info.getValue<string>() || "");
-					return phone || "N/A";
+					return <div className="text-center">{phone || "N/A"}</div>;
 				},
 			},
 			{
-				accessorKey: "email",
+				accessorKey: "coach.llc",
+				header: "LLC",
+				cell: (info) => info.getValue<string>() ?? "None",
+			},
+			{
+				accessorKey: "coach.website",
+				header: "Website",
+				cell: (info) => info.getValue<string>() ?? "None",
+			},
+			{
+				accessorKey: "user.email",
 				header: "Email",
 			},
 			{
-				accessorKey: "notes",
-				header: "Notes",
-				cell: ({ getValue }) => {
-					const notes = getValue<string>() || "";
-					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+				accessorKey: "clientCount",
+				header: () => <div className="text-center">Clients</div>,
+				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+			},
+			{
+				accessorKey: "trainingsCompleted",
+				header: () => <div className="text-center">Trainings</div>,
+				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+			},
+			{
+				accessorKey: "volunteerHours",
+				header: () => <div className="text-center">Volunteer Hours</div>,
+				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+			},
+			{
+				accessorKey: "paidHours",
+				header: () => <div className="text-center">Paid Hours</div>,
+				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+			},
+			{
+				accessorKey: "coach.updatedAt",
+				header: "Updated",
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const coachRow = asCoach(row.original); // now TypeScript knows it's ClientWithUser
+					const user = coachRow.user;
 
 					return (
-						<Popover>
-							<PopoverTrigger asChild>
-								<Button
-									variant="ghost"
-									className="text-left p-0 px-1 h-auto whitespace-nowrap text-ellipsis"
-								>
-									{truncated}
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent className="max-w-sm">
-								<p className="whitespace-pre-wrap">{notes}</p>
-							</PopoverContent>
-						</Popover>
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
+											Send Email
+										</a>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild>
+										<a
+											className="hover:!bg-success hover:!text-success-foreground"
+											href={`/admin/coaches/${user.id}/edit`}
+										>
+											View or Edit Coach
+										</a>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
+			},
+		];
+	}
+
+	if (userType === "coach-clients") {
+		return [
+			{
+				accessorKey: "name",
+				header: "Name",
+				cell: (info) => {
+					const r = asClient(info.row.original);
+					return `${r.user.firstName} ${r.user.lastName}`;
+				},
+			},
+			{
+				accessorKey: "client.followUpNeeded",
+				header: () => <div className="text-center">Needs Follow-up</div>,
+				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,
+			},
+			{
+				accessorKey: "client.followUpDate",
+				header: () => <div className="text-center">Follow-up Date</div>,
+				cell: (info) => {
+					const date = info.getValue<Date>();
+					return date ? (
+						<div className="text-center">{new Date(date).toLocaleDateString("en-US", dateOptions)}</div>
+					) : (
+						<div className="text-center">N/A</div>
 					);
 				},
 			},
 			{
-				accessorKey: "createdAt",
-				header: "Added",
+				accessorKey: "client.isReentryClient",
+				header: () => <div className="text-center">Re-entry</div>,
+				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,
+			},
+			{
+				accessorKey: "openRequestsCount",
+				header: () => <div className="text-center">Open Requests</div>,
+				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+			},
+			{
+				accessorKey: "serviceCount",
+				header: () => <div className="text-center">Services</div>,
+				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+			},
+			{
+				accessorKey: "user.phone",
+				header: () => <div className="text-center">Phone</div>,
+				cell: (info) => {
+					const phone = formatPhoneNumber(info.getValue<string>() || "");
+					return <div className="text-center">{phone || "N/A"}</div>;
+				},
+			},
+			{
+				accessorKey: "user.email",
+				header: "Email",
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const clientRow = asClient(row.original); // now TypeScript knows it's ClientWithUser
+					const user = clientRow.user;
+					const coachId = clientRow.client?.coachId;
+					// console.log(clientRow);
+					console.log("coachId:", coachId);
+
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
+											Send Email
+										</a>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild>
+										<a
+											className="hover:!bg-success hover:!text-success-foreground"
+											href={`/admin/clients/${user.id}/edit?coachId=${coachId}`}
+										>
+											View or Edit Client
+										</a>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
+			},
+		];
+	}
+
+	if (userType === "coach-hours") {
+		return [
+			{
+				accessorKey: "coachHours.paidHours",
+				header: () => <div className="text-center">Paid Hours</div>,
+				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+			},
+			{
+				accessorKey: "coachHours.volunteerHours",
+				header: () => <div className="text-center">Volunteer Hours</div>,
+				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+			},
+			{
+				accessorKey: "coachHours.createdAt",
+				header: "Created",
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				accessorKey: "coachHours.updatedAt",
+				header: "Updated",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 		];

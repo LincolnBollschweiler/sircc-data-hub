@@ -99,6 +99,13 @@
       "when": 1763506111472,
       "tag": "0013_harsh_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1763516011709,
+      "tag": "0014_fair_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }

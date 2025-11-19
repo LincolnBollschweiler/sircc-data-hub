@@ -12,6 +12,10 @@ import {
 	city,
 	visit,
 	referredOut,
+	coach,
+	coachTraining,
+	coachHours,
+	coachMileage,
 } from "@/drizzle/schema";
 import { eq, and, sql } from "drizzle-orm";
 // import { eq, and, or, sql } from "drizzle-orm";
@@ -86,6 +90,18 @@ export async function updateUserById(
 
 					if (!newClient) throw new Error("Failed to create client for user");
 				}
+				if (data.role === "coach") {
+					const [newCoach] = await tx
+						.insert(coach)
+						.values({
+							id: userUpdated.id,
+						})
+						.onConflictDoNothing()
+						.returning();
+
+					if (!newCoach) throw new Error("Failed to create coach for user");
+				}
+
 				await syncClerkUserMetadata(userUpdated);
 			}
 			return userUpdated; // returned if successfull
@@ -138,8 +154,8 @@ const cachedUsers = unstable_cache(
 		return await db.select().from(user).where(isNull(user.deletedAt)).orderBy(desc(user.updatedAt));
 	},
 	["getAllUsers"],
-	{ tags: [getAllUsersGlobalTag()] }
-	// { tags: [getAllUsersGlobalTag()], revalidate: 5 }
+	// { tags: [getAllUsersGlobalTag()] }
+	{ tags: [getAllUsersGlobalTag()], revalidate: 5 }
 );
 
 export const getAllUsers = async () => cachedUsers();
@@ -168,10 +184,11 @@ export const getUserSites = async () => cachedUserSites();
 
 //#region CRUD Clients
 // types represent one row returned from joins
+type User = typeof user.$inferSelect;
 export type ClientList = {
-	user: typeof user.$inferSelect;
+	user: User;
 	client: typeof client.$inferSelect | null; // null because of leftJoin
-	coach: typeof user.$inferSelect | null; // null because of leftJoin
+	coach: User | null; // null because of leftJoin
 	serviceCount: number;
 	openRequestsCount: number;
 	requestsUpdatedAt: Date | null;
@@ -202,9 +219,9 @@ export interface ClientServiceFull {
 }
 
 export interface ClientFull {
-	user: typeof user.$inferSelect;
+	user: User;
 	client: typeof client.$inferSelect;
-	coach: typeof user.$inferSelect | null;
+	coach: User | null;
 	referralSource: typeof referralSource.$inferSelect | null;
 	referredOut: typeof referralSource.$inferSelect | null;
 	serviceCount: number;
@@ -352,6 +369,13 @@ const getCachedClient = (id: string) => {
 };
 export const getClientById = async (id: string) => getCachedClient(id);
 
+export const updateClientById = async (clientId: string, data: Partial<typeof client.$inferInsert>) => {
+	console.log("Updating client coach with id:", clientId, "Data:", data);
+	const [updatedClient] = await db.update(client).set(data).where(eq(client.id, clientId)).returning();
+	revalidateClientCache(clientId);
+	return updatedClient;
+};
+
 const cachedClients = unstable_cache(
 	async (): Promise<ClientList[]> => {
 		return await db
@@ -403,14 +427,7 @@ export const getAllClients = async () => cachedClients();
 
 //#region CRUD Coaches
 
-export const updateClientById = async (clientId: string, data: Partial<typeof client.$inferInsert>) => {
-	console.log("Updating client coach with id:", clientId, "Data:", data);
-	const [updatedClient] = await db.update(client).set(data).where(eq(client.id, clientId)).returning();
-	revalidateClientCache(clientId);
-	return updatedClient;
-};
-
-export const cachedCoaches = unstable_cache(
+export const cachedCoachUsers = unstable_cache(
 	async () => {
 		return await db
 			.select()
@@ -422,7 +439,143 @@ export const cachedCoaches = unstable_cache(
 	{ tags: [getAllUsersGlobalTag()] }
 );
 
+export const getAllCoachUsers = async () => cachedCoachUsers();
+export type Coach = typeof coach.$inferSelect;
+export type CoachList = {
+	user: User;
+	coach: Coach | null; // null because of leftJoin
+	clientCount: number;
+	trainingsCompleted: number;
+	volunteerHours: number;
+	paidHours: number;
+};
+
+const cachedCoaches = unstable_cache(
+	async (): Promise<CoachList[]> => {
+		return await db
+			.select({
+				user,
+				coach,
+				clientCount: sql<number>`
+					(SELECT COUNT(*) FROM client c WHERE c.coach_id = ${coach.id} AND c.deleted_at IS NULL)					
+				`,
+				trainingsCompleted: sql<number>`
+					(SELECT COUNT(*) FROM coach_training ct WHERE ct.coach_id = ${coach.id})`,
+				volunteerHours: sql<number>`
+					(SELECT COALESCE(SUM(csh.volunteer_hours), 0) FROM coach_hours csh WHERE csh.coach_id = ${coach.id})`,
+				paidHours: sql<number>`
+					(SELECT COALESCE(SUM(csh.paid_hours), 0) FROM coach_hours csh WHERE csh.coach_id = ${coach.id})`,
+			})
+			.from(user)
+			.leftJoin(coach, eq(user.id, coach.id)) // join user.id to coach.id
+			.where(and(isNull(user.deletedAt), eq(user.role, "coach")))
+			.orderBy(user.lastName);
+	},
+	["getAllCoachesDetailed"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
 export const getAllCoaches = async () => cachedCoaches();
+
+export type Client = typeof client.$inferSelect;
+export type CoachTraining = typeof coachTraining.$inferSelect;
+export type CoachHours = typeof coachHours.$inferSelect;
+export type CoachMiles = typeof coachMileage.$inferSelect;
+export type CoachFull = {
+	user: User;
+	coach: Coach | null;
+	coachTrainings: CoachTraining[];
+	coachHours: CoachHours[];
+	coachMiles: CoachMiles[];
+	clients: ClientFull[];
+};
+
+const getCachedCoach = (id: string) => {
+	const cachedFn = unstable_cache(
+		async (): Promise<CoachFull | null> => {
+			// Get base user + coach row
+			const row = await db
+				.select({ user, coach })
+				.from(user)
+				.leftJoin(coach, eq(user.id, coach.id))
+				.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "coach"), isNull(user.deletedAt)))
+				.limit(1);
+
+			if (row.length === 0) return null;
+
+			const { user: userRow, coach: coachRow } = row[0]!;
+
+			// Get children (3 separate queries)
+			const coachTrainings = await db.select().from(coachTraining).where(eq(coachTraining.coachId, id));
+
+			const coachHoursRows: CoachHours[] = await db.select().from(coachHours).where(eq(coachHours.coachId, id));
+			const coachMilesRows: CoachMiles[] = await db
+				.select()
+				.from(coachMileage)
+				.where(eq(coachMileage.coachId, id));
+
+			const clientsRow = await db
+				.select({
+					user,
+					client,
+				})
+				.from(user)
+				.leftJoin(client, eq(user.id, client.id))
+				.where(and(eq(client.coachId, id), isNull(client.deletedAt), isNull(user.deletedAt)));
+
+			const clients = await Promise.all(
+				clientsRow.map(async (c) => {
+					if (!c.client) throw new Error("Client data missing");
+					const clientId = c.client.id;
+
+					const serviceCountResult = await db.execute<{
+						serviceCount: number;
+					}>(sql`
+						SELECT COUNT(*)::int AS "serviceCount"
+						FROM client_service cs
+						WHERE cs.client_id = ${clientId}
+						AND cs.deleted_at IS NULL
+					`);
+
+					const serviceCount = serviceCountResult.rows[0]?.serviceCount ?? 0;
+
+					const openRequestsResult = await db.execute<{
+						openRequestsCount: number;
+					}>(sql`
+						SELECT COUNT(*)::int AS "openRequestsCount"
+						FROM client_service csr
+						WHERE csr.client_id = ${clientId}
+						AND csr.requested_service_id IS NOT NULL
+						AND csr.provided_service_id IS NULL
+						AND csr.deleted_at IS NULL
+					`);
+
+					const openRequestsCount = openRequestsResult.rows[0]?.openRequestsCount ?? 0;
+
+					return {
+						...c,
+						serviceCount,
+						openRequestsCount,
+					};
+				})
+			);
+
+			return {
+				user: userRow,
+				coach: coachRow,
+				coachTrainings,
+				coachHours: coachHoursRows,
+				coachMiles: coachMilesRows,
+				clients: clients as ClientFull[],
+			};
+		},
+		["getCoach", id],
+		{ tags: [getAllUsersGlobalTag()] }
+	);
+	return cachedFn();
+};
+
+export const getCoachById = async (id: string) => getCachedCoach(id);
+
 //#endregion
 
 //#region Client Services
@@ -507,3 +660,4 @@ export const getClientReentryCheckListItemsForClient = async (clientId: string) 
 		.where(eq(clientReentryCheckListItem.clientId, clientId));
 	return items;
 };
+//#endregion
