@@ -11,9 +11,11 @@ import { actionToast } from "@/hooks/use-toast";
 export const ClientCoach = ({
 	client,
 	allCoaches,
+	coachIsViewing,
 }: {
 	client: ClientFull["client"];
 	allCoaches: ClientFull["coach"][];
+	coachIsViewing?: boolean;
 }) => {
 	const [open, setOpen] = useState(false);
 	const [value, setValue] = useState<string | null>(client ? client.coachId : null);
@@ -37,6 +39,7 @@ export const ClientCoach = ({
 						role="combobox"
 						aria-expanded={open}
 						className="w-[200px] justify-between"
+						disabled={coachIsViewing}
 					>
 						{value
 							? allCoaches.find((c) => c?.id === value)

@@ -62,7 +62,7 @@ export const addClientChecklistItem = async (clientId: string, itemId: string) =
 };
 
 export const deleteClientChecklistItem = async (clientId: string, itemId: string) => {
-	console.log("Deleting checklist item:", clientId, itemId);
+	// console.log("Deleting checklist item:", clientId, itemId);
 	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId);
 	return { error: !rv, message: rv ? "Checklist item deleted successfully" : "Failed to delete checklist item" };
 };

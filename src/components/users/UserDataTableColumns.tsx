@@ -777,7 +777,7 @@ export const userDataTableColumns = (
 					const user = clientRow.user;
 					const coachId = clientRow.client?.coachId;
 					// console.log(clientRow);
-					console.log("coachId:", coachId);
+					// console.log("coachId:", coachId);
 
 					return (
 						<div className="text-right">

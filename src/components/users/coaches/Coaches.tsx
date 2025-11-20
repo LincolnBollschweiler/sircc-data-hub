@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default async function Coaches() {
 	const coaches = await getAllCoaches();
-	console.log(coaches);
+	// console.log(coaches);
 
 	return (
 		<div className="container py-4 mx-auto">

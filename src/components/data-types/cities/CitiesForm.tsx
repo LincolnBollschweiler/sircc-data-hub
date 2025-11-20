@@ -26,7 +26,7 @@ export default function CitiesForm({
 	});
 
 	const onSubmit = async (values: z.infer<typeof generalSchema>) => {
-		console.log("Submitting city form with values:", values);
+		// console.log("Submitting city form with values:", values);
 		const action = city == null ? createCity : updateCity.bind(null, city.id);
 
 		const actionData = await action(values);

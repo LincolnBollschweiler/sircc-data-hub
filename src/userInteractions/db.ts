@@ -37,7 +37,7 @@ import { alias } from "drizzle-orm/pg-core";
 
 //#region User CRUD operations
 export async function insertUser(data: typeof user.$inferInsert) {
-	console.log("Inserting user:", data);
+	// console.log("Inserting user:", data);
 	const [applicant] = await db
 		.insert(user)
 		.values(data)
@@ -57,7 +57,7 @@ export async function insertUser(data: typeof user.$inferInsert) {
 }
 
 export async function updateUser({ clerkUserId }: { clerkUserId: string }, data: Partial<typeof user.$inferInsert>) {
-	console.log("Updating user with clerkUserId:", clerkUserId, "Data:", data);
+	// console.log("Updating user with clerkUserId:", clerkUserId, "Data:", data);
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.clerkUserId, clerkUserId)).returning();
 
 	if (updatedUser == null) throw new Error("Failed to update user");
@@ -118,7 +118,7 @@ export async function updateUserById(
 }
 
 export async function updateUserFull({ id }: { id: string }, data: Partial<typeof user.$inferInsert>) {
-	console.log("Updating user with id:", id, "Data:", data);
+	// console.log("Updating user with id:", id, "Data:", data);
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.id, id)).returning();
 
 	if (updatedUser == null) throw new Error("Failed to update user");
@@ -367,7 +367,7 @@ const getCachedClient = (id: string) => {
 export const getClientById = async (id: string) => getCachedClient(id);
 
 export const updateClientById = async (clientId: string, data: Partial<typeof client.$inferInsert>) => {
-	console.log("Updating client coach with id:", clientId, "Data:", data);
+	// console.log("Updating client coach with id:", clientId, "Data:", data);
 	const [updatedClient] = await db.update(client).set(data).where(eq(client.id, clientId)).returning();
 	revalidateClientCache(clientId);
 	return updatedClient;
@@ -573,7 +573,7 @@ export const updateCoachById = async (
 	coachId: string,
 	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
 ) => {
-	console.log("Updating coach with id:", coachId, "Data:", data);
+	// console.log("Updating coach with id:", coachId, "Data:", data);
 
 	const updatedCoach = await db.transaction(async (tx) => {
 		const [coachUpdated] = await tx.update(coach).set(data.coach).where(eq(coach.id, coachId)).returning();
@@ -634,7 +634,7 @@ export const insertClientService = async (data: ClientServiceInsert) => {
 };
 
 export const deleteClientServiceById = async (serviceId: string) => {
-	console.log("Deleting client service with id:", serviceId);
+	// console.log("Deleting client service with id:", serviceId);
 	const [deletedService] = await db.delete(clientService).where(eq(clientService.id, serviceId)).returning();
 
 	if (deletedService == null) {

@@ -12,10 +12,12 @@ export const ClientDetails = ({
 	user,
 	client,
 	allCoaches,
+	coachIsViewing,
 }: {
 	user: ClientFull["user"];
 	client: ClientFull["client"];
 	allCoaches: ClientFull["coach"][];
+	coachIsViewing?: boolean;
 }) => {
 	const [isReentry, setIsReentry] = useState(client.isReentryClient);
 
@@ -49,7 +51,7 @@ export const ClientDetails = ({
 					)}
 				</div>
 			)}
-			<ClientCoach client={client} allCoaches={allCoaches} />
+			<ClientCoach client={client} allCoaches={allCoaches} coachIsViewing={coachIsViewing} />
 			<div className="flex items-center gap-1">
 				<BigIconCheckbox checked={!!isReentry} onChange={(checked) => setIsReentryClient(checked)} />
 				<span>Re-entry Client</span>

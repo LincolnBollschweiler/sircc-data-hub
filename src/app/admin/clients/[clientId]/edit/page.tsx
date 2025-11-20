@@ -6,6 +6,7 @@ import { ClientDetails } from "@/components/users/clients/ClientDetails";
 import { getAllClientServiceTables } from "@/tableInteractions/db";
 import { getClientById, getAllCoachUsers, ClientServiceFull } from "@/userInteractions/db";
 import Link from "next/link";
+import { getCurrentUser } from "@/services/clerk";
 
 export default async function ViewClientPage({
 	params,
@@ -16,6 +17,20 @@ export default async function ViewClientPage({
 }) {
 	const { clientId } = await params;
 	const { coachId } = await searchParams;
+	const currentUser = await getCurrentUser({ allData: true });
+	const coachIsViewing = currentUser?.role === "coach";
+
+	if (!currentUser || (coachIsViewing && currentUser.data?.id !== coachId)) {
+		return (
+			<div className="text-center py-10 text-xl font-semibold flex flex-col items-center">
+				Access Denied
+				<Button className="mt-4" asChild>
+					<Link href="/">Back to Home</Link>
+				</Button>
+			</div>
+		);
+	}
+
 	const fullClient = await getClientById(clientId);
 	if (!fullClient) {
 		return <div className="text-center py-10 text-xl font-semibold">Client not found</div>;
@@ -36,7 +51,12 @@ export default async function ViewClientPage({
 			</PageHeader>
 			{fullClient && (
 				<>
-					<ClientDetails user={fullClient.user} client={fullClient.client} allCoaches={allCoaches} />
+					<ClientDetails
+						user={fullClient.user}
+						client={fullClient.client}
+						allCoaches={allCoaches}
+						coachIsViewing={coachIsViewing}
+					/>
 					{fullClient.client.isReentryClient && <ReentryCheckListWrapper clientId={clientId} />}
 					{fullClient.client.followUpNeeded && (
 						<div className="my-4 p-4 border-l-4 border-warning bg-warning/10">

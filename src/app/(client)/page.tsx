@@ -15,16 +15,18 @@ export default async function Home() {
 	return (
 		<>
 			<SignedIn>
-				{/* TODO - fix up the css below, depending on if more info is added */}
-				{currentUser && clientUser && intakeComplete && <ClientDetailsWrapper clientId={profile.id} />}
-				{currentUser && currentUser.role === "coach" && <CoachDetailsWrapper coachId={profile.id} />}
-				{!intakeComplete && (
+				{!intakeComplete ? (
 					<div className="container w-fit m-auto">
 						<div className="mt-4 py-4 px-6 bg-background-light rounded-md shadow-md">
 							<PageHeader title="Please Complete Your Intake Form" />
 							<ProfileForm profile={profile} isIntake={true} />
 						</div>
 					</div>
+				) : (
+					<>
+						{clientUser && <ClientDetailsWrapper clientId={profile.id} />}
+						{currentUser?.role === "coach" && <CoachDetailsWrapper coachId={profile.id} />}
+					</>
 				)}
 			</SignedIn>
 			<SignedOut>
