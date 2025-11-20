@@ -615,6 +615,66 @@ export const deleteCoachTrainingById = async (trainingId: string) => {
 	revalidateCoachCache(deletedItem.coachId);
 	return deletedItem;
 };
+
+export const addCoachHoursById = async (coachId: string, data: Partial<CoachHours>) => {
+	const [newItem] = await db
+		.insert(coachHours)
+		.values({ ...data, coachId })
+		.returning();
+
+	revalidateCoachCache(coachId);
+	return newItem;
+};
+
+export const updateCoachHoursById = async (hoursId: string, data: Partial<CoachHours>) => {
+	const [updatedItem] = await db.update(coachHours).set(data).where(eq(coachHours.id, hoursId)).returning();
+	if (updatedItem == null) {
+		console.error("Failed to update coach hours");
+		throw new Error("Failed to update coach hours");
+	}
+	revalidateCoachCache(updatedItem.coachId);
+	return updatedItem;
+};
+
+export const deleteCoachHoursById = async (hoursId: string) => {
+	const [deletedItem] = await db.delete(coachHours).where(eq(coachHours.id, hoursId)).returning();
+	if (deletedItem == null) {
+		console.error("Failed to delete coach hours");
+		throw new Error("Failed to delete coach hours");
+	}
+	revalidateCoachCache(deletedItem.coachId);
+	return deletedItem;
+};
+
+export const addCoachMileageById = async (coachId: string, data: Partial<CoachMiles>) => {
+	console.log("Adding coach mileage for coachId:", coachId, "Data:", data);
+	const [newItem] = await db
+		.insert(coachMileage)
+		.values({ ...data, coachId })
+		.returning();
+	revalidateCoachCache(coachId);
+	return newItem;
+};
+
+export const updateCoachMileageById = async (mileageId: string, data: Partial<CoachMiles>) => {
+	const [updatedItem] = await db.update(coachMileage).set(data).where(eq(coachMileage.id, mileageId)).returning();
+	if (updatedItem == null) {
+		console.error("Failed to update coach mileage");
+		throw new Error("Failed to update coach mileage");
+	}
+	revalidateCoachCache(updatedItem.coachId);
+	return updatedItem;
+};
+
+export const deleteCoachMileageById = async (mileageId: string) => {
+	const [deletedItem] = await db.delete(coachMileage).where(eq(coachMileage.id, mileageId)).returning();
+	if (deletedItem == null) {
+		console.error("Failed to delete coach mileage");
+		throw new Error("Failed to delete coach mileage");
+	}
+	revalidateCoachCache(deletedItem.coachId);
+	return deletedItem;
+};
 //#endregion
 
 //#region Client Services

@@ -44,7 +44,7 @@ export default function DataTable<TData>({
 	csTables?: CSTables;
 	services?: Service[] | undefined;
 }) {
-	const typesWithNoName = ["single-client", "single-client-view", "coach-hours"];
+	const typesWithNoName = ["single-client", "single-client-view", "coach-hours", "coach-miles"];
 	const { startDelete, dialog } = useDeleteClientService();
 
 	const columns = userDataTableColumns(

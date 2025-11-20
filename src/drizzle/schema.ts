@@ -138,8 +138,9 @@ export const coachMileage = pgTable(
 		coachId: uuid("coach_id")
 			.references(() => coach.id, { onDelete: "cascade" })
 			.notNull(),
-		miles: integer("miles").notNull(),
+		miles: decimal("miles", { precision: 5, scale: 2 }),
 		date: timestamp("date", { withTimezone: true }).notNull().defaultNow(),
+		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
 	},
@@ -156,6 +157,7 @@ export const coachHours = pgTable(
 		paidHours: decimal("paid_hours", { precision: 5, scale: 2 }),
 		volunteerHours: decimal("volunteer_hours", { precision: 5, scale: 2 }),
 		date: timestamp("date", { withTimezone: true }).notNull().defaultNow(),
+		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
 	},

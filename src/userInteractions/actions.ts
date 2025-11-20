@@ -3,14 +3,22 @@
 import { coach, user } from "@/drizzle/schema";
 import {
 	addClientReentryCheckListItemForClient,
+	addCoachHoursById,
+	addCoachMileageById,
 	addCoachTrainingById,
 	ClientServiceInsert,
+	CoachHours,
+	CoachMiles,
 	deleteClientServiceById,
+	deleteCoachHoursById,
+	deleteCoachMileageById,
 	deleteCoachTrainingById,
 	insertClientService,
 	removeClientReentryCheckListItemForClient,
 	updateClientById,
 	updateCoachById,
+	updateCoachHoursById,
+	updateCoachMileageById,
 	updateUserById,
 } from "@/userInteractions/db";
 import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
@@ -90,5 +98,55 @@ export const removeCoachTraining = async (coachId: string, trainingId: string) =
 	const rv = await deleteCoachTrainingById(trainingId);
 	if (!rv) return { error: true, message: "Failed to remove coach training" };
 	return { error: false, message: "Coach training removed successfully" };
+};
+
+export const insertCoachHours = async (coachId: string, data: Partial<CoachHours>) => {
+	if (!data.paidHours && !data.volunteerHours) {
+		return { error: true, message: "At least one of paid or volunteer hours must be provided" };
+	}
+	if (data.paidHours === "") delete data.paidHours;
+	if (data.volunteerHours === "") delete data.volunteerHours;
+
+	const rv = await addCoachHoursById(coachId, data);
+	if (!rv) return { error: true, message: "Failed to log coach hours" };
+	return { error: false, message: "Coach hours logged successfully" };
+};
+
+export const updateCoachHours = async (hoursId: string | null, data: Partial<CoachHours>) => {
+	if (!hoursId) return { error: true, message: "Invalid hours ID" };
+	if (!data.paidHours && !data.volunteerHours) {
+		return { error: true, message: "At least one of paid or volunteer hours must be provided" };
+	}
+	const rv = await updateCoachHoursById(hoursId, data);
+	if (!rv) return { error: true, message: "Failed to update coach hours" };
+	return { error: false, message: "Coach hours updated successfully" };
+};
+
+export const deleteCoachHours = async (hoursId: string) => {
+	const rv = await deleteCoachHoursById(hoursId);
+	if (!rv) return { error: true, message: "Failed to delete coach hours" };
+	return { error: false, message: "Coach hours deleted successfully" };
+};
+
+export const insertCoachMiles = async (coachId: string, data: Partial<CoachMiles>) => {
+	if (!data.miles) {
+		return { error: true, message: "Miles must be provided" };
+	}
+	const rv = await addCoachMileageById(coachId, data);
+	if (!rv) return { error: true, message: "Failed to log coach miles" };
+	return { error: false, message: "Coach miles logged successfully" };
+};
+
+export const updateCoachMiles = async (milesId: string | null, data: Partial<CoachMiles>) => {
+	if (!milesId) return { error: true, message: "Invalid miles ID" };
+	const rv = await updateCoachMileageById(milesId, data);
+	if (!rv) return { error: true, message: "Failed to update coach miles" };
+	return { error: false, message: "Coach miles updated successfully" };
+};
+
+export const deleteCoachMiles = async (milesId: string) => {
+	const rv = await deleteCoachMileageById(milesId);
+	if (!rv) return { error: true, message: "Failed to delete coach miles" };
+	return { error: false, message: "Coach miles deleted successfully" };
 };
 //#endregion

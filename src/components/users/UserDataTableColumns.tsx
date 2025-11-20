@@ -13,13 +13,16 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { updateUser } from "@/userInteractions/actions";
+import { deleteCoachMiles, updateUser } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
-import { ClientList, ClientServiceFull, CoachList } from "@/userInteractions/db";
+import { ClientList, ClientServiceFull, CoachHours, CoachList, CoachMiles } from "@/userInteractions/db";
+import { deleteCoachHours } from "@/userInteractions/actions";
 import ClientServicesDialog from "./clients/ClientServicesDialog";
 import { CSTables } from "@/tableInteractions/db";
+import HoursDialog from "./coaches/HoursDialog";
+import MilesDialog from "./coaches/MilesDialog";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -29,13 +32,33 @@ const asSingleClient = (row: unknown) => row as ClientServiceFull;
 const asUser = (row: unknown): User => row as User;
 const asUserRow = (row: unknown) => row as User;
 const asCoach = (row: unknown) => row as CoachList;
+const asHours = (row: unknown) => row as CoachHours;
+const asMiles = (row: unknown) => row as CoachMiles;
 
 const processAcceptance = async (user: Partial<User>, accepted: boolean | null) => {
 	const action = user.id ? updateUser.bind(null, user.id) : undefined;
 	if (!action) return;
 	const actionData = await action({ ...user, accepted });
 	if (actionData) actionToast({ actionData });
+	// TODO: Is the reload necessary? Can we update state instead?
+	// notice that the removeCoachHours function does not reload the page and the DT updates correctly
 	if (!actionData?.error) requestAnimationFrame(() => window.location.reload());
+};
+
+const removeCoachHours = async (id: string) => {
+	const action = deleteCoachHours.bind(null, id);
+	const actionData = await action();
+	if (actionData) {
+		actionToast({ actionData });
+	}
+};
+
+const removeCoachMiles = async (id: string) => {
+	const action = deleteCoachMiles.bind(null, id);
+	const actionData = await action();
+	if (actionData) {
+		actionToast({ actionData });
+	}
 };
 
 export const userDataTableColumns = (
@@ -815,24 +838,167 @@ export const userDataTableColumns = (
 	if (userType === "coach-hours") {
 		return [
 			{
-				accessorKey: "coachHours.paidHours",
-				header: () => <div className="text-center">Paid Hours</div>,
-				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
-			},
-			{
-				accessorKey: "coachHours.volunteerHours",
-				header: () => <div className="text-center">Volunteer Hours</div>,
-				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
-			},
-			{
-				accessorKey: "coachHours.createdAt",
-				header: "Created",
+				accessorKey: "date",
+				header: "Date",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 			{
-				accessorKey: "coachHours.updatedAt",
+				accessorKey: "paidHours",
+				header: () => <div className="text-center">Paid Hours</div>,
+				cell: (info) => {
+					const texVal = info.getValue<string>();
+					const val = texVal ? Number(texVal).toFixed(2) : "";
+					return <div className="text-center">{val}</div>;
+				},
+			},
+			{
+				accessorKey: "volunteerHours",
+				header: () => <div className="text-center">Volunteer Hours</div>,
+				cell: (info) => <div className="text-center">{Number(info.getValue<string>()).toFixed(2)}</div>,
+			},
+			{
+				accessorKey: "notes",
+				header: "Notes",
+				cell: ({ getValue }) => {
+					const notes = getValue<string>() || "";
+					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+					return (
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant="ghost"
+									className="text-left p-0 px-1 h-auto whitespace-nowrap text-ellipsis"
+								>
+									{truncated}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="max-w-sm">
+								<p className="whitespace-pre-wrap">{notes}</p>
+							</PopoverContent>
+						</Popover>
+					);
+				},
+			},
+			{
+				accessorKey: "updatedAt",
 				header: "Updated",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const hoursRow = asHours(row.original); // now TypeScript knows it's CoachHours
+
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<HoursDialog values={hoursRow as CoachHours}>
+											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
+												Edit Hours
+											</DialogTrigger>
+										</HoursDialog>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => removeCoachHours(hoursRow.id)}
+									>
+										Delete
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
+			},
+		];
+	}
+
+	if (userType === "coach-miles") {
+		return [
+			{
+				accessorKey: "date",
+				header: "Date",
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				accessorKey: "miles",
+				header: () => <div className="text-center">Miles</div>,
+				cell: (info) => <div className="text-center">{Number(info.getValue<string>()).toFixed(2)}</div>,
+			},
+			{
+				accessorKey: "notes",
+				header: "Notes",
+				cell: ({ getValue }) => {
+					const notes = getValue<string>() || "";
+					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+					return (
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant="ghost"
+									className="text-left p-0 px-1 h-auto whitespace-nowrap text-ellipsis"
+								>
+									{truncated}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="max-w-sm">
+								<p className="whitespace-pre-wrap">{notes}</p>
+							</PopoverContent>
+						</Popover>
+					);
+				},
+			},
+			{
+				accessorKey: "updatedAt",
+				header: "Updated",
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const milesRow = asMiles(row.original); // now TypeScript knows it's CoachMiles
+
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<MilesDialog values={milesRow as Partial<CoachMiles>}>
+											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
+												Edit Miles
+											</DialogTrigger>
+										</MilesDialog>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => removeCoachMiles(milesRow.id)}
+									>
+										Delete
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
 			},
 		];
 	}
