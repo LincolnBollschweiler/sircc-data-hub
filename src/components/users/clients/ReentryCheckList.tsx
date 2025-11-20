@@ -74,7 +74,7 @@ export default function ReentryCheckList({
 	}, [checkListItems]);
 
 	return (
-		<div className="container px-4 border py-1 rounded-lg shadow-md mb-6 bg-background-light">
+		<div className="container p-2.5 border rounded-lg shadow-md mb-6 bg-background-light">
 			<div className="font-semibold text-xl">Re-entry Checklist</div>
 			<div
 				className="grid justify-center gap-x-2 gap-y-0 mx-auto"

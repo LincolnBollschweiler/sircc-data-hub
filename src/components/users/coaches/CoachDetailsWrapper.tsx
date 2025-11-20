@@ -11,8 +11,7 @@ export default async function CoachDetailsWrapper({ coachId }: { coachId: string
 	return (
 		<div className="container py-4 mx-auto">
 			<PageHeader title="Your Account Details" />
-			<TrainingsWrapper coachId={coachId} />
-
+			<TrainingsWrapper coachId={coachId} isCoachView={true} />
 			<DataTable title="Clients" data={fullCoach.clients as ClientFull[]} userType="coach-clients" />
 			<br />
 			<DataTable title="Hours" data={fullCoach.coachHours as CoachHours[]} userType="coach-hours" />

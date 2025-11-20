@@ -122,7 +122,7 @@ export default function DataTable<TData>({
 	}, [pageSize, table]);
 
 	return (
-		<div className="container mx-auto border border-[border-muted/50] p-2 rounded-lg shadow-md bg-background-light">
+		<div className="container mx-auto border border-[border-muted/50] p-2.5 rounded-lg shadow-md bg-background-light">
 			{title && <h2 className="text-xl font-semibold mb-1">{title}</h2>}
 			{data.length > 0 ? (
 				<>
