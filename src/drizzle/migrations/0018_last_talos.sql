@@ -1,0 +1,1 @@
+ALTER TABLE "client" ADD COLUMN "follow_up_notes" varchar(1000);

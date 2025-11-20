@@ -21,6 +21,7 @@ import { userDataTableColumns } from "./UserDataTableColumns";
 import { CSTables, Service } from "@/tableInteractions/db";
 import { useDeleteClientService } from "../DeleteConfirm";
 import { ClientServices, NewClientService } from "./clients/ClientServices";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -71,7 +72,12 @@ export default function DataTable<TData>({
 	useEffect(() => {
 		if (data.length === 0) {
 			setLoadingOrNone(
-				<div className="flex justify-center items-center p-20 -translate-y-5 text-foreground text-xl font-semibold">
+				<div
+					className={cn(
+						"flex justify-center items-center p-20 text-foreground text-xl font-semibold",
+						title && "-translate-y-5"
+					)}
+				>
 					No data to display.
 				</div>
 			);

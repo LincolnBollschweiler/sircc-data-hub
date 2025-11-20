@@ -127,6 +127,20 @@
       "when": 1763576881446,
       "tag": "0017_youthful_shadowcat",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1763578856555,
+      "tag": "0018_last_talos",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1763596733433,
+      "tag": "0019_sloppy_fabian_cortez",
+      "breakpoints": true
     }
   ]
 }

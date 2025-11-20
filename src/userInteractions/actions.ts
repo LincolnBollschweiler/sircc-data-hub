@@ -1,17 +1,21 @@
 "use server";
 
-import { user } from "@/drizzle/schema";
+import { coach, user } from "@/drizzle/schema";
 import {
 	addClientReentryCheckListItemForClient,
+	addCoachTrainingById,
 	ClientServiceInsert,
 	deleteClientServiceById,
+	deleteCoachTrainingById,
 	insertClientService,
 	removeClientReentryCheckListItemForClient,
 	updateClientById,
+	updateCoachById,
 	updateUserById,
 } from "@/userInteractions/db";
 import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
 
+//#region User Actions
 export const updateUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
 	// console.log("Updating user:", id, unsafeData);
 	const { success, data } = userSchema.safeParse(unsafeData);
@@ -62,3 +66,29 @@ export const deleteClientChecklistItem = async (clientId: string, itemId: string
 	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId);
 	return { error: !rv, message: rv ? "Checklist item deleted successfully" : "Failed to delete checklist item" };
 };
+//#endregion
+
+//#region Coach Actions
+export const updateCoachDetails = async (
+	coachId: string,
+	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
+) => {
+	// console.log("Updating user:", id, unsafeData);
+	const rv = await updateCoachById(coachId, data);
+	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
+};
+
+export const insertCoachTraining = async (coachId: string, trainingId: string) => {
+	// console.log("Inserting coach training:", coachId, trainingId);
+	const rv = await addCoachTrainingById(coachId, trainingId);
+	if (!rv) return { error: true, message: "Failed to add coach training" };
+	return { error: false, message: "Coach training added successfully" };
+};
+
+export const removeCoachTraining = async (coachId: string, trainingId: string) => {
+	// console.log("Removing coach training:", coachId, trainingId);
+	const rv = await deleteCoachTrainingById(trainingId);
+	if (!rv) return { error: true, message: "Failed to remove coach training" };
+	return { error: false, message: "Coach training removed successfully" };
+};
+//#endregion

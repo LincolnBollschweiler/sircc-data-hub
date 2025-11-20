@@ -38,8 +38,23 @@ export default async function ViewClientPage({
 				<>
 					<ClientDetails user={fullClient.user} client={fullClient.client} allCoaches={allCoaches} />
 					{fullClient.client.isReentryClient && <ReentryCheckListWrapper clientId={clientId} />}
-
+					{fullClient.client.followUpNeeded && (
+						<div className="my-4 p-4 border-l-4 border-warning bg-warning/10">
+							<h3 className="font-semibold text-lg mb-2">Follow-Up Needed</h3>
+							<p>{fullClient.client.followUpNotes}</p>
+							{fullClient.client.followUpDate && (
+								<p className="mt-2">
+									{new Date(fullClient.client.followUpDate).toLocaleDateString("en-US", {
+										year: "numeric",
+										month: "long",
+										day: "numeric",
+									})}
+								</p>
+							)}
+						</div>
+					)}
 					<DataTable
+						title="Services"
 						data={fullClient.clientServices as ClientServiceFull[]}
 						userType="single-client"
 						csTables={csTables}

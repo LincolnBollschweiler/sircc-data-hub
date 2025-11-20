@@ -231,6 +231,7 @@ export const deleteCoachTraining = async (id: string) => {
 	return rv;
 };
 
+export type Trainings = Awaited<ReturnType<typeof getCoachTrainings>>;
 const cachedCoachTrainings = unstable_cache(
 	async () => {
 		console.log("Fetching coach trainings from DB (not cache)");

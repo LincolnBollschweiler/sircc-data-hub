@@ -24,12 +24,14 @@ import { unstable_cache } from "next/cache";
 import {
 	getAllUsersGlobalTag,
 	getClientIdTag,
+	getCoachGlobalTag,
+	getCoachIdTag,
 	getUserIdTag,
 	// getClientIdTag,
 	// getUserIdTag,
 	getUserSitesGlobalTag,
 } from "@/userInteractions/cacheTags";
-import { revalidateClientCache, revalidateUserCache } from "@/userInteractions/cache";
+import { revalidateClientCache, revalidateCoachCache, revalidateUserCache } from "@/userInteractions/cache";
 import { syncClerkUserMetadata } from "@/services/clerk";
 import { alias } from "drizzle-orm/pg-core";
 
@@ -222,6 +224,7 @@ export interface ClientFull {
 	user: User;
 	client: typeof client.$inferSelect;
 	coach: User | null;
+	coachDetails: Coach | null;
 	referralSource: typeof referralSource.$inferSelect | null;
 	referredOut: typeof referralSource.$inferSelect | null;
 	serviceCount: number;
@@ -244,6 +247,7 @@ const getCachedClient = (id: string) => {
 					user,
 					client,
 					coach: coachUser,
+					coachDetails: coach,
 
 					// clientService
 					clientService,
@@ -279,6 +283,7 @@ const getCachedClient = (id: string) => {
 				.from(user)
 				.leftJoin(client, eq(user.id, client.id))
 				.leftJoin(coachUser, eq(client.coachId, coachUser.id))
+				.leftJoin(coach, eq(client.coachId, coach.id))
 				.leftJoin(clientService, eq(client.id, clientService.clientId))
 				.leftJoin(location, eq(clientService.locationId, location.id))
 				.leftJoin(site, eq(clientService.siteId, site.id))
@@ -345,6 +350,7 @@ const getCachedClient = (id: string) => {
 				user: first.user,
 				client: first.client!,
 				coach: first.coach,
+				coachDetails: first.coachDetails,
 				referralSource: first.referralSource,
 				referredOut: first.referredOut,
 				serviceCount: first.serviceCount,
@@ -461,7 +467,7 @@ const cachedCoaches = unstable_cache(
 			.orderBy(user.lastName);
 	},
 	["getAllCoachesDetailed"],
-	{ tags: [getAllUsersGlobalTag()] }
+	{ tags: [getAllUsersGlobalTag(), getCoachGlobalTag()] }
 );
 export const getAllCoaches = async () => cachedCoaches();
 
@@ -556,13 +562,59 @@ const getCachedCoach = (id: string) => {
 			};
 		},
 		["getCoach", id],
-		{ tags: [getAllUsersGlobalTag()] }
+		{ tags: [getCoachIdTag(id), getUserIdTag(id)] }
 	);
 	return cachedFn();
 };
-
 export const getCoachById = async (id: string) => getCachedCoach(id);
 
+export type CoachUpdate = Awaited<ReturnType<typeof updateCoachById>>;
+export const updateCoachById = async (
+	coachId: string,
+	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
+) => {
+	console.log("Updating coach with id:", coachId, "Data:", data);
+
+	const updatedCoach = await db.transaction(async (tx) => {
+		const [coachUpdated] = await tx.update(coach).set(data.coach).where(eq(coach.id, coachId)).returning();
+		if (!coachUpdated) throw new Error("Failed to update coach");
+
+		const [userUpdated] = await tx.update(user).set(data.user).where(eq(user.id, coachId)).returning();
+		if (!userUpdated) throw new Error("Failed to update user");
+
+		return {
+			coach: coachUpdated,
+			user: userUpdated,
+		};
+	});
+
+	revalidateUserCache(coachId);
+	revalidateCoachCache(coachId);
+	return updatedCoach;
+};
+
+export type CoachTrainings = (typeof coachTraining.$inferSelect)[];
+export const getTrainingsForCoach = async (coachId: string) => {
+	const items = await db.select().from(coachTraining).where(eq(coachTraining.coachId, coachId));
+	return items;
+};
+
+export const addCoachTrainingById = async (coachId: string, trainingId: string) => {
+	const [newItem] = await db.insert(coachTraining).values({ coachId, trainingId }).returning();
+
+	revalidateCoachCache(coachId);
+	return newItem;
+};
+
+export const deleteCoachTrainingById = async (trainingId: string) => {
+	const [deletedItem] = await db.delete(coachTraining).where(eq(coachTraining.trainingId, trainingId)).returning();
+	if (deletedItem == null) {
+		console.error("Failed to delete coach training");
+		throw new Error("Failed to delete coach training");
+	}
+	revalidateCoachCache(deletedItem.coachId);
+	return deletedItem;
+};
 //#endregion
 
 //#region Client Services

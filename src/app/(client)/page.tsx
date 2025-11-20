@@ -5,6 +5,7 @@ import { userSchema } from "@/userInteractions/schema";
 import ProfileForm from "@/components/users/profile/ProfileForm";
 import { z } from "zod";
 import ClientDetailsWrapper from "@/components/users/clients/ClientDetailsWrapper";
+import CoachDetailsWrapper from "@/components/users/coaches/CoachDetailsWrapper";
 
 export default async function Home() {
 	const currentUser = await getCurrentUser({ allData: true });
@@ -16,6 +17,7 @@ export default async function Home() {
 			<SignedIn>
 				{/* TODO - fix up the css below, depending on if more info is added */}
 				{currentUser && clientUser && intakeComplete && <ClientDetailsWrapper clientId={profile.id} />}
+				{currentUser && currentUser.role === "coach" && <CoachDetailsWrapper coachId={profile.id} />}
 				{!intakeComplete && (
 					<div className="container w-fit m-auto">
 						<div className="mt-4 py-4 px-6 bg-background-light rounded-md shadow-md">

@@ -3,23 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import BigIconCheckbox from "@/components/BigIconCheckbox";
 import { actionToast } from "@/hooks/use-toast";
-import { addClientChecklistItem, deleteClientChecklistItem } from "@/userInteractions/actions";
-import { ClientReentryCheckListItem } from "@/userInteractions/db";
-import { ReentryChecklistItems } from "@/tableInteractions/db";
+import { CoachTrainings } from "@/userInteractions/db";
+import { Trainings as TrainingsType } from "@/tableInteractions/db";
+import { insertCoachTraining, removeCoachTraining } from "@/userInteractions/actions";
 
-export default function ReentryCheckList({
-	clientId,
-	clientCheckListItems,
-	checkListItems,
-	isClientView,
+export default function Trainings({
+	coachId,
+	trainingsForCoach,
+	trainings,
+	isCoachView,
 }: {
-	clientId: string;
-	clientCheckListItems: ClientReentryCheckListItem[];
-	checkListItems: ReentryChecklistItems;
-	isClientView?: boolean;
+	coachId: string;
+	trainingsForCoach: CoachTrainings;
+	trainings: TrainingsType;
+	isCoachView?: boolean;
 }) {
 	// Local state
-	const [checkedItems, setCheckedItems] = useState(clientCheckListItems.map((item) => item.reentryCheckListItemId));
+	const [checkedItems, setCheckedItems] = useState(trainingsForCoach.map((item) => item.trainingId));
 
 	// Debounce timer reference
 	const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -29,15 +29,15 @@ export default function ReentryCheckList({
 
 	// Debounced DB sync effect
 	useEffect(() => {
-		if (!pendingOps.current || isClientView) return;
+		if (!pendingOps.current || isCoachView) return;
 
 		if (debounceRef.current) clearTimeout(debounceRef.current);
 
 		debounceRef.current = setTimeout(async () => {
 			const { itemId, adding } = pendingOps.current!;
-			const action = adding ? addClientChecklistItem : deleteClientChecklistItem;
+			const action = adding ? insertCoachTraining : removeCoachTraining;
 
-			const actionData = await action(clientId, itemId);
+			const actionData = await action(coachId, itemId);
 			if (actionData) actionToast({ actionData });
 
 			pendingOps.current = null;
@@ -46,11 +46,11 @@ export default function ReentryCheckList({
 		return () => {
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 		};
-	}, [checkedItems, clientId, isClientView]);
+	}, [checkedItems, coachId, isCoachView]);
 
 	// Handle UI toggle instantly
 	const handleCheckboxChange = (itemId: string) => {
-		if (isClientView) return;
+		if (isCoachView) return;
 		const adding = !checkedItems.includes(itemId);
 
 		setCheckedItems((prev) => (adding ? [...prev, itemId] : prev.filter((id) => id !== itemId)));
@@ -71,18 +71,18 @@ export default function ReentryCheckList({
 		if (widths.length) {
 			setMaxWidth(Math.max(...widths) + 50); // +50 to accommodate checkbox
 		}
-	}, [checkListItems]);
+	}, [trainings]);
 
 	return (
 		<div className="container px-4 border py-1 rounded-lg shadow-md mb-6 bg-background-light">
-			<div className="font-semibold text-xl">Re-entry Checklist</div>
+			<div className="font-semibold text-xl">Trainings</div>
 			<div
 				className="grid justify-center gap-x-2 gap-y-0 mx-auto"
 				style={{
 					gridTemplateColumns: `repeat(auto-fit, minmax(${maxWidth}px, auto))`,
 				}}
 			>
-				{checkListItems.map((item) => {
+				{trainings.map((item) => {
 					const isChecked = checkedItems.includes(item.id);
 
 					return (
@@ -90,7 +90,7 @@ export default function ReentryCheckList({
 							<BigIconCheckbox
 								checked={isChecked}
 								onChange={() => handleCheckboxChange(item.id)}
-								noHover={isClientView}
+								noHover={isCoachView}
 							/>
 							<span
 								ref={(el) => {

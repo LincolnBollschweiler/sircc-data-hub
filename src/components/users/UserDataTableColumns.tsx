@@ -216,6 +216,23 @@ export const userDataTableColumns = (
 				},
 			},
 			{
+				accessorKey: "client.FollowupNeeded",
+				header: () => <div className="text-center">Follow-up</div>,
+				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,
+			},
+			{
+				accessorKey: "client.followUpDate",
+				header: () => <div className="text-center">Follow-up Date</div>,
+				cell: (info) => {
+					const date = info.getValue<Date>();
+					return date ? (
+						<div className="text-center">{new Date(date).toLocaleDateString("en-US", dateOptions)}</div>
+					) : (
+						<div className="text-center">N/A</div>
+					);
+				},
+			},
+			{
 				accessorKey: "client.isReentryClient",
 				header: () => <div className="text-center">Re-entry</div>,
 				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,

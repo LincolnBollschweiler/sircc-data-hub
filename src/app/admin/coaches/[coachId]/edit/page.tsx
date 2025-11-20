@@ -1,5 +1,7 @@
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
+import CoachDetails from "@/components/users/coaches/CoachDetails";
+import TrainingsWrapper from "@/components/users/coaches/TrainingsWrapper";
 import DataTable from "@/components/users/DataTable";
 import { getCoachById, CoachHours, ClientFull, CoachMiles } from "@/userInteractions/db";
 import Link from "next/link";
@@ -21,8 +23,8 @@ export default async function ViewCoachPage({ params }: { params: Promise<{ coac
 			</PageHeader>
 			{fullCoach && (
 				<>
-					{/* <ClientDetails user={fullCoach.user} client={fullCoach.client} allCoaches={allCoaches} /> */}
-					{/* {fullCoach.client.isReentryClient && <ReentryCheckListWrapper clientId={coachId} />} */}
+					<CoachDetails user={fullCoach.user} coach={fullCoach.coach!} />
+					{fullCoach && <TrainingsWrapper coachId={coachId} />}
 
 					<DataTable title="Clients" data={fullCoach.clients as ClientFull[]} userType="coach-clients" />
 					<br />
