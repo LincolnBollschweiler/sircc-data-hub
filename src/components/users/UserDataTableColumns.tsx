@@ -13,36 +13,33 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteCoachMiles, updateUser } from "@/userInteractions/actions";
+import { deleteCoachMiles, deleteCoachHours, updateUser } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
-import { ClientList, ClientServiceFull, CoachHours, CoachList, CoachMiles } from "@/userInteractions/db";
-import { deleteCoachHours } from "@/userInteractions/actions";
 import ClientServicesDialog from "./clients/ClientServicesDialog";
 import { CSTables } from "@/tableInteractions/db";
 import HoursDialog from "./coaches/HoursDialog";
 import MilesDialog from "./coaches/MilesDialog";
+import { ClientList, ClientServiceFull, CoachHours, CoachList, CoachMiles } from "@/userInteractions/db";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
-// helpers.ts (or in same file)
-const asClient = (row: unknown): ClientList => row as ClientList;
-const asSingleClient = (row: unknown) => row as ClientServiceFull;
+// Helper casts
 const asUser = (row: unknown): User => row as User;
-const asUserRow = (row: unknown) => row as User;
-const asCoach = (row: unknown) => row as CoachList;
-const asHours = (row: unknown) => row as CoachHours;
-const asMiles = (row: unknown) => row as CoachMiles;
+const asUserRow = (row: unknown): User => row as User;
+const asClient = (row: unknown): ClientList => row as ClientList;
+const asClientRow = (row: unknown): ClientList => row as ClientList;
+const asSingleClient = (row: unknown): ClientServiceFull => row as ClientServiceFull;
+const asCoach = (row: unknown): CoachList => row as CoachList;
+const asHours = (row: unknown): CoachHours => row as CoachHours;
+const asMiles = (row: unknown): CoachMiles => row as CoachMiles;
 
 const processAcceptance = async (user: Partial<User>, accepted: boolean | null) => {
 	const action = user.id ? updateUser.bind(null, user.id) : undefined;
 	if (!action) return;
 	const actionData = await action({ ...user, accepted });
 	if (actionData) actionToast({ actionData });
-	// TODO: Is the reload necessary? Can we update state instead?
-	// notice that the removeCoachHours function does not reload the page and the DT updates correctly
-	if (!actionData?.error) requestAnimationFrame(() => window.location.reload());
 };
 
 const removeCoachHours = async (id: string) => {
@@ -66,6 +63,7 @@ export const userDataTableColumns = (
 	csTables?: CSTables,
 	startDelete?: (id: string) => void
 ): ColumnDef<unknown>[] => {
+	// -------------------- REJECTED/APPLICANT --------------------
 	if (userType === "rejected" || userType === "applicant") {
 		return [
 			{
@@ -80,20 +78,20 @@ export const userDataTableColumns = (
 						variant="ghost"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 					>
-						Name
 						<ArrowUpDown className="ml-2 h-4 w-4" />
+						Name
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
 					const rA = asUserRow(rowA.original);
 					const rB = asUserRow(rowB.original);
-					const nameA = `${rA.firstName} ${rA.lastName}`.toLowerCase();
-					const nameB = `${rB.firstName} ${rB.lastName}`.toLowerCase();
-					return nameA.localeCompare(nameB);
+					return `${rA.firstName} ${rA.lastName}`
+						.toLowerCase()
+						.localeCompare(`${rB.firstName} ${rB.lastName}`.toLowerCase());
 				},
 				cell: (info) => {
 					const r = asUser(info.row.original);
-					return `${r.firstName} ${r.lastName}`;
+					return <div className="text-nowrap">{`${r.firstName} ${r.lastName}`}</div>;
 				},
 			},
 			{
@@ -101,7 +99,7 @@ export const userDataTableColumns = (
 				header: () => <div className="text-center">Phone</div>,
 				cell: (info) => {
 					const phone = formatPhoneNumber(info.getValue<string>() || "");
-					return <div className="text-center">{phone || "N/A"}</div>;
+					return <div className="text-center text-nowrap">{phone || "N/A"}</div>;
 				},
 			},
 			{
@@ -110,19 +108,17 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "desiredRole",
-				header: ({ column }) => {
-					return (
-						<Button
-							className="text-center w-full"
-							variant="ghost"
-							onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-						>
-							Desired Role
-							<ArrowUpDown className="ml-2 h-4 w-4" />
-						</Button>
-					);
-				},
-				cell: (info) => <div className="text-center">{info.getValue<string>() || "N/A"}</div>,
+				header: ({ column }) => (
+					<Button
+						className="text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						Desired Role
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+					</Button>
+				),
+				cell: (info) => <div className="text-center text-nowrap">{info.getValue<string>() || "N/A"}</div>,
 			},
 			{
 				accessorKey: "notes",
@@ -130,7 +126,6 @@ export const userDataTableColumns = (
 				cell: ({ getValue }) => {
 					const notes = getValue<string>() || "";
 					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
-
 					return (
 						<Popover>
 							<PopoverTrigger asChild>
@@ -150,30 +145,35 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "createdAt",
-				header: ({ column }) => {
-					return (
-						<Button
-							className="text-center w-full"
-							variant="ghost"
-							onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-						>
-							Added
-							<ArrowUpDown className="ml-2 h-4 w-4" />
-						</Button>
+				accessorFn: (row) => {
+					const r = asUserRow(row);
+					const date = r.createdAt;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						Added
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+					</Button>
+				),
+				cell: (info) => {
+					const date = info.getValue<Date>();
+					return date ? (
+						<div className="text-center">{new Date(date).toLocaleDateString("en-US", dateOptions)}</div>
+					) : (
+						<div className="text-center">N/A</div>
 					);
 				},
-				cell: (info) => (
-					<div className="text-center">
-						{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}
-					</div>
-				),
 			},
 			{
 				id: "actions",
 				header: () => <div className="text-right"></div>,
 				cell: ({ row }) => {
-					const user = row.original;
-
+					const user = row.original as User;
 					return (
 						<div className="text-right">
 							<DropdownMenu>
@@ -186,16 +186,13 @@ export const userDataTableColumns = (
 								<DropdownMenuContent align="end">
 									{userType !== "rejected" && (
 										<DropdownMenuItem asChild>
-											<a
-												className="hover:!bg-background-dark"
-												href={`mailto:${(user as User).email}`}
-											>
+											<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
 												Send Email
 											</a>
 										</DropdownMenuItem>
 									)}
 									{userType === "rejected" && (
-										<DropdownMenuItem onClick={() => processAcceptance(user as User, null)}>
+										<DropdownMenuItem onClick={() => processAcceptance(user, null)}>
 											Undecided Applicant
 										</DropdownMenuItem>
 									)}
@@ -203,17 +200,16 @@ export const userDataTableColumns = (
 										<>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem asChild>
-												<AssignRoleFormDialog profile={user as User}>
+												<AssignRoleFormDialog profile={user}>
 													<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
 														Assign Role & Accept
 													</DialogTrigger>
 												</AssignRoleFormDialog>
 											</DropdownMenuItem>
 											<DropdownMenuSeparator />
-											<DropdownMenuSeparator />
 											<DropdownMenuItem
 												className="hover:!bg-danger"
-												onClick={() => processAcceptance(user as User, false)}
+												onClick={() => processAcceptance(user, false)}
 											>
 												Reject
 											</DropdownMenuItem>
@@ -231,20 +227,45 @@ export const userDataTableColumns = (
 	if (userType === "client" || userType === "client-volunteer") {
 		return [
 			{
-				accessorKey: "name",
-				header: "Name",
+				id: "name",
+				accessorFn: (row) => {
+					const r = asClientRow(row); // <-- correct cast
+					return `${r.user.firstName} ${r.user.lastName}`;
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+						Name
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					const nameA = `${a.user.firstName} ${a.user.lastName}`.toLowerCase();
+					const nameB = `${b.user.firstName} ${b.user.lastName}`.toLowerCase();
+					return nameA.localeCompare(nameB);
+				},
 				cell: (info) => {
 					const r = asClient(info.row.original);
-					return `${r.user.firstName} ${r.user.lastName}`;
+					return <div className="text-nowrap">{`${r.user.firstName} ${r.user.lastName}`}</div>;
 				},
 			},
 			{
-				accessorKey: "client.FollowupNeeded",
+				accessorKey: "client.followupNeeded",
 				header: () => <div className="text-center">Follow-up</div>,
 				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,
 			},
 			{
 				accessorKey: "client.followUpDate",
+				accessorFn: (row) => {
+					const r = asClientRow(row);
+					const date = r.client?.followUpDate ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: () => <div className="text-center">Follow-up Date</div>,
 				cell: (info) => {
 					const date = info.getValue<Date>();
@@ -265,7 +286,11 @@ export const userDataTableColumns = (
 				header: "Coach",
 				cell: (info) => {
 					const r = asClient(info.row.original);
-					return `${r.coach?.firstName} ${r.coach?.lastName.charAt(0)}` || "N/A";
+					return r.coach ? (
+						<div className="text-nowrap">{`${r.coach.firstName} ${r.coach.lastName.charAt(0)}`}</div>
+					) : (
+						"N/A"
+					);
 				},
 			},
 			{
@@ -287,7 +312,7 @@ export const userDataTableColumns = (
 				header: () => <div className="text-center">Phone</div>,
 				cell: (info) => {
 					const phone = formatPhoneNumber(info.getValue<string>() || "");
-					return <div className="text-center">{phone || "N/A"}</div>;
+					return <div className="text-center text-nowrap">{phone || "N/A"}</div>;
 				},
 			},
 			{
@@ -303,6 +328,11 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "updatedAt",
+				accessorFn: (row) => {
+					const r = asClientRow(row);
+					const date = r.requestsUpdatedAt ?? r.client?.updatedAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: "Updated",
 				cell: (info) => {
 					const r = asClient(info.row.original);
@@ -355,77 +385,112 @@ export const userDataTableColumns = (
 	if (userType === "single-client") {
 		return [
 			{
-				accessorKey: "requestedService.name",
+				id: "requestedService",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.requestedService?.name ?? "";
+				},
 				header: "Requested Service",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.requestedService ? r.requestedService.name : "";
+					return <div className="text-nowrap">{r.requestedService?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "providedService.name",
+				id: "providedService",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.providedService?.name ?? "";
+				},
 				header: "Provided Service",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.providedService ? r.providedService.name : "";
+					return <div className="text-nowrap">{r.providedService?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "city.name",
+				id: "city",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.city?.name ?? "";
+				},
 				header: "City",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.city ? r.city.name : "";
+					return <div className="text-nowrap">{r.city?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "location.name",
+				id: "location",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.location?.name ?? "";
+				},
 				header: "Location",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.location ? r.location.name : "";
+					return <div className="text-nowrap">{r.location?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "referralSource.name",
+				id: "referralSource",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.referralSource?.name ?? "";
+				},
 				header: "Referral Source",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.referralSource ? r.referralSource.name : "";
+					return <div className="text-nowrap">{r.referralSource?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "referredOut.name",
+				id: "referredOut",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.referredOut?.name ?? "";
+				},
 				header: "Referred Out",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.referredOut ? r.referredOut.name : "";
+					return <div className="text-nowrap">{r.referredOut?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "visit.name",
+				id: "visitReason",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.visit?.name ?? "";
+				},
 				header: "Visit Reason",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.visit ? r.visit.name : "";
+					return <div className="text-nowrap">{r.visit?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "clientService.funds",
+				id: "funding",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.clientService.funds ?? null;
+				},
 				header: "Funding",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					if (r.clientService.funds != null) {
-						return `$${r.clientService.funds.toString()}`;
-					}
+					return r.clientService.funds != null ? `$${r.clientService.funds}` : "";
 				},
 			},
 			{
-				accessorKey: "clientService.notes",
+				id: "notes",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.clientService.notes ?? "";
+				},
 				header: "Notes",
 				cell: ({ getValue }) => {
 					const notes = getValue<string>() || "";
 					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+
 					return (
 						<Popover>
 							<PopoverTrigger asChild>
@@ -444,12 +509,22 @@ export const userDataTableColumns = (
 				},
 			},
 			{
-				accessorKey: "clientService.createdAt",
+				id: "createdAt",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					const date = r.clientService.createdAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: "Created",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 			{
-				accessorKey: "clientService.updatedAt",
+				id: "updatedAt",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					const date = r.clientService.updatedAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: "Updated",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
@@ -459,7 +534,6 @@ export const userDataTableColumns = (
 				cell: ({ row }) => {
 					const clientRow = asSingleClient(row.original);
 					const service = clientRow.clientService;
-					// const id = clientRow.clientService.id;
 
 					return (
 						<div className="text-right">
@@ -470,6 +544,7 @@ export const userDataTableColumns = (
 										<MoreHorizontal className="h-4 w-4" />
 									</Button>
 								</DropdownMenuTrigger>
+
 								<DropdownMenuContent align="end">
 									<DropdownMenuItem asChild>
 										<ClientServicesDialog
@@ -482,8 +557,9 @@ export const userDataTableColumns = (
 											</DialogTrigger>
 										</ClientServicesDialog>
 									</DropdownMenuItem>
+
 									<DropdownMenuSeparator />
-									<DropdownMenuSeparator />
+
 									<DropdownMenuItem
 										className="hover:!bg-danger"
 										onClick={() => startDelete && startDelete(service.id)}
@@ -502,69 +578,112 @@ export const userDataTableColumns = (
 	if (userType === "single-client-view") {
 		return [
 			{
-				accessorKey: "requestedService.name",
+				id: "requestedService",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.requestedService?.name ?? "";
+				},
 				header: "Requested Service",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.requestedService ? r.requestedService.name : "";
+					return <div className="text-nowrap">{r.requestedService?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "providedService.name",
+				id: "providedService",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.providedService?.name ?? "";
+				},
 				header: "Provided Service",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.providedService ? r.providedService.name : "";
+					return <div className="text-nowrap">{r.providedService?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "location.name",
+				id: "city",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.city?.name ?? "";
+				},
+				header: "City",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return <div className="text-nowrap">{r.city?.name ?? ""}</div>;
+				},
+			},
+			{
+				id: "location",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.location?.name ?? "";
+				},
 				header: "Location",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.location ? r.location.name : "";
+					return <div className="text-nowrap">{r.location?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "referralSource.name",
+				id: "referralSource",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.referralSource?.name ?? "";
+				},
 				header: "Referral Source",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.referralSource ? r.referralSource.name : "";
+					return <div className="text-nowrap">{r.referralSource?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "referredOut.name",
+				id: "referredOut",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.referredOut?.name ?? "";
+				},
 				header: "Referred Out",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.referredOut ? r.referredOut.name : "";
+					return <div className="text-nowrap">{r.referredOut?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "visit.name",
+				id: "visitReason",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.visit?.name ?? "";
+				},
 				header: "Visit Reason",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					return r.visit ? r.visit.name : "";
+					return <div className="text-nowrap">{r.visit?.name ?? ""}</div>;
 				},
 			},
 			{
-				accessorKey: "clientService.funds",
-				header: "Funds Provided",
+				id: "funding",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.clientService.funds ?? null;
+				},
+				header: "Funding",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
-					if (r.clientService.funds != null) {
-						return `$${r.clientService.funds.toString()}`;
-					}
+					return r.clientService.funds != null ? `$${r.clientService.funds}` : "";
 				},
 			},
 			{
-				accessorKey: "clientService.notes",
+				id: "notes",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					return r.clientService.notes ?? "";
+				},
 				header: "Notes",
 				cell: ({ getValue }) => {
 					const notes = getValue<string>() || "";
 					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+
 					return (
 						<Popover>
 							<PopoverTrigger asChild>
@@ -583,12 +702,22 @@ export const userDataTableColumns = (
 				},
 			},
 			{
-				accessorKey: "clientService.createdAt",
+				id: "createdAt",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					const date = r.clientService.createdAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: "Created",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 			{
-				accessorKey: "clientService.updatedAt",
+				id: "updatedAt",
+				accessorFn: (row) => {
+					const r = asSingleClient(row);
+					const date = r.clientService.updatedAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: "Updated",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
@@ -643,6 +772,11 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "createdAt",
+				accessorFn: (row) => {
+					const r = asUserRow(row);
+					const date = r.createdAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: "Added",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
@@ -652,11 +786,31 @@ export const userDataTableColumns = (
 	if (userType === "coach") {
 		return [
 			{
-				accessorKey: "name",
-				header: "Name",
+				id: "name",
+				accessorFn: (row) => {
+					const r = asCoach(row);
+					return `${r.user.firstName} ${r.user.lastName}`;
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+						Name
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asCoach(rowA.original);
+					const b = asCoach(rowB.original);
+					const nameA = `${a.user.firstName} ${a.user.lastName}`.toLowerCase();
+					const nameB = `${b.user.firstName} ${b.user.lastName}`.toLowerCase();
+					return nameA.localeCompare(nameB);
+				},
 				cell: (info) => {
 					const r = asCoach(info.row.original);
-					return `${r.user.firstName} ${r.user.lastName}`;
+					return <div className="text-nowrap">{`${r.user.firstName} ${r.user.lastName}`}</div>;
 				},
 			},
 			{
@@ -670,12 +824,12 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "coach.llc",
 				header: "LLC",
-				cell: (info) => info.getValue<string>() ?? "None",
+				cell: (info) => <div className="text-nowrap">{info.getValue<string>() ?? "None"}</div>,
 			},
 			{
 				accessorKey: "coach.website",
 				header: "Website",
-				cell: (info) => info.getValue<string>() ?? "None",
+				cell: (info) => <div className="text-nowrap">{info.getValue<string>() ?? "None"}</div>,
 			},
 			{
 				accessorKey: "user.email",
@@ -703,6 +857,11 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "coach.updatedAt",
+				accessorFn: (row) => {
+					const r = asCoach(row);
+					const date = r.coach?.updatedAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: "Updated",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
@@ -710,7 +869,7 @@ export const userDataTableColumns = (
 				id: "actions",
 				header: () => <div className="text-right"></div>,
 				cell: ({ row }) => {
-					const coachRow = asCoach(row.original); // now TypeScript knows it's ClientWithUser
+					const coachRow = asCoach(row.original);
 					const user = coachRow.user;
 
 					return (
@@ -728,7 +887,9 @@ export const userDataTableColumns = (
 											Send Email
 										</a>
 									</DropdownMenuItem>
+
 									<DropdownMenuSeparator />
+
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -749,11 +910,27 @@ export const userDataTableColumns = (
 	if (userType === "coach-clients") {
 		return [
 			{
-				accessorKey: "name",
-				header: "Name",
-				cell: (info) => {
-					const r = asClient(info.row.original);
+				id: "name",
+				accessorFn: (row) => {
+					const r = asClientRow(row);
 					return `${r.user.firstName} ${r.user.lastName}`;
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+						Name
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					const nameA = `${a.user.firstName} ${a.user.lastName}`.toLowerCase();
+					const nameB = `${b.user.firstName} ${b.user.lastName}`.toLowerCase();
+					return nameA.localeCompare(nameB);
 				},
 			},
 			{
@@ -763,6 +940,11 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "client.followUpDate",
+				accessorFn: (row) => {
+					const r = asClientRow(row);
+					const date = r.client?.followUpDate ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: () => <div className="text-center">Follow-up Date</div>,
 				cell: (info) => {
 					const date = info.getValue<Date>();
@@ -793,7 +975,7 @@ export const userDataTableColumns = (
 				header: () => <div className="text-center">Phone</div>,
 				cell: (info) => {
 					const phone = formatPhoneNumber(info.getValue<string>() || "");
-					return <div className="text-center">{phone || "N/A"}</div>;
+					return <div className="text-center text-nowrap">{phone || "N/A"}</div>;
 				},
 			},
 			{
@@ -847,12 +1029,37 @@ export const userDataTableColumns = (
 		return [
 			{
 				accessorKey: "date",
-				header: "Date",
+				accessorFn: (row) => {
+					const r = asHours(row);
+					const date = r.date ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="ml-2 h-4 w-4" />
+						Date
+					</Button>
+				),
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 			{
 				accessorKey: "paidHours",
-				header: () => <div className="text-center">Paid Hours</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Paid Hours
+						</div>
+					</Button>
+				),
 				cell: (info) => {
 					const texVal = info.getValue<string>();
 					const val = texVal ? Number(texVal).toFixed(2) : "";
@@ -861,7 +1068,18 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "volunteerHours",
-				header: () => <div className="text-center">Volunteer Hours</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Volunteer Hours
+						</div>
+					</Button>
+				),
 				cell: (info) => {
 					const texVal = info.getValue<string>();
 					const val = texVal ? Number(texVal).toFixed(2) : "";
@@ -893,8 +1111,28 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "updatedAt",
-				header: "Updated",
-				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+				accessorFn: (row) => {
+					const r = asUserRow(row);
+					const date = r.updatedAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Updated
+						</div>
+					</Button>
+				),
+				cell: (info) => (
+					<div className="text-center">
+						{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}
+					</div>
+				),
 			},
 			{
 				id: "actions",
@@ -939,12 +1177,39 @@ export const userDataTableColumns = (
 		return [
 			{
 				accessorKey: "date",
-				header: "Date",
+				accessorFn: (row) => {
+					const r = asMiles(row);
+					const date = r.date ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-start"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Date
+						</div>
+					</Button>
+				),
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},
 			{
 				accessorKey: "miles",
-				header: () => <div className="text-center">Miles</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Miles
+						</div>
+					</Button>
+				),
 				cell: (info) => <div className="text-center">{Number(info.getValue<string>()).toFixed(2)}</div>,
 			},
 			{
@@ -972,10 +1237,29 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "updatedAt",
-				header: "Updated",
-				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+				accessorFn: (row) => {
+					const r = asUserRow(row);
+					const date = r.updatedAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Updated
+						</div>
+					</Button>
+				),
+				cell: (info) => (
+					<div className="text-center">
+						{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}
+					</div>
+				),
 			},
-
 			{
 				id: "actions",
 				header: () => <div className="text-right"></div>,
@@ -1063,6 +1347,11 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "createdAt",
+				accessorFn: (row) => {
+					const r = asUserRow(row);
+					const date = r.createdAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
 				header: "Added",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
 			},

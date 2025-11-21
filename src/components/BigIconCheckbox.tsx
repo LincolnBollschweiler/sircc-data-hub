@@ -32,8 +32,8 @@ export default function BigIconCheckbox({
 			type="button"
 			aria-pressed={checked}
 			className={cn(
-				"flex items-center justify-center rounded-md transition-colors select-none border border-transparent hover:border-[#888]",
-				noHover ? "cursor-default" : "cursor-pointer"
+				"flex items-center justify-center rounded-md transition-colors select-none border border-transparent",
+				noHover ? "cursor-default" : "cursor-pointer hover:border-[#888]"
 			)}
 			style={{ width: size + 4, height: size + 4 }} // ← reduced padding distance
 		>
