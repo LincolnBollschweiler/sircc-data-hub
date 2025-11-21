@@ -371,6 +371,14 @@ export const userDataTableColumns = (
 				},
 			},
 			{
+				accessorKey: "city.name",
+				header: "City",
+				cell: (info) => {
+					const r = asSingleClient(info.row.original);
+					return r.city ? r.city.name : "";
+				},
+			},
+			{
 				accessorKey: "location.name",
 				header: "Location",
 				cell: (info) => {
@@ -404,7 +412,7 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "clientService.funds",
-				header: "Funds Provided",
+				header: "Funding",
 				cell: (info) => {
 					const r = asSingleClient(info.row.original);
 					if (r.clientService.funds != null) {
@@ -854,7 +862,11 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "volunteerHours",
 				header: () => <div className="text-center">Volunteer Hours</div>,
-				cell: (info) => <div className="text-center">{Number(info.getValue<string>()).toFixed(2)}</div>,
+				cell: (info) => {
+					const texVal = info.getValue<string>();
+					const val = texVal ? Number(texVal).toFixed(2) : "";
+					return <div className="text-center">{val}</div>;
+				},
 			},
 			{
 				accessorKey: "notes",

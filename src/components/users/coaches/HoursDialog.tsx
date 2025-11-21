@@ -34,13 +34,17 @@ export default function HoursDialog({
 
 	const [action, setAction] = useState<"save" | "cancel" | "dismiss" | null>(null);
 
-	const handleCancel = () => {
-		setAction("cancel");
-		setIsOpen(false);
+	const resetAll = () => {
 		setVolunteerHours("");
 		setHours("");
 		setDate(new Date());
 		setNotes("");
+	};
+
+	const handleCancel = () => {
+		setAction("cancel");
+		setIsOpen(false);
+		resetAll();
 	};
 
 	const handleSave = async () => {
@@ -56,11 +60,10 @@ export default function HoursDialog({
 			notes,
 		};
 
-		console.log("Logged Hours:", loggedHours);
-
 		const action = coachId ? insertCoachHours.bind(null, coachId) : updateCoachHours.bind(null, values?.id ?? null);
 		const actionData = await action(loggedHours);
 		if (actionData) actionToast({ actionData });
+		if (!actionData.error) resetAll();
 	};
 
 	const handleOpenChange = (open: boolean) => {

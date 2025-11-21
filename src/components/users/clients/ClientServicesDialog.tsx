@@ -57,9 +57,7 @@ export default function ClientServicesDialog({
 
 	const [action, setAction] = useState<"save" | "cancel" | "dismiss" | null>(null);
 
-	const handleCancel = () => {
-		setAction("cancel");
-		setIsOpen(false);
+	const resetAll = () => {
 		setProvidedServiceId(null);
 		setRequestedServiceId(null);
 		setCityId(null);
@@ -69,6 +67,12 @@ export default function ClientServicesDialog({
 		setVisitTypeId(null);
 		setFunds("");
 		setClientNotes("");
+	};
+
+	const handleCancel = () => {
+		setAction("cancel");
+		setIsOpen(false);
+		resetAll();
 	};
 
 	const handleSave = async () => {
@@ -102,6 +106,7 @@ export default function ClientServicesDialog({
 		const action = createClientService.bind(null, null);
 		const actionData = await action(clientService);
 		if (actionData) actionToast({ actionData });
+		if (!actionData.error) resetAll();
 	};
 
 	const handleOpenChange = (open: boolean) => {

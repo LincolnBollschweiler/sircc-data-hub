@@ -502,11 +502,16 @@ const getCachedCoach = (id: string) => {
 			// Get children (3 separate queries)
 			const coachTrainings = await db.select().from(coachTraining).where(eq(coachTraining.coachId, id));
 
-			const coachHoursRows: CoachHours[] = await db.select().from(coachHours).where(eq(coachHours.coachId, id));
+			const coachHoursRows: CoachHours[] = await db
+				.select()
+				.from(coachHours)
+				.where(eq(coachHours.coachId, id))
+				.orderBy(desc(coachHours.date));
 			const coachMilesRows: CoachMiles[] = await db
 				.select()
 				.from(coachMileage)
-				.where(eq(coachMileage.coachId, id));
+				.where(eq(coachMileage.coachId, id))
+				.orderBy(desc(coachMileage.date));
 
 			const clientsRow = await db
 				.select({

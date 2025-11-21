@@ -101,11 +101,11 @@ export const removeCoachTraining = async (coachId: string, trainingId: string) =
 };
 
 export const insertCoachHours = async (coachId: string, data: Partial<CoachHours>) => {
-	if (!data.paidHours && !data.volunteerHours) {
+	if (!Number(data.paidHours) && !Number(data.volunteerHours)) {
 		return { error: true, message: "At least one of paid or volunteer hours must be provided" };
 	}
-	if (data.paidHours === "") delete data.paidHours;
-	if (data.volunteerHours === "") delete data.volunteerHours;
+	if (!Number(data.paidHours)) delete data.paidHours;
+	if (!Number(data.volunteerHours)) delete data.volunteerHours;
 
 	const rv = await addCoachHoursById(coachId, data);
 	if (!rv) return { error: true, message: "Failed to log coach hours" };
@@ -114,9 +114,12 @@ export const insertCoachHours = async (coachId: string, data: Partial<CoachHours
 
 export const updateCoachHours = async (hoursId: string | null, data: Partial<CoachHours>) => {
 	if (!hoursId) return { error: true, message: "Invalid hours ID" };
-	if (!data.paidHours && !data.volunteerHours) {
+	if (!Number(data.paidHours) && !Number(data.volunteerHours))
 		return { error: true, message: "At least one of paid or volunteer hours must be provided" };
-	}
+
+	if (!Number(data.paidHours)) delete data.paidHours;
+	if (!Number(data.volunteerHours)) delete data.volunteerHours;
+
 	const rv = await updateCoachHoursById(hoursId, data);
 	if (!rv) return { error: true, message: "Failed to update coach hours" };
 	return { error: false, message: "Coach hours updated successfully" };
@@ -129,9 +132,7 @@ export const deleteCoachHours = async (hoursId: string) => {
 };
 
 export const insertCoachMiles = async (coachId: string, data: Partial<CoachMiles>) => {
-	if (!data.miles) {
-		return { error: true, message: "Miles must be provided" };
-	}
+	if (!Number(data.miles)) return { error: true, message: "Miles must be provided" };
 	const rv = await addCoachMileageById(coachId, data);
 	if (!rv) return { error: true, message: "Failed to log coach miles" };
 	return { error: false, message: "Coach miles logged successfully" };
@@ -139,6 +140,8 @@ export const insertCoachMiles = async (coachId: string, data: Partial<CoachMiles
 
 export const updateCoachMiles = async (milesId: string | null, data: Partial<CoachMiles>) => {
 	if (!milesId) return { error: true, message: "Invalid miles ID" };
+	console.log("Updating coach miles:", milesId, data);
+	if (!Number(data.miles)) return { error: true, message: "Miles must be provided" };
 	const rv = await updateCoachMileageById(milesId, data);
 	if (!rv) return { error: true, message: "Failed to update coach miles" };
 	return { error: false, message: "Coach miles updated successfully" };
