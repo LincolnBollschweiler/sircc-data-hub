@@ -26,7 +26,7 @@ export const ClientDetails = ({
 		setIsReentry(checked);
 
 		const action = updateClientIsReentryStatus.bind(null, client.id);
-		const actionData = await action(checked);
+		const actionData = await action(checked, !!coachIsViewing);
 		if (actionData) {
 			actionToast({ actionData });
 		}

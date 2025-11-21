@@ -39,6 +39,7 @@ export default async function ViewClientPage({
 	const allCoaches = await getAllCoachUsers();
 	const csTables = await getAllClientServiceTables();
 
+	// const backToLink = !coachId ? `/admin/clients` : coachIsViewing ? "/" : `/admin/coaches/${coachId}/edit`;
 	const backToLink = coachId ? `/admin/coaches/${coachId}/edit` : `/admin/clients`;
 	const backToText = coachId ? `Back to Coach` : `Back to Clients`;
 
@@ -57,7 +58,13 @@ export default async function ViewClientPage({
 						allCoaches={allCoaches}
 						coachIsViewing={coachIsViewing}
 					/>
-					{fullClient.client.isReentryClient && <ReentryCheckListWrapper clientId={clientId} />}
+					{fullClient.client.isReentryClient && (
+						<ReentryCheckListWrapper
+							clientId={clientId}
+							clientCheckListItems={fullClient.checkListItems}
+							coachIsViewing={coachIsViewing}
+						/>
+					)}
 					{fullClient.client.followUpNeeded && (
 						<div className="my-4 p-4 border-l-4 border-warning bg-warning/10">
 							<h3 className="font-semibold text-lg mb-2">Follow-Up Needed</h3>
@@ -79,6 +86,7 @@ export default async function ViewClientPage({
 						userType="single-client"
 						csTables={csTables}
 						clientId={clientId}
+						coachIsViewing={coachIsViewing}
 					/>
 				</>
 			)}

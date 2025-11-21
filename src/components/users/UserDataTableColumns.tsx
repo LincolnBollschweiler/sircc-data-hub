@@ -61,6 +61,9 @@ const removeCoachMiles = async (id: string) => {
 
 export const userDataTableColumns = (
 	userType: string,
+	coachIsViewing?: boolean,
+	trainingsCount?: number,
+	checkListCount?: number,
 	csTables?: CSTables,
 	startDelete?: (id: string) => void
 ): ColumnDef<unknown>[] => {
@@ -313,8 +316,19 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "client.isReentryClient",
-				header: () => <div className="text-center">Re-entry</div>,
-				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,
+				header: () => <div className="text-center">Check List</div>,
+				cell: (info) => {
+					const r = asClient(info.row.original);
+					const isReentry = r.client?.isReentryClient;
+					const checkListCountValue = checkListCount || 0;
+					const checkListItemCount = r.checkListItemCount || 0;
+					const value = !isReentry
+						? "N/A"
+						: checkListCountValue == checkListItemCount
+						? "Completed"
+						: `${r.checkListItemCount || 0} of ${checkListCount}`;
+					return <div className="text-center">{value}</div>;
+				},
 			},
 			{
 				accessorKey: "coachName",
@@ -586,6 +600,7 @@ export const userDataTableColumns = (
 											clientId={service.clientId}
 											csTables={csTables!}
 											values={service}
+											coachIsViewing={!!coachIsViewing}
 										>
 											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
 												Edit Service
@@ -912,7 +927,12 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "trainingsCompleted",
 				header: () => <div className="text-center">Trainings</div>,
-				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+				cell: (info) => {
+					const completed = info.getValue<number>();
+					const total = trainingsCount;
+					const cell = completed == total ? "Complete" : `${completed} of ${total}`; // use soft equals
+					return <div className="text-center">{cell}</div>;
+				},
 			},
 			{
 				accessorKey: "volunteerHours",
@@ -1043,8 +1063,19 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "client.isReentryClient",
-				header: () => <div className="text-center">Re-entry</div>,
-				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,
+				header: () => <div className="text-center">Check List</div>,
+				cell: (info) => {
+					const r = asClient(info.row.original);
+					const isReentry = r.client?.isReentryClient;
+					const checkListCountValue = checkListCount || 0;
+					const checkListItemCount = r.checkListItemCount || 0;
+					const value = !isReentry
+						? "N/A"
+						: checkListCountValue == checkListItemCount
+						? "Completed"
+						: `${r.checkListItemCount || 0} of ${checkListCount}`;
+					return <div className="text-center">{value}</div>;
+				},
 			},
 			{
 				accessorKey: "openRequestsCount",

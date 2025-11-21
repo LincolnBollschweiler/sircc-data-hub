@@ -34,21 +34,30 @@ export default function DataTable<TData>({
 	title,
 	data,
 	userType,
+	coachIsViewing,
 	clientId,
 	csTables,
 	services,
+	trainingsCount,
+	checkListCount,
 }: DataTableProps<TData> & {
 	title?: string;
 	userType: string;
+	coachIsViewing?: boolean;
 	clientId?: string;
 	csTables?: CSTables;
 	services?: Service[] | undefined;
+	trainingsCount?: number;
+	checkListCount?: number;
 }) {
 	const typesWithNoName = ["single-client", "single-client-view", "coach-hours", "coach-miles"];
 	const { startDelete, dialog } = useDeleteClientService();
 
 	const columns = userDataTableColumns(
 		userType,
+		coachIsViewing,
+		trainingsCount,
+		checkListCount,
 		csTables,
 		userType === "single-client" ? startDelete : undefined
 	) as ColumnDef<TData, unknown>[];
@@ -143,7 +152,9 @@ export default function DataTable<TData>({
 								onChange={(e) => setGlobalFilter(e.target.value)}
 							/>
 						</div>
-						{userType === "single-client" && <ClientServices clientId={clientId!} csTables={csTables!} />}
+						{userType === "single-client" && (
+							<ClientServices clientId={clientId!} csTables={csTables!} coachIsViewing={coachIsViewing} />
+						)}
 						{userType === "single-client-view" && (
 							<NewClientService clientId={clientId!} services={services!} />
 						)}
