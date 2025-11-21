@@ -155,7 +155,17 @@ export default function DataTable<TData>({
 								{table.getHeaderGroups().map((headerGroup) => (
 									<TableRow key={headerGroup.id}>
 										{headerGroup.headers.map((header) => (
-											<TableHead key={header.id} className="text-bold">
+											<TableHead
+												key={header.id}
+												className="text-bold"
+												style={
+													// this sets the width for an avatar image column header, keeping the size consistent
+													// across all DataTable flavors, browser window widths, and devices.
+													header.column.id === "userPhoto"
+														? { width: "35px", minWidth: "35px" }
+														: {}
+												}
+											>
 												{flexRender(header.column.columnDef.header, header.getContext())}
 											</TableHead>
 										))}
@@ -166,7 +176,10 @@ export default function DataTable<TData>({
 								{table.getRowModel().rows.map((row) => (
 									<TableRow key={row.id}>
 										{row.getVisibleCells().map((cell) => (
-											<TableCell key={cell.id}>
+											<TableCell
+												key={cell.id}
+												className={cell.column.id === "userPhoto" ? "p-0 mx-auto" : ""}
+											>
 												{flexRender(cell.column.columnDef.cell, cell.getContext())}
 											</TableCell>
 										))}

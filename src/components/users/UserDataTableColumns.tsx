@@ -22,6 +22,7 @@ import { CSTables } from "@/tableInteractions/db";
 import HoursDialog from "./coaches/HoursDialog";
 import MilesDialog from "./coaches/MilesDialog";
 import { ClientList, ClientServiceFull, CoachHours, CoachList, CoachMiles } from "@/userInteractions/db";
+import Image from "next/image";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -66,6 +67,23 @@ export const userDataTableColumns = (
 	// -------------------- REJECTED/APPLICANT --------------------
 	if (userType === "rejected" || userType === "applicant") {
 		return [
+			{
+				id: "userPhoto",
+				header: "",
+				accessorKey: "photoUrl",
+				cell: (info) => {
+					const r = asUser(info.row.original);
+					return (
+						<Image
+							src={r.photoUrl ?? "/default-avatar.png"}
+							alt={`${r.firstName} ${r.lastName}`}
+							width={30}
+							height={30}
+							className="rounded-full object-cover mx-auto"
+						/>
+					);
+				},
+			},
 			{
 				id: "name",
 				accessorFn: (row) => {
@@ -226,6 +244,23 @@ export const userDataTableColumns = (
 
 	if (userType === "client" || userType === "client-volunteer") {
 		return [
+			{
+				id: "userPhoto",
+				header: "",
+				accessorKey: "photoUrl",
+				cell: (info) => {
+					const r = asClientRow(info.row.original);
+					return (
+						<Image
+							src={r.user.photoUrl ?? "/default-avatar.png"}
+							alt={`${r.user.firstName} ${r.user.lastName}`}
+							width={30}
+							height={30}
+							className="rounded-full object-cover mx-auto"
+						/>
+					);
+				},
+			},
 			{
 				id: "name",
 				accessorFn: (row) => {
@@ -727,6 +762,23 @@ export const userDataTableColumns = (
 	if (userType === "volunteer" || userType === "client-volunteer") {
 		return [
 			{
+				id: "userPhoto",
+				header: "",
+				accessorKey: "photoUrl",
+				cell: (info) => {
+					const r = asUser(info.row.original);
+					return (
+						<Image
+							src={r.photoUrl ?? "/default-avatar.png"}
+							alt={`${r.firstName} ${r.lastName}`}
+							width={30}
+							height={30}
+							className="rounded-full object-cover mx-auto"
+						/>
+					);
+				},
+			},
+			{
 				accessorKey: "name",
 				header: "Name",
 				cell: (info) => {
@@ -785,6 +837,23 @@ export const userDataTableColumns = (
 
 	if (userType === "coach") {
 		return [
+			{
+				id: "userPhoto",
+				header: "",
+				accessorKey: "photoUrl",
+				cell: (info) => {
+					const r = asCoach(info.row.original);
+					return (
+						<Image
+							src={r.user.photoUrl ?? "/default-avatar.png"}
+							alt={`${r.user.firstName} ${r.user.lastName}`}
+							width={30}
+							height={30}
+							className="rounded-full object-cover mx-auto"
+						/>
+					);
+				},
+			},
 			{
 				id: "name",
 				accessorFn: (row) => {
@@ -909,6 +978,23 @@ export const userDataTableColumns = (
 
 	if (userType === "coach-clients") {
 		return [
+			{
+				id: "userPhoto",
+				header: "",
+				accessorKey: "photoUrl",
+				cell: (info) => {
+					const r = asClientRow(info.row.original);
+					return (
+						<Image
+							src={r.user.photoUrl ?? "/default-avatar.png"}
+							alt={`${r.user.firstName} ${r.user.lastName}`}
+							width={30}
+							height={30}
+							className="rounded-full object-cover mx-auto"
+						/>
+					);
+				},
+			},
 			{
 				id: "name",
 				accessorFn: (row) => {
