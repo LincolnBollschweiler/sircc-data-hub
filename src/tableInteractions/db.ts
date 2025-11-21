@@ -57,7 +57,7 @@ export const deleteVolunteerType = async (id: string) => {
 
 const cachedVolunteerTypes = unstable_cache(
 	async () => {
-		console.log("Fetching volunteer types from DB (not cache)");
+		// console.log("Fetching volunteer types from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.volunteeringType.id,
@@ -151,7 +151,7 @@ export type ReentryChecklistItems = Awaited<ReturnType<typeof getReentryChecklis
 
 const cachedReentryChecklistItems = unstable_cache(
 	async () => {
-		console.log("Fetching reentry checklist items from DB (not cache)");
+		// console.log("Fetching reentry checklist items from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.reentryCheckListItem.id,
@@ -231,9 +231,10 @@ export const deleteCoachTraining = async (id: string) => {
 	return rv;
 };
 
+export type Trainings = Awaited<ReturnType<typeof getCoachTrainings>>;
 const cachedCoachTrainings = unstable_cache(
 	async () => {
-		console.log("Fetching coach trainings from DB (not cache)");
+		// console.log("Fetching coach trainings from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.training.id,
@@ -320,7 +321,7 @@ export const deleteLocation = async (id: string) => {
 export type Location = typeof dbTable.location.$inferSelect;
 const cachedLocations = unstable_cache(
 	async () => {
-		console.log("Fetching locations from DB (not cache)");
+		// console.log("Fetching locations from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.location.id,
@@ -398,7 +399,7 @@ export const deleteCity = async (id: string) => {
 export type City = typeof dbTable.city.$inferSelect;
 const cachedCities = unstable_cache(
 	async () => {
-		console.log("Fetching cities from DB (not cache)");
+		// console.log("Fetching cities from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.city.id,
@@ -469,7 +470,7 @@ export const deleteVisit = async (id: string) => {
 export type Visit = typeof dbTable.visit.$inferSelect;
 const cachedVisits = unstable_cache(
 	async () => {
-		console.log("Fetching visits from DB (not cache)");
+		// console.log("Fetching visits from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.visit.id,
@@ -560,7 +561,7 @@ export const deleteReferralSource = async (id: string) => {
 export type ReferralSource = typeof dbTable.referralSource.$inferSelect;
 const cachedReferralSources = unstable_cache(
 	async () => {
-		console.log("Fetching referral sources from DB (not cache)");
+		// console.log("Fetching referral sources from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.referralSource.id,
@@ -648,7 +649,7 @@ export const deleteReferredOut = async (id: string) => {
 export type ReferredOut = typeof dbTable.referredOut.$inferSelect;
 const cachedReferredOut = unstable_cache(
 	async () => {
-		console.log("Fetching referred out from DB (not cache)");
+		// console.log("Fetching referred out from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.referredOut.id,
@@ -731,7 +732,7 @@ export const deleteSite = async (id: string) => {
 export type Site = typeof dbTable.site.$inferSelect;
 const cachedSites = unstable_cache(
 	async () => {
-		console.log("Fetching sites from DB (not cache)");
+		// console.log("Fetching sites from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.site.id,
@@ -818,7 +819,7 @@ export type Service = Awaited<ReturnType<typeof getServices>>[number];
 
 const cachedServices = unstable_cache(
 	async () => {
-		console.log("Fetching services from DB (not cache)");
+		// console.log("Fetching services from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.service.id,

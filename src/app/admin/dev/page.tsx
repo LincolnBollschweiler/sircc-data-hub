@@ -71,8 +71,9 @@ body.light {
 }`;
 
 	const process = () => {
-		const { lightOutput, darkOutput } = createNewTheme(iamsajidThemeInputText);
-		console.log(lightOutput, "\n\n", darkOutput);
+		createNewTheme(iamsajidThemeInputText);
+		// const { lightOutput, darkOutput } = createNewTheme(iamsajidThemeInputText);
+		// console.log(lightOutput, "\n\n", darkOutput);
 	};
 
 	return (
@@ -103,13 +104,13 @@ body.light {
 					</div>
 					<div>
 						<span className="font-semibold">Step 3: </span>
-						<span>Click 'Show Code', change dropdown to 'Theme', and copy.</span>
+						<span>Click &apos;Show Code&apos;, change dropdown to &apos;Theme&apos;, and copy.</span>
 					</div>
 					<div>
 						<span className="font-semibold">Step 4: </span>
 						<span>
 							Go to the file src\app\admin\dev\page.tsx and paste the ouput into the
-							"iamsajidThemeInputText" variable.
+							&quot;iamsajidThemeInputText&quot; variable.
 						</span>
 					</div>
 					<div>

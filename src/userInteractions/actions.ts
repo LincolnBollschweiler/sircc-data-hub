@@ -1,17 +1,29 @@
 "use server";
 
-import { user } from "@/drizzle/schema";
+import { coach, user } from "@/drizzle/schema";
 import {
 	addClientReentryCheckListItemForClient,
+	addCoachHoursById,
+	addCoachMileageById,
+	addCoachTrainingById,
 	ClientServiceInsert,
+	CoachHours,
+	CoachMiles,
 	deleteClientServiceById,
+	deleteCoachHoursById,
+	deleteCoachMileageById,
+	deleteCoachTrainingById,
 	insertClientService,
 	removeClientReentryCheckListItemForClient,
 	updateClientById,
+	updateCoachById,
+	updateCoachHoursById,
+	updateCoachMileageById,
 	updateUserById,
 } from "@/userInteractions/db";
 import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
 
+//#region User Actions
 export const updateUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
 	// console.log("Updating user:", id, unsafeData);
 	const { success, data } = userSchema.safeParse(unsafeData);
@@ -58,7 +70,86 @@ export const addClientChecklistItem = async (clientId: string, itemId: string) =
 };
 
 export const deleteClientChecklistItem = async (clientId: string, itemId: string) => {
-	console.log("Deleting checklist item:", clientId, itemId);
+	// console.log("Deleting checklist item:", clientId, itemId);
 	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId);
 	return { error: !rv, message: rv ? "Checklist item deleted successfully" : "Failed to delete checklist item" };
 };
+//#endregion
+
+//#region Coach Actions
+export const updateCoachDetails = async (
+	coachId: string,
+	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
+) => {
+	// console.log("Updating user:", id, unsafeData);
+	const rv = await updateCoachById(coachId, data);
+	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
+};
+
+export const insertCoachTraining = async (coachId: string, trainingId: string) => {
+	// console.log("Inserting coach training:", coachId, trainingId);
+	const rv = await addCoachTrainingById(coachId, trainingId);
+	if (!rv) return { error: true, message: "Failed to add coach training" };
+	return { error: false, message: "Coach training added successfully" };
+};
+
+export const removeCoachTraining = async (coachId: string, trainingId: string) => {
+	// console.log("Removing coach training:", coachId, trainingId);
+	const rv = await deleteCoachTrainingById(trainingId);
+	if (!rv) return { error: true, message: "Failed to remove coach training" };
+	return { error: false, message: "Coach training removed successfully" };
+};
+
+export const insertCoachHours = async (coachId: string, data: Partial<CoachHours>) => {
+	if (!Number(data.paidHours) && !Number(data.volunteerHours)) {
+		return { error: true, message: "At least one of paid or volunteer hours must be provided" };
+	}
+	if (!Number(data.paidHours)) delete data.paidHours;
+	if (!Number(data.volunteerHours)) delete data.volunteerHours;
+
+	const rv = await addCoachHoursById(coachId, data);
+	if (!rv) return { error: true, message: "Failed to log coach hours" };
+	return { error: false, message: "Coach hours logged successfully" };
+};
+
+export const updateCoachHours = async (hoursId: string | null, data: Partial<CoachHours>) => {
+	if (!hoursId) return { error: true, message: "Invalid hours ID" };
+	if (!Number(data.paidHours) && !Number(data.volunteerHours))
+		return { error: true, message: "At least one of paid or volunteer hours must be provided" };
+
+	if (!Number(data.paidHours)) delete data.paidHours;
+	if (!Number(data.volunteerHours)) delete data.volunteerHours;
+
+	const rv = await updateCoachHoursById(hoursId, data);
+	if (!rv) return { error: true, message: "Failed to update coach hours" };
+	return { error: false, message: "Coach hours updated successfully" };
+};
+
+export const deleteCoachHours = async (hoursId: string) => {
+	const rv = await deleteCoachHoursById(hoursId);
+	if (!rv) return { error: true, message: "Failed to delete coach hours" };
+	return { error: false, message: "Coach hours deleted successfully" };
+};
+
+export const insertCoachMiles = async (coachId: string, data: Partial<CoachMiles>) => {
+	if (!Number(data.miles)) return { error: true, message: "Miles must be provided" };
+	const rv = await addCoachMileageById(coachId, data);
+	if (!rv) return { error: true, message: "Failed to log coach miles" };
+	return { error: false, message: "Coach miles logged successfully" };
+};
+
+export const updateCoachMiles = async (milesId: string | null, data: Partial<CoachMiles>) => {
+	if (!milesId) return { error: true, message: "Invalid miles ID" };
+	console.log("Updating coach miles:", milesId, data);
+	if (!Number(data.miles)) return { error: true, message: "Miles must be provided" };
+	const rv = await updateCoachMileageById(milesId, data);
+	if (!rv) return { error: true, message: "Failed to update coach miles" };
+	return { error: false, message: "Coach miles updated successfully" };
+};
+
+export const deleteCoachMiles = async (milesId: string) => {
+	const rv = await deleteCoachMileageById(milesId);
+	if (!rv) return { error: true, message: "Failed to delete coach miles" };
+	return { error: false, message: "Coach miles deleted successfully" };
+};
+//#endregion

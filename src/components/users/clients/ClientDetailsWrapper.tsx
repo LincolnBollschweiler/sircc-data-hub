@@ -13,10 +13,13 @@ export default async function ClientDetailsWrapper({ clientId }: { clientId: str
 			{fullClient && (
 				<div className="container py-4 mx-auto">
 					<PageHeader title="Your Account Details" />
-					{fullClient.coach && <CoachDetails coach={fullClient.coach} />}
+					{fullClient.coach && (
+						<CoachDetails coach={fullClient.coach} coachDetails={fullClient.coachDetails} />
+					)}
 					<ReentryCheckListWrapper clientId={clientId} isClientView={true} />
 					<DataTable
-						data={fullClient.clientServices as ClientServiceFull[] & { siteId?: string | null }[]}
+						title="Services"
+						data={fullClient.clientServices as ClientServiceFull[]}
 						userType="single-client-view"
 						clientId={clientId}
 						services={services}

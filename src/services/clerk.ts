@@ -34,7 +34,7 @@ export const getCurrentUser = async ({ allData = false } = {}) => {
 };
 
 export const syncClerkUserMetadata = (user: { id: string; clerkUserId: string; role: UserRole }) => {
-	console.log("Syncing Clerk user metadata for:", user.clerkUserId, "with role:", user.role);
+	// console.log("Syncing Clerk user metadata for:", user.clerkUserId, "with role:", user.role);
 	return client.users.updateUserMetadata(user.clerkUserId, {
 		publicMetadata: {
 			dbId: user.id,
