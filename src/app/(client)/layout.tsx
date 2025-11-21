@@ -79,14 +79,3 @@ const ProfileLink = (user: User) => {
 		</ProfileDialog>
 	);
 };
-
-// const YourClients = async () => {
-// 	const user = await getCurrentUser();
-// 	if (!canAccessCoachPages(user)) return null;
-
-// 	return (
-// 		<Link className="flex items-center px-2 hover:bg-accent/50" href="/clients">
-// 			<span className="hover-underline-border">Clients</span>
-// 		</Link>
-// 	);
-// };

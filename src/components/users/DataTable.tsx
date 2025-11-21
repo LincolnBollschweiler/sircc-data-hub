@@ -66,7 +66,7 @@ export default function DataTable<TData>({
 	const [pageSize, setPageSize] = useState<number>(() => {
 		// Load from localStorage on first render (client only)
 		if (typeof window !== "undefined") {
-			const saved = localStorage.getItem(PAGE_SIZE_KEY);
+			const saved = localStorage.getItem(`${PAGE_SIZE_KEY}-${userType}`);
 			return saved ? Number(saved) : 10;
 		}
 		return 10;
@@ -121,7 +121,7 @@ export default function DataTable<TData>({
 	const handlePageSizeChange = (value: string) => {
 		const newSize = Number(value);
 		setPageSize(newSize);
-		localStorage.setItem(PAGE_SIZE_KEY, value);
+		localStorage.setItem(`${PAGE_SIZE_KEY}-${userType}`, value);
 		table.setPageSize(newSize);
 	};
 

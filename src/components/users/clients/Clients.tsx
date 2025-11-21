@@ -6,8 +6,10 @@ import Link from "next/link";
 import { getReentryChecklistItems } from "@/tableInteractions/db";
 
 export default async function Clients() {
-	const clients = await getAllClients();
-	const checkListCount = await getReentryChecklistItems().then((items) => items.length);
+	const [clients, checkListCount] = await Promise.all([
+		getAllClients(),
+		getReentryChecklistItems().then((items) => items.length),
+	]);
 
 	return (
 		<div className="container py-4 mx-auto">

@@ -6,8 +6,10 @@ import Link from "next/link";
 import { getTrainings } from "@/tableInteractions/db";
 
 export default async function Coaches() {
-	const coaches = await getAllCoaches();
-	const trainingsCount = await getTrainings().then((trainings) => trainings.length);
+	const [coaches, trainingsCount] = await Promise.all([
+		getAllCoaches(),
+		getTrainings().then((trainings) => trainings.length),
+	]);
 
 	return (
 		<div className="container py-4 mx-auto">

@@ -9,10 +9,11 @@ import MilesDialog from "./MilesDialog";
 import { getReentryChecklistItems } from "@/tableInteractions/db";
 
 export default async function CoachDetailsWrapper({ coachId }: { coachId: string }) {
-	const fullCoach = await getCoachById(coachId);
-
+	const [fullCoach, checkListCount] = await Promise.all([
+		getCoachById(coachId),
+		getReentryChecklistItems().then((items) => items.length),
+	]);
 	if (!fullCoach) return null;
-	const checkListCount = await getReentryChecklistItems().then((items) => items.length);
 
 	// console.dir(fullCoach, { depth: null });
 

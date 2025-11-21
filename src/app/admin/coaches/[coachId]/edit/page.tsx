@@ -9,6 +9,7 @@ import Link from "next/link";
 export default async function ViewCoachPage({ params }: { params: Promise<{ coachId: string }> }) {
 	const { coachId } = await params;
 	const fullCoach = await getCoachById(coachId);
+
 	// console.dir(fullCoach, { depth: null });
 	if (!fullCoach) {
 		return <div className="text-center py-10 text-xl font-semibold">Coach not found</div>;

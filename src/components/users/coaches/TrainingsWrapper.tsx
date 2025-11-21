@@ -3,8 +3,7 @@ import { getTrainings } from "@/tableInteractions/db";
 import Trainings from "./Trainings";
 
 export default async function TrainingsWrapper({ coachId, isCoachView }: { coachId: string; isCoachView?: boolean }) {
-	const trainingsForCoach = await getTrainingsForCoach(coachId);
-	const trainings = await getTrainings();
+	const [trainingsForCoach, trainings] = await Promise.all([getTrainingsForCoach(coachId), getTrainings()]);
 
 	return (
 		<Trainings

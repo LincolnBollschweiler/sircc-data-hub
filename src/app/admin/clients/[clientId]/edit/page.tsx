@@ -15,9 +15,12 @@ export default async function ViewClientPage({
 	params: Promise<{ clientId: string }>;
 	searchParams: Promise<{ coachId?: string | undefined }>;
 }) {
-	const { clientId } = await params;
-	const { coachId } = await searchParams;
-	const currentUser = await getCurrentUser({ allData: true });
+	const [{ clientId }, { coachId }, currentUser] = await Promise.all([
+		params,
+		searchParams,
+		getCurrentUser({ allData: true }),
+	]);
+
 	const coachIsViewing = currentUser?.role === "coach";
 
 	if (!currentUser || (coachIsViewing && currentUser.data?.id !== coachId)) {
@@ -31,13 +34,13 @@ export default async function ViewClientPage({
 		);
 	}
 
-	const fullClient = await getClientById(clientId);
-	if (!fullClient) {
-		return <div className="text-center py-10 text-xl font-semibold">Client not found</div>;
-	}
+	const [fullClient, allCoaches, csTables] = await Promise.all([
+		getClientById(clientId),
+		getAllCoachUsers(),
+		getAllClientServiceTables(),
+	]);
 
-	const allCoaches = await getAllCoachUsers();
-	const csTables = await getAllClientServiceTables();
+	if (!fullClient) return <div className="text-center py-10 text-xl font-semibold">Client not found</div>;
 
 	// const backToLink = !coachId ? `/admin/clients` : coachIsViewing ? "/" : `/admin/coaches/${coachId}/edit`;
 	const backToLink = coachId ? `/admin/coaches/${coachId}/edit` : `/admin/clients`;

@@ -490,30 +490,32 @@ const getCachedCoach = (id: string) => {
 
 			const { user: userRow, coach: coachRow } = row[0]!;
 
-			// Get children (3 separate queries)
-			const coachTrainings = await db.select().from(coachTraining).where(eq(coachTraining.coachId, id));
+			const ct = async () => db.select().from(coachTraining).where(eq(coachTraining.coachId, id));
 
-			const coachHoursRows: CoachHours[] = await db
-				.select()
-				.from(coachHours)
-				.where(eq(coachHours.coachId, id))
-				.orderBy(desc(coachHours.date));
-			const coachMilesRows: CoachMiles[] = await db
-				.select()
-				.from(coachMileage)
-				.where(eq(coachMileage.coachId, id))
-				.orderBy(desc(coachMileage.date));
+			const cHR = async () =>
+				db.select().from(coachHours).where(eq(coachHours.coachId, id)).orderBy(desc(coachHours.date));
 
-			const clientsRow = await db
-				.select({
-					user,
-					client,
-					checkListItemCount: sql<number>`
+			const cMR = async () =>
+				db.select().from(coachMileage).where(eq(coachMileage.coachId, id)).orderBy(desc(coachMileage.date));
+
+			const cR = async () =>
+				db
+					.select({
+						user,
+						client,
+						checkListItemCount: sql<number>`
 						(SELECT COUNT(*) FROM client_reentry_check_list_item crcli WHERE crcli.client_id = ${client.id})`,
-				})
-				.from(user)
-				.leftJoin(client, eq(user.id, client.id))
-				.where(and(eq(client.coachId, id), isNull(client.deletedAt), isNull(user.deletedAt)));
+					})
+					.from(user)
+					.leftJoin(client, eq(user.id, client.id))
+					.where(and(eq(client.coachId, id), isNull(client.deletedAt), isNull(user.deletedAt)));
+
+			const [coachTrainings, coachHoursRows, coachMilesRows, clientsRow] = await Promise.all([
+				ct(),
+				cHR(),
+				cMR(),
+				cR(),
+			]);
 
 			const clients = await Promise.all(
 				clientsRow.map(async (c) => {
