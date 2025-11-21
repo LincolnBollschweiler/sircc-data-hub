@@ -93,11 +93,11 @@ export const updateReentryChecklistItemOrders = async (orderedIds: string[]) => 
 //#endregion
 
 //#region Coach Trainings
-export const createCoachTraining = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
+export const createTraining = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {
 	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Validation failed" };
 
-	const rv = await dbTable.insertCoachTraining(data);
+	const rv = await dbTable.insertTraining(data);
 
 	return {
 		error: !rv,
@@ -105,11 +105,11 @@ export const createCoachTraining = async (unsafeData: z.infer<typeof schemas.gen
 	};
 };
 
-export const updateCoachTraining = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
+export const updateTraining = async (id: string, unsafeData: z.infer<typeof schemas.generalSchema>) => {
 	const { success, data } = schemas.generalSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Validation failed" };
 
-	const rv = await dbTable.updateCoachTrainingById(id, data);
+	const rv = await dbTable.updateTrainingById(id, data);
 
 	return {
 		error: !rv,
@@ -117,16 +117,16 @@ export const updateCoachTraining = async (id: string, unsafeData: z.infer<typeof
 	};
 };
 
-export const removeCoachTraining = async (id: string) => {
-	const rv = await dbTable.deleteCoachTraining(id);
+export const removeTraining = async (id: string) => {
+	const rv = await dbTable.deleteTrainingById(id);
 	return {
 		error: !rv,
 		message: !rv ? "Failed to remove coach training" : "Coach training removed successfully",
 	};
 };
-export const updateCoachTrainingOrders = async (orderedIds: string[]) => {
+export const updateTrainingOrders = async (orderedIds: string[]) => {
 	if (orderedIds.length === 0) return { error: true, message: "No coach trainings to update" };
-	await dbTable.updateCoachTrainingOrders(orderedIds);
+	await dbTable.updateTrainingOrdersById(orderedIds);
 	return { error: false, message: "Coach training orders updated successfully" };
 };
 //#endregion
@@ -202,6 +202,7 @@ export const updateCityOrders = async (orderedIds: string[]) => {
 	await dbTable.updateCityOrders(orderedIds);
 	return { error: false, message: "City orders updated successfully" };
 };
+//#endregion
 
 //#region Visits
 export const createVisit = async (unsafeData: z.infer<typeof schemas.generalSchema>) => {

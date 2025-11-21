@@ -4,14 +4,14 @@ import SortableList, { SortableItem } from "../../SortableList";
 import { Button } from "../../ui/button";
 import { FilePenLineIcon, Trash2Icon, GripVerticalIcon } from "lucide-react";
 import { ActionButton } from "../../ActionButton";
-import { removeCoachTraining, updateCoachTrainingOrders } from "@/tableInteractions/actions";
+import { removeTraining, updateTrainingOrders } from "@/tableInteractions/actions";
 import { cn } from "@/lib/utils";
 import { DialogTrigger } from "@radix-ui/react-dialog";
-import CoachTrainingsFormDialog from "./CoachTrainingsFormDialog";
+import TrainingsFormDialog from "./TrainingsFormDialog";
 import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
 import { z } from "zod";
 
-export function SortableCoachTrainingsList({
+export function SortableTrainingsList({
 	items,
 }: {
 	items: (z.infer<typeof generalSchema> & z.infer<typeof updateSchema>)[];
@@ -19,7 +19,7 @@ export function SortableCoachTrainingsList({
 	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
 	return (
-		<SortableList items={items} onOrderChange={updateCoachTrainingOrders}>
+		<SortableList items={items} onOrderChange={updateTrainingOrders}>
 			{(sorted) =>
 				sorted.map((item, index) => (
 					<SortableItem key={item.id} id={item.id}>
@@ -45,17 +45,17 @@ export function SortableCoachTrainingsList({
 
 								{/* actions column */}
 								<div className="flex justify-end gap-2">
-									<CoachTrainingsFormDialog coachTraining={item}>
+									<TrainingsFormDialog coachTraining={item}>
 										<DialogTrigger asChild>
 											<Button>
 												<FilePenLineIcon className="w-4 h-4" />
 												<span className="sr-only">Edit</span>
 											</Button>
 										</DialogTrigger>
-									</CoachTrainingsFormDialog>
+									</TrainingsFormDialog>
 									<ActionButton
 										variant="destructiveOutline"
-										action={removeCoachTraining.bind(null, item.id)}
+										action={removeTraining.bind(null, item.id)}
 										requireAreYouSure
 									>
 										<Trash2Icon className="w-4 h-4" />

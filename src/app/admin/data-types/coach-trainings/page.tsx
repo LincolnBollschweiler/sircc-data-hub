@@ -1,23 +1,23 @@
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/PageHeader";
-import { getCoachTrainings } from "@/tableInteractions/db";
-import CoachTrainings from "@/components/data-types/coachTrainings/CoachTrainings";
-import CoachTrainingsFormDialog from "@/components/data-types/coachTrainings/CoachTrainingsFormDialog";
+import { getTrainings } from "@/tableInteractions/db";
+import Trainings from "@/components/data-types/coachTrainings/Trainings";
+import TrainingsFormDialog from "@/components/data-types/coachTrainings/TrainingsFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 
-export default async function CoachTrainingsPage() {
-	const coachTrainings = await getCoachTrainings();
+export default async function TrainingsPage() {
+	const coachTrainings = await getTrainings();
 
 	return (
 		<div className="container py-4">
 			<PageHeader title="Coach Trainings">
-				<CoachTrainingsFormDialog>
+				<TrainingsFormDialog>
 					<DialogTrigger asChild>
 						<Button>Add New Coach Training</Button>
 					</DialogTrigger>
-				</CoachTrainingsFormDialog>
+				</TrainingsFormDialog>
 			</PageHeader>
-			<CoachTrainings items={coachTrainings} />
+			<Trainings items={coachTrainings} />
 		</div>
 	);
 }

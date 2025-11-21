@@ -2,11 +2,11 @@
 
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
-import CoachTrainingsForm from "./CoachTrainingsForm";
+import TrainingsForm from "./TrainingsForm";
 import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
 import { z } from "zod";
 
-export default function CoachTrainingsFormDialog({
+export default function TrainingsFormDialog({
 	coachTraining,
 	children,
 }: {
@@ -23,7 +23,7 @@ export default function CoachTrainingsFormDialog({
 					<DialogTitle>{coachTraining ? "Edit Coach Training" : "Add New Coach Training"}</DialogTitle>
 				</DialogHeader>
 				<div className="mt-4 grid gap-4">
-					<CoachTrainingsForm coachTraining={coachTraining} onSuccess={() => setIsOpen(false)} />
+					<TrainingsForm coachTraining={coachTraining} onSuccess={() => setIsOpen(false)} />
 				</div>
 			</DialogContent>
 		</Dialog>

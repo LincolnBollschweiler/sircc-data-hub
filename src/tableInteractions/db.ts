@@ -193,7 +193,7 @@ export const updateReentryChecklistItemOrders = async (orderedIds: string[]) => 
 //#endregion
 
 //#region Coach Trainings
-export const insertCoachTraining = async (data: typeof dbTable.training.$inferInsert) => {
+export const insertTraining = async (data: typeof dbTable.training.$inferInsert) => {
 	const [rv] = await db.insert(dbTable.training).values(data).returning();
 	if (!rv) return;
 
@@ -201,7 +201,7 @@ export const insertCoachTraining = async (data: typeof dbTable.training.$inferIn
 	return rv;
 };
 
-export const getCoachTrainingById = async (id: string) => {
+export const getTrainingById = async (id: string) => {
 	const coachTraining = await db.query.training.findFirst({
 		columns: { id: true, name: true, description: true },
 		where: eq(dbTable.training.id, id),
@@ -210,7 +210,7 @@ export const getCoachTrainingById = async (id: string) => {
 	return coachTraining;
 };
 
-export const updateCoachTrainingById = async (id: string, data: Partial<typeof dbTable.training.$inferInsert>) => {
+export const updateTrainingById = async (id: string, data: Partial<typeof dbTable.training.$inferInsert>) => {
 	const [rv] = await db.update(dbTable.training).set(data).where(eq(dbTable.training.id, id)).returning();
 	if (!rv) {
 		return { error: true, message: "Failed to update coach training" };
@@ -219,7 +219,7 @@ export const updateCoachTrainingById = async (id: string, data: Partial<typeof d
 	return { error: false, message: "Coach training updated successfully" };
 };
 
-export const deleteCoachTraining = async (id: string) => {
+export const deleteTrainingById = async (id: string) => {
 	const [rv] = await db
 		.update(dbTable.training)
 		.set({ deletedAt: new Date() })
@@ -231,8 +231,8 @@ export const deleteCoachTraining = async (id: string) => {
 	return rv;
 };
 
-export type Trainings = Awaited<ReturnType<typeof getCoachTrainings>>;
-const cachedCoachTrainings = unstable_cache(
+export type Trainings = Awaited<ReturnType<typeof getTrainings>>;
+const cachedTrainings = unstable_cache(
 	async () => {
 		// console.log("Fetching coach trainings from DB (not cache)");
 		return await db
@@ -250,10 +250,9 @@ const cachedCoachTrainings = unstable_cache(
 	["getCoachTrainings"],
 	{ tags: [cacheTags.getCoachTrainingGlobalTag()] }
 );
+export const getTrainings = async () => cachedTrainings();
 
-export const getCoachTrainings = async () => cachedCoachTrainings();
-
-export const updateCoachTrainingOrders = async (orderedIds: string[]) => {
+export const updateTrainingOrdersById = async (orderedIds: string[]) => {
 	const trainings = await Promise.all(
 		orderedIds.map(async (id, index) => {
 			const [rv] = await db
