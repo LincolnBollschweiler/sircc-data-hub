@@ -60,10 +60,7 @@ export default function ClientServiceDialog({
 
 	const handleOpenChange = (open: boolean) => {
 		// When dialog closes without clicking Save or Cancel
-		if (!open && action === null) {
-			setAction("dismiss"); // clicking outside or pressing ESC
-			// console.log("Client service dialog dismissed without action.");
-		}
+		if (!open && action === null) setAction("dismiss"); // clicking outside or pressing ESC
 		setIsOpen(open);
 	};
 

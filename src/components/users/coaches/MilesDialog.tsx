@@ -50,8 +50,6 @@ export default function MilesDialog({
 			notes,
 		};
 
-		console.log("Logged Miles:", loggedMiles);
-
 		const action = coachId ? insertCoachMiles.bind(null, coachId) : updateCoachMiles.bind(null, values?.id ?? null);
 		const actionData = await action(loggedMiles);
 		if (actionData) actionToast({ actionData });

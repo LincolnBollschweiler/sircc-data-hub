@@ -35,7 +35,6 @@ import { alias } from "drizzle-orm/pg-core";
 
 //#region User CRUD operations
 export async function insertUser(data: typeof user.$inferInsert) {
-	// console.log("Inserting user:", data);
 	const [applicant] = await db
 		.insert(user)
 		.values(data)
@@ -55,11 +54,8 @@ export async function insertUser(data: typeof user.$inferInsert) {
 }
 
 export async function updateUser({ clerkUserId }: { clerkUserId: string }, data: Partial<typeof user.$inferInsert>) {
-	// console.log("Updating user with clerkUserId:", clerkUserId, "Data:", data);
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.clerkUserId, clerkUserId)).returning();
-
 	if (updatedUser == null) throw new Error("Failed to update user");
-
 	revalidateUserCache(updatedUser.id);
 	return updatedUser;
 }
@@ -116,17 +112,13 @@ export async function updateUserById(
 }
 
 export async function updateUserFull({ id }: { id: string }, data: Partial<typeof user.$inferInsert>) {
-	// console.log("Updating user with id:", id, "Data:", data);
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.id, id)).returning();
-
 	if (updatedUser == null) throw new Error("Failed to update user");
-
 	revalidateUserCache(updatedUser.id);
 	return updatedUser;
 }
 
 export async function deleteUser({ clerkUserId }: { clerkUserId: string }) {
-	// console.log("Deleting user with clerkUserId:", clerkUserId);
 	const [deletedUser] = await db
 		.update(user)
 		.set({
@@ -237,7 +229,6 @@ const providedSvc = alias(service, "providedSvc");
 const getCachedClient = (id: string) => {
 	const cachedFn = unstable_cache(
 		async (): Promise<ClientFull | null> => {
-			// console.log("Fetching from cacked client from DB (not cache):", id);
 			const rows = await db
 				.select({
 					user,
@@ -356,7 +347,6 @@ export const updateClientById = async (
 	data: Partial<typeof client.$inferInsert>,
 	coachIsViewing?: boolean
 ) => {
-	// console.log("Updating client coach with id:", clientId, "Data:", data);
 	const [updatedClient] = await db.update(client).set(data).where(eq(client.id, clientId)).returning();
 	revalidateClientCache(clientId, !!coachIsViewing);
 	return updatedClient;
@@ -412,7 +402,6 @@ export const getAllClients = async () => cachedClients();
 //#endregion
 
 //#region CRUD Coaches
-
 export const cachedCoachUsers = unstable_cache(
 	async () => {
 		return await db
@@ -573,8 +562,6 @@ export const updateCoachById = async (
 	coachId: string,
 	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
 ) => {
-	// console.log("Updating coach with id:", coachId, "Data:", data);
-
 	const updatedCoach = await db.transaction(async (tx) => {
 		const [coachUpdated] = await tx.update(coach).set(data.coach).where(eq(coach.id, coachId)).returning();
 		if (!coachUpdated) throw new Error("Failed to update coach");
@@ -591,6 +578,29 @@ export const updateCoachById = async (
 	revalidateUserCache(coachId);
 	revalidateCoachCache(coachId);
 	return updatedCoach;
+};
+
+export type ClientUpdate = Awaited<ReturnType<typeof updateClientUserById>>;
+export const updateClientUserById = async (
+	clientId: string,
+	data: { user: Partial<typeof user.$inferInsert>; client: Partial<typeof client.$inferInsert> }
+) => {
+	const updatedClient = await db.transaction(async (tx) => {
+		const [clientUpdated] = await tx.update(client).set(data.client).where(eq(client.id, clientId)).returning();
+		if (!clientUpdated) throw new Error("Failed to update client");
+
+		const [userUpdated] = await tx.update(user).set(data.user).where(eq(user.id, clientId)).returning();
+		if (!userUpdated) throw new Error("Failed to update user");
+
+		return {
+			client: clientUpdated,
+			user: userUpdated,
+		};
+	});
+
+	revalidateUserCache(clientId);
+	revalidateClientCache(clientId);
+	return updatedClient;
 };
 
 export type CoachTrainings = (typeof coachTraining.$inferSelect)[];
@@ -647,7 +657,6 @@ export const deleteCoachHoursById = async (hoursId: string) => {
 };
 
 export const addCoachMileageById = async (coachId: string, data: Partial<CoachMiles>) => {
-	// console.log("Adding coach mileage for coachId:", coachId, "Data:", data);
 	const [newItem] = await db
 		.insert(coachMileage)
 		.values({ ...data, coachId })
@@ -681,7 +690,6 @@ export const deleteCoachMileageById = async (mileageId: string) => {
 export type ClientServiceInsert = typeof clientService.$inferInsert;
 
 export const insertClientService = async (data: ClientServiceInsert, coachIsViewing?: boolean) => {
-	// console.log("Creating client service for clientId:", data.clientId, "Data:", data);
 	const [newService] = await db.insert(clientService).values(data).returning();
 
 	if (newService == null) {
@@ -698,7 +706,6 @@ export const updateClientServiceById = async (
 	data: Partial<ClientServiceInsert>,
 	coachIsViewing?: boolean
 ) => {
-	// console.log("Updating client service with id:", serviceId, "Data:", data);
 	const [updatedService] = await db
 		.update(clientService)
 		.set(data)
@@ -713,7 +720,6 @@ export const updateClientServiceById = async (
 };
 
 export const deleteClientServiceById = async (serviceId: string, coachIsViewing?: boolean) => {
-	// console.log("Deleting client service with id:", serviceId);
 	const [deletedService] = await db.delete(clientService).where(eq(clientService.id, serviceId)).returning();
 
 	if (deletedService == null) {

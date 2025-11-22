@@ -46,6 +46,20 @@ export default async function ViewClientPage({
 	const backToLink = coachId ? `/admin/coaches/${coachId}/edit` : `/admin/clients`;
 	const backToText = coachId ? `Back to Coach` : `Back to Clients`;
 
+	const followUpNeeded = fullClient.client.followUpNeeded;
+	const today = new Date();
+	let followUpLabel = "Follow-Up Needed on ";
+	let followUpClass = "my-4 p-4 border-l-4 border-warning bg-warning/10";
+	const followUpDate = fullClient.client.followUpDate;
+	let followUpDateObject;
+	if (followUpNeeded && followUpDate != null) {
+		followUpDateObject = new Date(followUpDate);
+		if (followUpDateObject < today) {
+			followUpLabel = "Follow-Up Overdue as of ";
+			followUpClass = "my-4 p-4 border-l-4 border-danger bg-danger/10";
+		}
+	}
+
 	return (
 		<div className="container py-4 mx-auto">
 			<PageHeader title={`View Client`}>
@@ -55,6 +69,21 @@ export default async function ViewClientPage({
 			</PageHeader>
 			{fullClient && (
 				<>
+					{fullClient.client.followUpNeeded && (
+						<div className={followUpClass}>
+							<h3 className="font-semibold text-lg mb-2">
+								<span>{followUpLabel}</span>
+								<span>
+									{followUpDateObject?.toLocaleDateString("en-US", {
+										year: "numeric",
+										month: "long",
+										day: "numeric",
+									})}
+								</span>
+							</h3>
+							<p>{fullClient.client.followUpNotes}</p>
+						</div>
+					)}
 					<ClientDetails
 						user={fullClient.user}
 						client={fullClient.client}
@@ -67,21 +96,6 @@ export default async function ViewClientPage({
 							clientCheckListItems={fullClient.checkListItems}
 							coachIsViewing={coachIsViewing}
 						/>
-					)}
-					{fullClient.client.followUpNeeded && (
-						<div className="my-4 p-4 border-l-4 border-warning bg-warning/10">
-							<h3 className="font-semibold text-lg mb-2">Follow-Up Needed</h3>
-							<p>{fullClient.client.followUpNotes}</p>
-							{fullClient.client.followUpDate && (
-								<p className="mt-2">
-									{new Date(fullClient.client.followUpDate).toLocaleDateString("en-US", {
-										year: "numeric",
-										month: "long",
-										day: "numeric",
-									})}
-								</p>
-							)}
-						</div>
 					)}
 					<DataTable
 						title="Services"

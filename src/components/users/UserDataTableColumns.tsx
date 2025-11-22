@@ -293,7 +293,7 @@ export const userDataTableColumns = (
 				},
 			},
 			{
-				accessorKey: "client.followupNeeded",
+				accessorKey: "client.followUpNeeded",
 				header: () => <div className="text-center">Follow-up</div>,
 				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,
 			},
@@ -1106,8 +1106,6 @@ export const userDataTableColumns = (
 					const clientRow = asClient(row.original); // now TypeScript knows it's ClientWithUser
 					const user = clientRow.user;
 					const coachId = clientRow.client?.coachId;
-					// console.log(clientRow);
-					// console.log("coachId:", coachId);
 
 					return (
 						<div className="text-right">
