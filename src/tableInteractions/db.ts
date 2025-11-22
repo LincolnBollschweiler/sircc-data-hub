@@ -57,7 +57,6 @@ export const deleteVolunteerType = async (id: string) => {
 
 const cachedVolunteerTypes = unstable_cache(
 	async () => {
-		// console.log("Fetching volunteer types from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.volunteeringType.id,
@@ -151,7 +150,6 @@ export type ReentryChecklistItems = Awaited<ReturnType<typeof getReentryChecklis
 
 const cachedReentryChecklistItems = unstable_cache(
 	async () => {
-		// console.log("Fetching reentry checklist items from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.reentryCheckListItem.id,
@@ -193,7 +191,7 @@ export const updateReentryChecklistItemOrders = async (orderedIds: string[]) => 
 //#endregion
 
 //#region Coach Trainings
-export const insertCoachTraining = async (data: typeof dbTable.training.$inferInsert) => {
+export const insertTraining = async (data: typeof dbTable.training.$inferInsert) => {
 	const [rv] = await db.insert(dbTable.training).values(data).returning();
 	if (!rv) return;
 
@@ -201,7 +199,7 @@ export const insertCoachTraining = async (data: typeof dbTable.training.$inferIn
 	return rv;
 };
 
-export const getCoachTrainingById = async (id: string) => {
+export const getTrainingById = async (id: string) => {
 	const coachTraining = await db.query.training.findFirst({
 		columns: { id: true, name: true, description: true },
 		where: eq(dbTable.training.id, id),
@@ -210,7 +208,7 @@ export const getCoachTrainingById = async (id: string) => {
 	return coachTraining;
 };
 
-export const updateCoachTrainingById = async (id: string, data: Partial<typeof dbTable.training.$inferInsert>) => {
+export const updateTrainingById = async (id: string, data: Partial<typeof dbTable.training.$inferInsert>) => {
 	const [rv] = await db.update(dbTable.training).set(data).where(eq(dbTable.training.id, id)).returning();
 	if (!rv) {
 		return { error: true, message: "Failed to update coach training" };
@@ -219,7 +217,7 @@ export const updateCoachTrainingById = async (id: string, data: Partial<typeof d
 	return { error: false, message: "Coach training updated successfully" };
 };
 
-export const deleteCoachTraining = async (id: string) => {
+export const deleteTrainingById = async (id: string) => {
 	const [rv] = await db
 		.update(dbTable.training)
 		.set({ deletedAt: new Date() })
@@ -231,10 +229,9 @@ export const deleteCoachTraining = async (id: string) => {
 	return rv;
 };
 
-export type Trainings = Awaited<ReturnType<typeof getCoachTrainings>>;
-const cachedCoachTrainings = unstable_cache(
+export type Trainings = Awaited<ReturnType<typeof getTrainings>>;
+const cachedTrainings = unstable_cache(
 	async () => {
-		// console.log("Fetching coach trainings from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.training.id,
@@ -250,10 +247,9 @@ const cachedCoachTrainings = unstable_cache(
 	["getCoachTrainings"],
 	{ tags: [cacheTags.getCoachTrainingGlobalTag()] }
 );
+export const getTrainings = async () => cachedTrainings();
 
-export const getCoachTrainings = async () => cachedCoachTrainings();
-
-export const updateCoachTrainingOrders = async (orderedIds: string[]) => {
+export const updateTrainingOrdersById = async (orderedIds: string[]) => {
 	const trainings = await Promise.all(
 		orderedIds.map(async (id, index) => {
 			const [rv] = await db
@@ -321,7 +317,6 @@ export const deleteLocation = async (id: string) => {
 export type Location = typeof dbTable.location.$inferSelect;
 const cachedLocations = unstable_cache(
 	async () => {
-		// console.log("Fetching locations from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.location.id,
@@ -399,7 +394,6 @@ export const deleteCity = async (id: string) => {
 export type City = typeof dbTable.city.$inferSelect;
 const cachedCities = unstable_cache(
 	async () => {
-		// console.log("Fetching cities from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.city.id,
@@ -470,7 +464,6 @@ export const deleteVisit = async (id: string) => {
 export type Visit = typeof dbTable.visit.$inferSelect;
 const cachedVisits = unstable_cache(
 	async () => {
-		// console.log("Fetching visits from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.visit.id,
@@ -561,7 +554,6 @@ export const deleteReferralSource = async (id: string) => {
 export type ReferralSource = typeof dbTable.referralSource.$inferSelect;
 const cachedReferralSources = unstable_cache(
 	async () => {
-		// console.log("Fetching referral sources from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.referralSource.id,
@@ -649,7 +641,6 @@ export const deleteReferredOut = async (id: string) => {
 export type ReferredOut = typeof dbTable.referredOut.$inferSelect;
 const cachedReferredOut = unstable_cache(
 	async () => {
-		// console.log("Fetching referred out from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.referredOut.id,
@@ -732,7 +723,6 @@ export const deleteSite = async (id: string) => {
 export type Site = typeof dbTable.site.$inferSelect;
 const cachedSites = unstable_cache(
 	async () => {
-		// console.log("Fetching sites from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.site.id,
@@ -773,11 +763,9 @@ export const updateSiteOrders = async (orderedIds: string[]) => {
 //#region Service DB Interactions
 export const insertService = async (data: typeof dbTable.service.$inferInsert) => {
 	const [newService] = await db.insert(dbTable.service).values(data).returning();
-
+	if (!newService) console.error("Failed to insert new service");
 	if (!newService) return;
-
 	cache.revalidateServiceCache(newService.id);
-
 	return newService;
 };
 
@@ -819,7 +807,6 @@ export type Service = Awaited<ReturnType<typeof getServices>>[number];
 
 const cachedServices = unstable_cache(
 	async () => {
-		// console.log("Fetching services from DB (not cache)");
 		return await db
 			.select({
 				id: dbTable.service.id,

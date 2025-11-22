@@ -10,7 +10,6 @@ const client = await clerkClient();
 const getCachedUser = (userId: string) => {
 	const cachedFn = unstable_cache(
 		async () => {
-			// console.log("Fetching from DB (not cache):", userId);
 			return await db.query.user.findFirst({
 				where: eq(user.id, userId),
 			});

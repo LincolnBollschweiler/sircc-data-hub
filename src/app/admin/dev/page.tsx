@@ -2,6 +2,26 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createNewTheme } from "@/utils/createNewTheme";
+import {
+	createCity,
+	createLocation,
+	createReentryChecklistItem,
+	createReferralSource,
+	createReferredOut,
+	createService,
+	createVisit,
+	createVolunteerType,
+} from "@/tableInteractions/actions";
+import {
+	deleteAllCity,
+	deleteAllLocation,
+	deleteAllReentryChecklistItem,
+	deleteAllReferralSource,
+	deleteAllReferredOut,
+	deleteAllService,
+	deleteAllVisit,
+	deleteAllVolunteerTypes,
+} from "@/tableInteractions/adminActions";
 
 export default function Dev() {
 	const iamsajidThemeInputText = `
@@ -76,6 +96,18 @@ body.light {
 		// console.log(lightOutput, "\n\n", darkOutput);
 	};
 
+	const loadDataTypeValues = async () => {
+		await loadGeneral("");
+		// await loadGeneral("city");
+		// await loadGeneral("visit");
+		// await loadGeneral("location");
+		// await loadGeneral("service");
+		// await loadGeneral("reentryCheckListItem");
+		// await loadGeneral("referralSource");
+		// await loadGeneral("referredOut");
+		// await loadGeneral("volunteeringType");
+	};
+
 	return (
 		<main className="container py-6">
 			<h1 className="text-3xl font-bold mb-4">Developer Page</h1>
@@ -126,6 +158,79 @@ body.light {
 					</div>
 				</section>
 			</section>
+			<section>
+				<h2 className="text-2xl font-semibold mb-2">Parse CSV</h2>
+				<Button onClick={loadDataTypeValues}>Load in Data Types</Button>
+			</section>
 		</main>
 	);
 }
+
+const addToDb = async (type: string, name: string) => {
+	let action;
+	let deleteAction;
+	switch (type) {
+		case "city":
+			deleteAction = deleteAllCity;
+			await deleteAction();
+			action = createCity;
+			await action({ name });
+			break;
+		case "visit":
+			deleteAction = deleteAllVisit;
+			await deleteAction();
+			action = createVisit;
+			await action({ name });
+			break;
+		case "location":
+			deleteAction = deleteAllLocation;
+			await deleteAction();
+			action = createLocation;
+			await action({ name, description: "" });
+			break;
+		case "service":
+			deleteAction = deleteAllService;
+			await deleteAction();
+			action = createService;
+			await action({ name, description: "", requiresFunding: false });
+			break;
+		case "reentryCheckListItem":
+			deleteAction = deleteAllReentryChecklistItem;
+			await deleteAction();
+			action = createReentryChecklistItem;
+			await action({ name, description: "" });
+			break;
+		case "referralSource":
+			deleteAction = deleteAllReferralSource;
+			await deleteAction();
+			action = createReferralSource;
+			await action({ name, description: "" });
+			break;
+		case "referredOut":
+			deleteAction = deleteAllReferredOut;
+			await deleteAction();
+			action = createReferredOut;
+			await action({ name, description: "" });
+			break;
+		case "volunteeringType":
+			deleteAction = deleteAllVolunteerTypes;
+			await deleteAction();
+			action = createVolunteerType;
+			await action({ name, description: "" });
+			break;
+		default:
+			console.warn(`No action defined for type: ${name}`);
+			return;
+	}
+};
+
+const loadGeneral = async (type: string) => {
+	if (type === "") return;
+	const response = await fetch(`/temp-load-in/${type}.csv`);
+	const csvText = await response.text();
+	const valuesSet = new Set<string>(csvText.split(",").map((value) => value.trim()));
+	const valuesArray = Array.from(valuesSet).filter((value) => value.length > 0);
+	valuesArray.sort();
+	console.log(`Parsed ${type}:`, valuesArray);
+	valuesArray.forEach((value) => addToDb(type, value)); // Example function to insert value into database
+};

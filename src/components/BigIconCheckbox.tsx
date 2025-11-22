@@ -9,7 +9,7 @@ export default function BigIconCheckbox({
 	defaultChecked,
 	onChange,
 	noHover = false,
-	size = 28,
+	size = 30,
 }: {
 	checked?: boolean;
 	defaultChecked?: boolean;
@@ -32,10 +32,10 @@ export default function BigIconCheckbox({
 			type="button"
 			aria-pressed={checked}
 			className={cn(
-				"flex items-center justify-center rounded-md p-1 transition-colors select-none",
-				noHover ? "cursor-default" : "cursor-pointer"
+				"flex items-center justify-center rounded-md transition-colors select-none border border-transparent",
+				noHover ? "cursor-default" : "cursor-pointer hover:border-[#888]"
 			)}
-			style={{ width: size + 8, height: size + 8 }}
+			style={{ width: size + 4, height: size + 4 }} // ← reduced padding distance
 		>
 			{checked ? (
 				<Check style={{ width: size, height: size }} className="text-success" />
@@ -43,7 +43,6 @@ export default function BigIconCheckbox({
 				<X style={{ width: size, height: size }} className="text-danger" />
 			)}
 
-			{/* Hidden real checkbox for accessibility */}
 			<input type="checkbox" checked={checked} onChange={() => {}} className="hidden" />
 		</button>
 	);

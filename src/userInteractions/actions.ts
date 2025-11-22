@@ -1,6 +1,6 @@
 "use server";
 
-import { coach, user } from "@/drizzle/schema";
+import { client, coach, user } from "@/drizzle/schema";
 import {
 	addClientReentryCheckListItemForClient,
 	addCoachHoursById,
@@ -16,6 +16,8 @@ import {
 	insertClientService,
 	removeClientReentryCheckListItemForClient,
 	updateClientById,
+	updateClientServiceById,
+	updateClientUserById,
 	updateCoachById,
 	updateCoachHoursById,
 	updateCoachMileageById,
@@ -25,21 +27,16 @@ import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
 
 //#region User Actions
 export const updateUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
-	// console.log("Updating user:", id, unsafeData);
 	const { success, data } = userSchema.safeParse(unsafeData);
-	// console.log({ success, data });
 	if (!success) return { error: true, message: "Invalid data" };
 	const rv = await updateUserById(id, data);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
 };
 
 export const updateUserRoleAndAccept = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
-	// console.log("Updating user:", id, unsafeData);
 	const { success, data } = assignRoleSchema.safeParse(unsafeData);
-	// console.log({ success, data });
 	if (!success) return { error: true, message: "Invalid data" };
 	return await updateUserById(id, { ...data, accepted: true });
-	// return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
 };
 
 export const updateClientsCoach = async (userId: string | null, coachId: string | null) => {
@@ -48,30 +45,45 @@ export const updateClientsCoach = async (userId: string | null, coachId: string 
 	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
 };
 
-export const updateClientIsReentryStatus = async (userId: string | null, isReentryClient: boolean) => {
+export const updateClientIsReentryStatus = async (
+	userId: string | null,
+	isReentryClient: boolean,
+	coachIsViewing: boolean
+) => {
 	if (!userId) return { error: true, message: "Invalid user ID" };
-	const rv = await updateClientById(userId, { isReentryClient });
+	const rv = await updateClientById(userId, { isReentryClient }, coachIsViewing);
 	return { error: !rv, message: rv ? "Re-entry status updated successfully" : "Failed to update re-entry status" };
 };
 
-export const createClientService = async (userId: null, data: ClientServiceInsert) => {
-	const rv = await insertClientService(data);
+export const createClientService = async (userId: null, data: ClientServiceInsert, coachIsViewing?: boolean) => {
+	const rv = await insertClientService(data, !!coachIsViewing);
 	return { error: !rv, message: rv ? "Service created successfully" : "Failed to create service" };
 };
 
-export const deleteClientService = async (serviceId: string) => {
-	const rv = await deleteClientServiceById(serviceId);
+export const updateClientService = async (
+	serviceId: string | null,
+	data: Partial<ClientServiceInsert>,
+	coachIsViewing?: boolean
+) => {
+	if (!serviceId) {
+		return { error: true, message: "Invalid service ID" };
+	}
+	const rv = await updateClientServiceById(serviceId, data, !!coachIsViewing);
+	return { error: !rv, message: rv ? "Service updated successfully" : "Failed to update service" };
+};
+
+export const deleteClientService = async (serviceId: string, coachIsViewing?: boolean) => {
+	const rv = await deleteClientServiceById(serviceId, !!coachIsViewing);
 	return { error: !rv, message: rv ? "Service deleted successfully" : "Failed to delete service" };
 };
 
-export const addClientChecklistItem = async (clientId: string, itemId: string) => {
-	const rv = await addClientReentryCheckListItemForClient(clientId, itemId);
+export const addClientChecklistItem = async (clientId: string, itemId: string, coachIsViewing?: boolean) => {
+	const rv = await addClientReentryCheckListItemForClient(clientId, itemId, !!coachIsViewing);
 	return { error: !rv, message: rv ? "Checklist item added successfully" : "Failed to add checklist item" };
 };
 
-export const deleteClientChecklistItem = async (clientId: string, itemId: string) => {
-	// console.log("Deleting checklist item:", clientId, itemId);
-	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId);
+export const deleteClientChecklistItem = async (clientId: string, itemId: string, coachIsViewing?: boolean) => {
+	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId, !!coachIsViewing);
 	return { error: !rv, message: rv ? "Checklist item deleted successfully" : "Failed to delete checklist item" };
 };
 //#endregion
@@ -81,20 +93,25 @@ export const updateCoachDetails = async (
 	coachId: string,
 	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
 ) => {
-	// console.log("Updating user:", id, unsafeData);
 	const rv = await updateCoachById(coachId, data);
 	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
 };
 
+export const updateClientDetails = async (
+	clientId: string,
+	data: { client: Partial<typeof client.$inferInsert>; user: Partial<typeof user.$inferInsert> }
+) => {
+	const rv = await updateClientUserById(clientId, data);
+	return { error: !rv, message: rv ? "Client updated successfully" : "Failed to update client" };
+};
+
 export const insertCoachTraining = async (coachId: string, trainingId: string) => {
-	// console.log("Inserting coach training:", coachId, trainingId);
 	const rv = await addCoachTrainingById(coachId, trainingId);
 	if (!rv) return { error: true, message: "Failed to add coach training" };
 	return { error: false, message: "Coach training added successfully" };
 };
 
 export const removeCoachTraining = async (coachId: string, trainingId: string) => {
-	// console.log("Removing coach training:", coachId, trainingId);
 	const rv = await deleteCoachTrainingById(trainingId);
 	if (!rv) return { error: true, message: "Failed to remove coach training" };
 	return { error: false, message: "Coach training removed successfully" };
@@ -140,7 +157,6 @@ export const insertCoachMiles = async (coachId: string, data: Partial<CoachMiles
 
 export const updateCoachMiles = async (milesId: string | null, data: Partial<CoachMiles>) => {
 	if (!milesId) return { error: true, message: "Invalid miles ID" };
-	console.log("Updating coach miles:", milesId, data);
 	if (!Number(data.miles)) return { error: true, message: "Miles must be provided" };
 	const rv = await updateCoachMileageById(milesId, data);
 	if (!rv) return { error: true, message: "Failed to update coach miles" };

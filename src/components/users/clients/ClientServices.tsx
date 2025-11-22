@@ -6,9 +6,17 @@ import ClientServicesDialog from "./ClientServicesDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 import ClientServiceDialog from "./ClientServiceDialog";
 
-export const ClientServices = ({ clientId, csTables }: { clientId: string; csTables: CSTables }) => {
+export const ClientServices = ({
+	clientId,
+	csTables,
+	coachIsViewing,
+}: {
+	clientId: string;
+	csTables: CSTables;
+	coachIsViewing?: boolean;
+}) => {
 	return (
-		<ClientServicesDialog clientId={clientId} csTables={csTables}>
+		<ClientServicesDialog clientId={clientId} csTables={csTables} coachIsViewing={!!coachIsViewing}>
 			<DialogTrigger asChild>
 				<Button className="mr-1">Add Service</Button>
 			</DialogTrigger>

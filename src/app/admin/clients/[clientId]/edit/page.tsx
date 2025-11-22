@@ -15,9 +15,12 @@ export default async function ViewClientPage({
 	params: Promise<{ clientId: string }>;
 	searchParams: Promise<{ coachId?: string | undefined }>;
 }) {
-	const { clientId } = await params;
-	const { coachId } = await searchParams;
-	const currentUser = await getCurrentUser({ allData: true });
+	const [{ clientId }, { coachId }, currentUser] = await Promise.all([
+		params,
+		searchParams,
+		getCurrentUser({ allData: true }),
+	]);
+
 	const coachIsViewing = currentUser?.role === "coach";
 
 	if (!currentUser || (coachIsViewing && currentUser.data?.id !== coachId)) {
@@ -31,16 +34,31 @@ export default async function ViewClientPage({
 		);
 	}
 
-	const fullClient = await getClientById(clientId);
-	if (!fullClient) {
-		return <div className="text-center py-10 text-xl font-semibold">Client not found</div>;
-	}
+	const [fullClient, allCoaches, csTables] = await Promise.all([
+		getClientById(clientId),
+		getAllCoachUsers(),
+		getAllClientServiceTables(),
+	]);
 
-	const allCoaches = await getAllCoachUsers();
-	const csTables = await getAllClientServiceTables();
+	if (!fullClient) return <div className="text-center py-10 text-xl font-semibold">Client not found</div>;
 
+	// const backToLink = !coachId ? `/admin/clients` : coachIsViewing ? "/" : `/admin/coaches/${coachId}/edit`;
 	const backToLink = coachId ? `/admin/coaches/${coachId}/edit` : `/admin/clients`;
 	const backToText = coachId ? `Back to Coach` : `Back to Clients`;
+
+	const followUpNeeded = fullClient.client.followUpNeeded;
+	const today = new Date();
+	let followUpLabel = "Follow-Up Needed on ";
+	let followUpClass = "my-4 p-4 border-l-4 border-warning bg-warning/10";
+	const followUpDate = fullClient.client.followUpDate;
+	let followUpDateObject;
+	if (followUpNeeded && followUpDate != null) {
+		followUpDateObject = new Date(followUpDate);
+		if (followUpDateObject < today) {
+			followUpLabel = "Follow-Up Overdue as of ";
+			followUpClass = "my-4 p-4 border-l-4 border-danger bg-danger/10";
+		}
+	}
 
 	return (
 		<div className="container py-4 mx-auto">
@@ -51,27 +69,33 @@ export default async function ViewClientPage({
 			</PageHeader>
 			{fullClient && (
 				<>
+					{fullClient.client.followUpNeeded && (
+						<div className={followUpClass}>
+							<h3 className="font-semibold text-lg mb-2">
+								<span>{followUpLabel}</span>
+								<span>
+									{followUpDateObject?.toLocaleDateString("en-US", {
+										year: "numeric",
+										month: "long",
+										day: "numeric",
+									})}
+								</span>
+							</h3>
+							<p>{fullClient.client.followUpNotes}</p>
+						</div>
+					)}
 					<ClientDetails
 						user={fullClient.user}
 						client={fullClient.client}
 						allCoaches={allCoaches}
 						coachIsViewing={coachIsViewing}
 					/>
-					{fullClient.client.isReentryClient && <ReentryCheckListWrapper clientId={clientId} />}
-					{fullClient.client.followUpNeeded && (
-						<div className="my-4 p-4 border-l-4 border-warning bg-warning/10">
-							<h3 className="font-semibold text-lg mb-2">Follow-Up Needed</h3>
-							<p>{fullClient.client.followUpNotes}</p>
-							{fullClient.client.followUpDate && (
-								<p className="mt-2">
-									{new Date(fullClient.client.followUpDate).toLocaleDateString("en-US", {
-										year: "numeric",
-										month: "long",
-										day: "numeric",
-									})}
-								</p>
-							)}
-						</div>
+					{fullClient.client.isReentryClient && (
+						<ReentryCheckListWrapper
+							clientId={clientId}
+							clientCheckListItems={fullClient.checkListItems}
+							coachIsViewing={coachIsViewing}
+						/>
 					)}
 					<DataTable
 						title="Services"
@@ -79,6 +103,7 @@ export default async function ViewClientPage({
 						userType="single-client"
 						csTables={csTables}
 						clientId={clientId}
+						coachIsViewing={coachIsViewing}
 					/>
 				</>
 			)}

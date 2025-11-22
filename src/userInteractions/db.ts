@@ -7,7 +7,6 @@ import {
 	user,
 	location,
 	clientReentryCheckListItem,
-	reentryCheckListItem,
 	referralSource,
 	city,
 	visit,
@@ -23,12 +22,11 @@ import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import {
 	getAllUsersGlobalTag,
+	getClientGlobalTag,
 	getClientIdTag,
 	getCoachGlobalTag,
 	getCoachIdTag,
 	getUserIdTag,
-	// getClientIdTag,
-	// getUserIdTag,
 	getUserSitesGlobalTag,
 } from "@/userInteractions/cacheTags";
 import { revalidateClientCache, revalidateCoachCache, revalidateUserCache } from "@/userInteractions/cache";
@@ -37,7 +35,6 @@ import { alias } from "drizzle-orm/pg-core";
 
 //#region User CRUD operations
 export async function insertUser(data: typeof user.$inferInsert) {
-	// console.log("Inserting user:", data);
 	const [applicant] = await db
 		.insert(user)
 		.values(data)
@@ -57,11 +54,8 @@ export async function insertUser(data: typeof user.$inferInsert) {
 }
 
 export async function updateUser({ clerkUserId }: { clerkUserId: string }, data: Partial<typeof user.$inferInsert>) {
-	// console.log("Updating user with clerkUserId:", clerkUserId, "Data:", data);
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.clerkUserId, clerkUserId)).returning();
-
 	if (updatedUser == null) throw new Error("Failed to update user");
-
 	revalidateUserCache(updatedUser.id);
 	return updatedUser;
 }
@@ -118,17 +112,13 @@ export async function updateUserById(
 }
 
 export async function updateUserFull({ id }: { id: string }, data: Partial<typeof user.$inferInsert>) {
-	// console.log("Updating user with id:", id, "Data:", data);
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.id, id)).returning();
-
 	if (updatedUser == null) throw new Error("Failed to update user");
-
 	revalidateUserCache(updatedUser.id);
 	return updatedUser;
 }
 
 export async function deleteUser({ clerkUserId }: { clerkUserId: string }) {
-	// console.log("Deleting user with clerkUserId:", clerkUserId);
 	const [deletedUser] = await db
 		.update(user)
 		.set({
@@ -194,6 +184,7 @@ export type ClientList = {
 	serviceCount: number;
 	openRequestsCount: number;
 	requestsUpdatedAt: Date | null;
+	checkListItemCount: number;
 };
 
 function groupBy<T, K extends string | number | symbol>(list: T[], getKey: (item: T) => K): Record<K, T[]> {
@@ -214,10 +205,6 @@ export interface ClientServiceFull {
 	referralSource: typeof referralSource.$inferSelect | null;
 	referredOut: typeof referralSource.$inferSelect | null;
 	visit: typeof visit.$inferSelect | null;
-	reentryItems: {
-		clientReentryCheckListItem: typeof clientReentryCheckListItem.$inferSelect;
-		reentryCheckListItem: typeof reentryCheckListItem.$inferSelect | null;
-	}[];
 }
 
 export interface ClientFull {
@@ -231,6 +218,7 @@ export interface ClientFull {
 	openRequestsCount: number;
 	requestsUpdatedAt: Date | null;
 	clientServices: ClientServiceFull[];
+	checkListItems: ClientReentryCheckListItem[];
 }
 
 // IMPORTANT ALIASES
@@ -241,15 +229,12 @@ const providedSvc = alias(service, "providedSvc");
 const getCachedClient = (id: string) => {
 	const cachedFn = unstable_cache(
 		async (): Promise<ClientFull | null> => {
-			// console.log("Fetching from cacked client from DB (not cache):", id);
 			const rows = await db
 				.select({
 					user,
 					client,
 					coach: coachUser,
 					coachDetails: coach,
-
-					// clientService
 					clientService,
 
 					// joins for each clientService
@@ -261,10 +246,6 @@ const getCachedClient = (id: string) => {
 					referralSource,
 					referredOut,
 					visit,
-
-					// reentry join
-					clientReentryCheckListItem,
-					reentryCheckListItem,
 
 					// computed counts
 					serviceCount: sql<number>`
@@ -294,10 +275,6 @@ const getCachedClient = (id: string) => {
 				.leftJoin(referredOut, eq(clientService.referredOutId, referredOut.id))
 				.leftJoin(visit, eq(clientService.visitId, visit.id))
 				.leftJoin(clientReentryCheckListItem, eq(client.id, clientReentryCheckListItem.clientId))
-				.leftJoin(
-					reentryCheckListItem,
-					eq(clientReentryCheckListItem.reentryCheckListItemId, reentryCheckListItem.id)
-				)
 				.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "client"), isNull(user.deletedAt)))
 				.orderBy(desc(clientService.updatedAt));
 
@@ -335,15 +312,13 @@ const getCachedClient = (id: string) => {
 					requestedService: first.requestedService ?? null,
 					providedService: first.providedService ?? null,
 					visit: first.visit ?? null,
-
-					reentryItems: group
-						.filter((r) => r.reentryCheckListItem)
-						.map((r) => ({
-							clientReentryCheckListItem: r.clientReentryCheckListItem!,
-							reentryCheckListItem: r.reentryCheckListItem!,
-						})),
 				};
 			});
+
+			const checkListItems: ClientReentryCheckListItem[] = await db
+				.select()
+				.from(clientReentryCheckListItem)
+				.where(eq(clientReentryCheckListItem.clientId, id));
 
 			// FINAL STRUCT
 			return {
@@ -357,6 +332,7 @@ const getCachedClient = (id: string) => {
 				openRequestsCount: first.openRequestsCount,
 				requestsUpdatedAt: first.requestsUpdatedAt,
 				clientServices,
+				checkListItems,
 			};
 		},
 		["getClientById", id],
@@ -366,10 +342,13 @@ const getCachedClient = (id: string) => {
 };
 export const getClientById = async (id: string) => getCachedClient(id);
 
-export const updateClientById = async (clientId: string, data: Partial<typeof client.$inferInsert>) => {
-	// console.log("Updating client coach with id:", clientId, "Data:", data);
+export const updateClientById = async (
+	clientId: string,
+	data: Partial<typeof client.$inferInsert>,
+	coachIsViewing?: boolean
+) => {
 	const [updatedClient] = await db.update(client).set(data).where(eq(client.id, clientId)).returning();
-	revalidateClientCache(clientId);
+	revalidateClientCache(clientId, !!coachIsViewing);
 	return updatedClient;
 };
 
@@ -397,6 +376,8 @@ const cachedClients = unstable_cache(
 					FROM client_service csr
 					WHERE csr.client_id = ${client.id})
 				`,
+				checkListItemCount: sql<number>`
+						(SELECT COUNT(*) FROM client_reentry_check_list_item crcli WHERE crcli.client_id = ${client.id})`,
 			})
 			.from(user)
 			.leftJoin(client, eq(user.id, client.id)) // join user.id to client.id
@@ -421,7 +402,6 @@ export const getAllClients = async () => cachedClients();
 //#endregion
 
 //#region CRUD Coaches
-
 export const cachedCoachUsers = unstable_cache(
 	async () => {
 		return await db
@@ -481,7 +461,7 @@ export type CoachFull = {
 	coachTrainings: CoachTraining[];
 	coachHours: CoachHours[];
 	coachMiles: CoachMiles[];
-	clients: ClientFull[];
+	clients: ClientList[];
 };
 
 const getCachedCoach = (id: string) => {
@@ -499,28 +479,32 @@ const getCachedCoach = (id: string) => {
 
 			const { user: userRow, coach: coachRow } = row[0]!;
 
-			// Get children (3 separate queries)
-			const coachTrainings = await db.select().from(coachTraining).where(eq(coachTraining.coachId, id));
+			const ct = async () => db.select().from(coachTraining).where(eq(coachTraining.coachId, id));
 
-			const coachHoursRows: CoachHours[] = await db
-				.select()
-				.from(coachHours)
-				.where(eq(coachHours.coachId, id))
-				.orderBy(desc(coachHours.date));
-			const coachMilesRows: CoachMiles[] = await db
-				.select()
-				.from(coachMileage)
-				.where(eq(coachMileage.coachId, id))
-				.orderBy(desc(coachMileage.date));
+			const cHR = async () =>
+				db.select().from(coachHours).where(eq(coachHours.coachId, id)).orderBy(desc(coachHours.date));
 
-			const clientsRow = await db
-				.select({
-					user,
-					client,
-				})
-				.from(user)
-				.leftJoin(client, eq(user.id, client.id))
-				.where(and(eq(client.coachId, id), isNull(client.deletedAt), isNull(user.deletedAt)));
+			const cMR = async () =>
+				db.select().from(coachMileage).where(eq(coachMileage.coachId, id)).orderBy(desc(coachMileage.date));
+
+			const cR = async () =>
+				db
+					.select({
+						user,
+						client,
+						checkListItemCount: sql<number>`
+						(SELECT COUNT(*) FROM client_reentry_check_list_item crcli WHERE crcli.client_id = ${client.id})`,
+					})
+					.from(user)
+					.leftJoin(client, eq(user.id, client.id))
+					.where(and(eq(client.coachId, id), isNull(client.deletedAt), isNull(user.deletedAt)));
+
+			const [coachTrainings, coachHoursRows, coachMilesRows, clientsRow] = await Promise.all([
+				ct(),
+				cHR(),
+				cMR(),
+				cR(),
+			]);
 
 			const clients = await Promise.all(
 				clientsRow.map(async (c) => {
@@ -563,11 +547,11 @@ const getCachedCoach = (id: string) => {
 				coachTrainings,
 				coachHours: coachHoursRows,
 				coachMiles: coachMilesRows,
-				clients: clients as ClientFull[],
+				clients: clients as ClientList[],
 			};
 		},
 		["getCoach", id],
-		{ tags: [getCoachIdTag(id), getUserIdTag(id)] }
+		{ tags: [getCoachIdTag(id), getUserIdTag(id), getClientGlobalTag()] }
 	);
 	return cachedFn();
 };
@@ -578,8 +562,6 @@ export const updateCoachById = async (
 	coachId: string,
 	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
 ) => {
-	// console.log("Updating coach with id:", coachId, "Data:", data);
-
 	const updatedCoach = await db.transaction(async (tx) => {
 		const [coachUpdated] = await tx.update(coach).set(data.coach).where(eq(coach.id, coachId)).returning();
 		if (!coachUpdated) throw new Error("Failed to update coach");
@@ -596,6 +578,29 @@ export const updateCoachById = async (
 	revalidateUserCache(coachId);
 	revalidateCoachCache(coachId);
 	return updatedCoach;
+};
+
+export type ClientUpdate = Awaited<ReturnType<typeof updateClientUserById>>;
+export const updateClientUserById = async (
+	clientId: string,
+	data: { user: Partial<typeof user.$inferInsert>; client: Partial<typeof client.$inferInsert> }
+) => {
+	const updatedClient = await db.transaction(async (tx) => {
+		const [clientUpdated] = await tx.update(client).set(data.client).where(eq(client.id, clientId)).returning();
+		if (!clientUpdated) throw new Error("Failed to update client");
+
+		const [userUpdated] = await tx.update(user).set(data.user).where(eq(user.id, clientId)).returning();
+		if (!userUpdated) throw new Error("Failed to update user");
+
+		return {
+			client: clientUpdated,
+			user: userUpdated,
+		};
+	});
+
+	revalidateUserCache(clientId);
+	revalidateClientCache(clientId);
+	return updatedClient;
 };
 
 export type CoachTrainings = (typeof coachTraining.$inferSelect)[];
@@ -652,7 +657,6 @@ export const deleteCoachHoursById = async (hoursId: string) => {
 };
 
 export const addCoachMileageById = async (coachId: string, data: Partial<CoachMiles>) => {
-	console.log("Adding coach mileage for coachId:", coachId, "Data:", data);
 	const [newItem] = await db
 		.insert(coachMileage)
 		.values({ ...data, coachId })
@@ -685,8 +689,7 @@ export const deleteCoachMileageById = async (mileageId: string) => {
 //#region Client Services
 export type ClientServiceInsert = typeof clientService.$inferInsert;
 
-export const insertClientService = async (data: ClientServiceInsert) => {
-	// console.log("Creating client service for clientId:", data.clientId, "Data:", data);
+export const insertClientService = async (data: ClientServiceInsert, coachIsViewing?: boolean) => {
 	const [newService] = await db.insert(clientService).values(data).returning();
 
 	if (newService == null) {
@@ -694,12 +697,29 @@ export const insertClientService = async (data: ClientServiceInsert) => {
 		throw new Error("Failed to create client service");
 	}
 
-	revalidateClientCache(data.clientId);
+	revalidateClientCache(data.clientId, !!coachIsViewing);
 	return newService;
 };
 
-export const deleteClientServiceById = async (serviceId: string) => {
-	// console.log("Deleting client service with id:", serviceId);
+export const updateClientServiceById = async (
+	serviceId: string,
+	data: Partial<ClientServiceInsert>,
+	coachIsViewing?: boolean
+) => {
+	const [updatedService] = await db
+		.update(clientService)
+		.set(data)
+		.where(eq(clientService.id, serviceId))
+		.returning();
+	if (updatedService == null) {
+		console.error("Failed to update client service");
+		throw new Error("Failed to update client service");
+	}
+	revalidateClientCache(updatedService.clientId, !!coachIsViewing);
+	return updatedService;
+};
+
+export const deleteClientServiceById = async (serviceId: string, coachIsViewing?: boolean) => {
 	const [deletedService] = await db.delete(clientService).where(eq(clientService.id, serviceId)).returning();
 
 	if (deletedService == null) {
@@ -707,13 +727,17 @@ export const deleteClientServiceById = async (serviceId: string) => {
 		throw new Error("Failed to delete client service");
 	}
 
-	revalidateClientCache(deletedService.clientId);
+	revalidateClientCache(deletedService.clientId, !!coachIsViewing);
 	return deletedService;
 };
 //#endregion
 
 //#region Client Checklist Items
-export const addClientReentryCheckListItemForClient = async (clientId: string, reentryCheckListItemId: string) => {
+export const addClientReentryCheckListItemForClient = async (
+	clientId: string,
+	reentryCheckListItemId: string,
+	coachIsViewing?: boolean
+) => {
 	const [newItem] = await db
 		.insert(clientReentryCheckListItem)
 		.values({
@@ -727,11 +751,15 @@ export const addClientReentryCheckListItemForClient = async (clientId: string, r
 		throw new Error("Failed to add client reentry checklist item");
 	}
 
-	revalidateClientCache(clientId);
+	revalidateClientCache(clientId, !!coachIsViewing);
 	return newItem;
 };
 
-export const removeClientReentryCheckListItemForClient = async (clientId: string, reentryCheckListItemId: string) => {
+export const removeClientReentryCheckListItemForClient = async (
+	clientId: string,
+	reentryCheckListItemId: string,
+	coachIsViewing?: boolean
+) => {
 	const [deletedItem] = await db
 		.delete(clientReentryCheckListItem)
 		.where(
@@ -745,7 +773,7 @@ export const removeClientReentryCheckListItemForClient = async (clientId: string
 		console.error("Failed to remove client reentry checklist item");
 		throw new Error("Failed to remove client reentry checklist item");
 	}
-	revalidateClientCache(clientId);
+	revalidateClientCache(clientId, !!coachIsViewing);
 	return deletedItem;
 };
 

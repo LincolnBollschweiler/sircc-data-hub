@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { SortableCoachTrainingsList } from "./SortableCoachTrainingsList";
+import { SortableTrainingsList } from "./SortableTrainingsList";
 import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
 
-export default function CoachTrainings({
+export default function Trainings({
 	items,
 }: {
 	items: (z.infer<typeof generalSchema> & z.infer<typeof updateSchema>)[];
@@ -18,7 +18,7 @@ export default function CoachTrainings({
 					<div className="text-center">Updated</div>
 					<div></div>
 				</div>
-				<SortableCoachTrainingsList items={items} />
+				<SortableTrainingsList items={items} />
 			</div>
 		</div>
 	);

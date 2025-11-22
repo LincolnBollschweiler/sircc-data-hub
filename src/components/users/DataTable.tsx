@@ -34,21 +34,30 @@ export default function DataTable<TData>({
 	title,
 	data,
 	userType,
+	coachIsViewing,
 	clientId,
 	csTables,
 	services,
+	trainingsCount,
+	checkListCount,
 }: DataTableProps<TData> & {
 	title?: string;
 	userType: string;
+	coachIsViewing?: boolean;
 	clientId?: string;
 	csTables?: CSTables;
 	services?: Service[] | undefined;
+	trainingsCount?: number;
+	checkListCount?: number;
 }) {
 	const typesWithNoName = ["single-client", "single-client-view", "coach-hours", "coach-miles"];
 	const { startDelete, dialog } = useDeleteClientService();
 
 	const columns = userDataTableColumns(
 		userType,
+		coachIsViewing,
+		trainingsCount,
+		checkListCount,
 		csTables,
 		userType === "single-client" ? startDelete : undefined
 	) as ColumnDef<TData, unknown>[];
@@ -57,7 +66,7 @@ export default function DataTable<TData>({
 	const [pageSize, setPageSize] = useState<number>(() => {
 		// Load from localStorage on first render (client only)
 		if (typeof window !== "undefined") {
-			const saved = localStorage.getItem(PAGE_SIZE_KEY);
+			const saved = localStorage.getItem(`${PAGE_SIZE_KEY}-${userType}`);
 			return saved ? Number(saved) : 10;
 		}
 		return 10;
@@ -112,7 +121,7 @@ export default function DataTable<TData>({
 	const handlePageSizeChange = (value: string) => {
 		const newSize = Number(value);
 		setPageSize(newSize);
-		localStorage.setItem(PAGE_SIZE_KEY, value);
+		localStorage.setItem(`${PAGE_SIZE_KEY}-${userType}`, value);
 		table.setPageSize(newSize);
 	};
 
@@ -143,7 +152,9 @@ export default function DataTable<TData>({
 								onChange={(e) => setGlobalFilter(e.target.value)}
 							/>
 						</div>
-						{userType === "single-client" && <ClientServices clientId={clientId!} csTables={csTables!} />}
+						{userType === "single-client" && (
+							<ClientServices clientId={clientId!} csTables={csTables!} coachIsViewing={coachIsViewing} />
+						)}
 						{userType === "single-client-view" && (
 							<NewClientService clientId={clientId!} services={services!} />
 						)}
@@ -155,7 +166,17 @@ export default function DataTable<TData>({
 								{table.getHeaderGroups().map((headerGroup) => (
 									<TableRow key={headerGroup.id}>
 										{headerGroup.headers.map((header) => (
-											<TableHead key={header.id} className="text-bold">
+											<TableHead
+												key={header.id}
+												className="text-bold"
+												style={
+													// this sets the width for an avatar image column header, keeping the size consistent
+													// across all DataTable flavors, browser window widths, and devices.
+													header.column.id === "userPhoto"
+														? { width: "35px", minWidth: "35px" }
+														: {}
+												}
+											>
 												{flexRender(header.column.columnDef.header, header.getContext())}
 											</TableHead>
 										))}
@@ -166,7 +187,10 @@ export default function DataTable<TData>({
 								{table.getRowModel().rows.map((row) => (
 									<TableRow key={row.id}>
 										{row.getVisibleCells().map((cell) => (
-											<TableCell key={cell.id}>
+											<TableCell
+												key={cell.id}
+												className={cell.column.id === "userPhoto" ? "p-0 mx-auto" : ""}
+											>
 												{flexRender(cell.column.columnDef.cell, cell.getContext())}
 											</TableCell>
 										))}

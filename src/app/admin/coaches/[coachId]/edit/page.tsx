@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import CoachDetails from "@/components/users/coaches/CoachDetails";
 import TrainingsWrapper from "@/components/users/coaches/TrainingsWrapper";
 import DataTable from "@/components/users/DataTable";
-import { getCoachById, CoachHours, ClientFull, CoachMiles } from "@/userInteractions/db";
+import { getCoachById, CoachHours, CoachMiles, ClientList } from "@/userInteractions/db";
 import Link from "next/link";
 
 export default async function ViewCoachPage({ params }: { params: Promise<{ coachId: string }> }) {
 	const { coachId } = await params;
 	const fullCoach = await getCoachById(coachId);
+
 	// console.dir(fullCoach, { depth: null });
 	if (!fullCoach) {
 		return <div className="text-center py-10 text-xl font-semibold">Coach not found</div>;
@@ -26,7 +27,7 @@ export default async function ViewCoachPage({ params }: { params: Promise<{ coac
 					<CoachDetails user={fullCoach.user} coach={fullCoach.coach!} />
 					{fullCoach && <TrainingsWrapper coachId={coachId} />}
 
-					<DataTable title="Clients" data={fullCoach.clients as ClientFull[]} userType="coach-clients" />
+					<DataTable title="Clients" data={fullCoach.clients as ClientList[]} userType="coach-clients" />
 					<br />
 					<DataTable title="Hours" data={fullCoach.coachHours as CoachHours[]} userType="coach-hours" />
 					<br />
