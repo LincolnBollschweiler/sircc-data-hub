@@ -10,10 +10,10 @@ export default async function ReentryChecklistItemsPage() {
 
 	return (
 		<div className="container py-4 mx-auto">
-			<PageHeader title="Reentry Checklist Items">
+			<PageHeader title="Re-entry Checklist Items">
 				<ReentryChecklistItemsFormDialog>
 					<DialogTrigger asChild>
-						<Button>Add Reentry Checklist Item</Button>
+						<Button>Add Re-entry Checklist Item</Button>
 					</DialogTrigger>
 				</ReentryChecklistItemsFormDialog>
 			</PageHeader>

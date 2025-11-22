@@ -18,77 +18,88 @@ import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "../ui/input";
 import { userDataTableColumns } from "./UserDataTableColumns";
-import { CSTables } from "@/tableInteractions/db";
+import { CSTables, Service } from "@/tableInteractions/db";
 import { useDeleteClientService } from "../DeleteConfirm";
+import { ClientServices, NewClientService } from "./clients/ClientServices";
+import { cn } from "@/lib/utils";
 
-interface DataTableProps<TData extends { siteId?: string | null }> {
+interface DataTableProps<TData> {
 	data: TData[];
 	userType?: string;
 }
 
 const PAGE_SIZE_KEY = "datatable_page_size";
-const USER_SITE_ID = "global_user_site_id";
 
-export default function DataTable<TData extends { siteId?: string | null }>({
+export default function DataTable<TData>({
+	title,
 	data,
-	sites,
 	userType,
+	coachIsViewing,
+	clientId,
 	csTables,
+	services,
+	trainingsCount,
+	checkListCount,
 }: DataTableProps<TData> & {
-	sites: { id: string; name: string }[];
+	title?: string;
 	userType: string;
+	coachIsViewing?: boolean;
+	clientId?: string;
 	csTables?: CSTables;
+	services?: Service[] | undefined;
+	trainingsCount?: number;
+	checkListCount?: number;
 }) {
+	const typesWithNoName = ["single-client", "single-client-view", "coach-hours", "coach-miles"];
 	const { startDelete, dialog } = useDeleteClientService();
+
 	const columns = userDataTableColumns(
 		userType,
+		coachIsViewing,
+		trainingsCount,
+		checkListCount,
 		csTables,
 		userType === "single-client" ? startDelete : undefined
 	) as ColumnDef<TData, unknown>[];
+
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pageSize, setPageSize] = useState<number>(() => {
 		// Load from localStorage on first render (client only)
 		if (typeof window !== "undefined") {
-			const saved = localStorage.getItem(PAGE_SIZE_KEY);
+			const saved = localStorage.getItem(`${PAGE_SIZE_KEY}-${userType}`);
 			return saved ? Number(saved) : 10;
 		}
 		return 10;
 	});
 
-	const [siteId, setSiteId] = useState("all");
 	const [loadingOrNone, setLoadingOrNone] = useState<React.ReactNode | null>(
 		<div className="flex justify-center items-center p-20">
 			<Loader2 className="w-8 h-8 text-foreground/80 animate-spin" />
 		</div>
 	);
-	useEffect(() => {
-		const saved = localStorage.getItem(USER_SITE_ID);
-		handleSiteChange(saved || "all");
-	}, []);
 
-	const handleSiteChange = async (value: string) => {
-		console.log("Site changed to:", value);
-		setSiteId(value);
-		localStorage.setItem(USER_SITE_ID, value);
-		const filteredData =
-			value === "all"
-				? data.filter((item) => item.siteId)
-				: value === "none"
-				? data.filter((item) => !item.siteId)
-				: data.filter((item) => item.siteId === value);
-		setSiteFilteredData(filteredData);
-		if (filteredData.length === 0) {
-			setLoadingOrNone(<div className="w-full text-center p-20">No matching applicants</div>);
+	useEffect(() => {
+		if (data.length === 0) {
+			setLoadingOrNone(
+				<div
+					className={cn(
+						"flex justify-center items-center p-20 text-foreground text-xl font-semibold",
+						title && "-translate-y-5"
+					)}
+				>
+					No data to display.
+				</div>
+			);
 		} else {
 			setLoadingOrNone(null);
 		}
-	};
+	}, [data]);
 
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
-	const [siteFilteredData, setSiteFilteredData] = useState<TData[]>([]);
+
 	const table = useReactTable({
-		data: siteFilteredData,
+		data,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
@@ -110,7 +121,7 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 	const handlePageSizeChange = (value: string) => {
 		const newSize = Number(value);
 		setPageSize(newSize);
-		localStorage.setItem(PAGE_SIZE_KEY, value);
+		localStorage.setItem(`${PAGE_SIZE_KEY}-${userType}`, value);
 		table.setPageSize(newSize);
 	};
 
@@ -120,153 +131,156 @@ export default function DataTable<TData extends { siteId?: string | null }>({
 	}, [pageSize, table]);
 
 	return (
-		<>
-			<div className="flex flex-wrap gap-1 items-center justify-between my-1">
-				<Select onValueChange={handleSiteChange} value={siteId}>
-					<SelectTrigger className="w-[160px] text-primary-foreground bg-primary">
-						<SelectValue placeholder="Select a site" />
-					</SelectTrigger>
-					<SelectContent>
-						{[
-							<SelectItem key="all" value={"all"}>
-								All Sites
-							</SelectItem>,
-							<SelectItem key="none" value={"none"}>
-								No Preferred Site
-							</SelectItem>,
-							...sites.map((site) => (
-								<SelectItem key={site.id} value={site.id ?? ""}>
-									{site.name}
-								</SelectItem>
-							)),
-						]}
-					</SelectContent>
-				</Select>
-				<div className="flex flex-wrap sm:flex-nowrap gap-1 items-center">
-					{userType !== "single-client" && (
-						<Input
-							className="max-w-sm text-primary-foreground bg-primary"
-							placeholder={`Search by Name...`}
-							value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-							onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
-						/>
-					)}
-					<Input
-						className="max-w-sm text-primary-foreground bg-primary"
-						placeholder="Search all columns..."
-						value={globalFilter ?? ""}
-						onChange={(e) => setGlobalFilter(e.target.value)}
-					/>
-				</div>
-			</div>
-			{siteFilteredData.length > 0 ? (
-				<div className="container mx-auto [&_table_tr:hover]:bg-background-light [&_table_th:hover]:bg-background-light border border-[border-muted/50] p-1 rounded-lg shadow-md">
-					<Table className="bg-background-light rounded-t-md overflow-hidden">
-						<TableHeader className="bg-background-dark">
-							{table.getHeaderGroups().map((headerGroup) => (
-								<TableRow key={headerGroup.id}>
-									{headerGroup.headers.map((header) => (
-										<TableHead key={header.id} className="text-bold">
-											{flexRender(header.column.columnDef.header, header.getContext())}
-										</TableHead>
-									))}
-								</TableRow>
-							))}
-						</TableHeader>
-						<TableBody>
-							{table.getRowModel().rows.map((row) => (
-								<TableRow key={row.id}>
-									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id}>
-											{flexRender(cell.column.columnDef.cell, cell.getContext())}
-										</TableCell>
-									))}
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-
-					<div className="flex flex-col items-start gap-2 sm:items-center sm:flex-row justify-between p-2 bg-background-dark rounded-b-md">
-						{/* LEFT — Rows per page */}
-						<div>
-							<Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-								<SelectTrigger className="w-[120px] bg-background-light text-sm">
-									<SelectValue placeholder={`Show ${pageSize}`} />
-								</SelectTrigger>
-								<SelectContent position="popper" className="bg-background-light">
-									{[5, 10, 20, 30, 40, 50].map((size) => (
-										<SelectItem key={size} value={size.toString()}>
-											Show {size}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-
-						{/* CENTER — Page info + Go to page */}
-						<div className="flex items-center gap-2 text-sm">
-							<span>
-								Page <strong>{pageIndex + 1}</strong> of {pageCount.toLocaleString()}
-							</span>
-							<span>| Go to:</span>
+		<div className="container mx-auto border border-[border-muted/50] p-2.5 rounded-lg shadow-md bg-background-light">
+			{title && <h2 className="text-xl font-semibold mb-1">{title}</h2>}
+			{data.length > 0 ? (
+				<>
+					<div className="flex flex-wrap gap-1 items-center justify-between mb-2">
+						<div className="flex flex-wrap sm:flex-nowrap gap-1 items-center">
+							{!typesWithNoName.includes(userType) && (
+								<Input
+									className="max-w-sm text-primary-foreground bg-primary"
+									placeholder={`Search by Name...`}
+									value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+									onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
+								/>
+							)}
 							<Input
-								type="number"
-								min={1}
-								max={pageCount}
-								defaultValue={pageIndex + 1}
-								onChange={(e) => {
-									const page = e.target.value ? Number(e.target.value) - 1 : 0;
-									table.setPageIndex(page);
-								}}
-								className="w-16 h-8 text-center border rounded bg-background-light text-sm"
+								className="max-w-sm text-primary-foreground bg-primary"
+								placeholder="Search all columns..."
+								value={globalFilter ?? ""}
+								onChange={(e) => setGlobalFilter(e.target.value)}
 							/>
 						</div>
+						{userType === "single-client" && (
+							<ClientServices clientId={clientId!} csTables={csTables!} coachIsViewing={coachIsViewing} />
+						)}
+						{userType === "single-client-view" && (
+							<NewClientService clientId={clientId!} services={services!} />
+						)}
+					</div>
 
-						{/* RIGHT — Navigation */}
-						<div className="flex items-center gap-1">
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={() => table.firstPage()}
-								disabled={!table.getCanPreviousPage()}
-								className="border rounded p-1 bg-background-light text-sm"
-							>
-								<ChevronsLeft className="h-4 w-4" />
-							</Button>
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={() => table.previousPage()}
-								disabled={!table.getCanPreviousPage()}
-								className="border rounded py-1 px-2 bg-background-light text-sm"
-							>
-								Prev
-							</Button>
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={() => table.nextPage()}
-								disabled={!table.getCanNextPage()}
-								className="border rounded py-1 px-2 bg-background-light text-sm"
-							>
-								Next
-							</Button>
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={() => table.lastPage()}
-								disabled={!table.getCanNextPage()}
-								className="border rounded p-1 bg-background-light text-sm"
-							>
-								<ChevronsRight className="h-4 w-4" />
-							</Button>
+					<div className="container mx-auto [&_table_tr:hover]:bg-background-light [&_table_th:hover]:bg-background-light border border-[border-muted/50] p-1 rounded-lg shadow-md">
+						<Table className="bg-background-light rounded-t-md overflow-hidden">
+							<TableHeader className="bg-background-dark">
+								{table.getHeaderGroups().map((headerGroup) => (
+									<TableRow key={headerGroup.id}>
+										{headerGroup.headers.map((header) => (
+											<TableHead
+												key={header.id}
+												className="text-bold"
+												style={
+													// this sets the width for an avatar image column header, keeping the size consistent
+													// across all DataTable flavors, browser window widths, and devices.
+													header.column.id === "userPhoto"
+														? { width: "35px", minWidth: "35px" }
+														: {}
+												}
+											>
+												{flexRender(header.column.columnDef.header, header.getContext())}
+											</TableHead>
+										))}
+									</TableRow>
+								))}
+							</TableHeader>
+							<TableBody>
+								{table.getRowModel().rows.map((row) => (
+									<TableRow key={row.id}>
+										{row.getVisibleCells().map((cell) => (
+											<TableCell
+												key={cell.id}
+												className={cell.column.id === "userPhoto" ? "p-0 mx-auto" : ""}
+											>
+												{flexRender(cell.column.columnDef.cell, cell.getContext())}
+											</TableCell>
+										))}
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+
+						<div className="flex flex-col items-start gap-2 sm:items-center sm:flex-row justify-between p-2 bg-background-dark rounded-b-md">
+							{/* LEFT — Rows per page */}
+							<div>
+								<Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+									<SelectTrigger className="w-[120px] bg-background-light text-sm">
+										<SelectValue placeholder={`Show ${pageSize}`} />
+									</SelectTrigger>
+									<SelectContent position="popper" className="bg-background-light">
+										{[5, 10, 20, 30, 40, 50].map((size) => (
+											<SelectItem key={size} value={size.toString()}>
+												Show {size}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							{/* CENTER — Page info + Go to page */}
+							<div className="flex items-center gap-2 text-sm">
+								<span>
+									Page <strong>{pageIndex + 1}</strong> of {pageCount.toLocaleString()}
+								</span>
+								<span>| Go to:</span>
+								<Input
+									type="number"
+									min={1}
+									max={pageCount}
+									defaultValue={pageIndex + 1}
+									onChange={(e) => {
+										const page = e.target.value ? Number(e.target.value) - 1 : 0;
+										table.setPageIndex(page);
+									}}
+									className="w-16 h-8 text-center border rounded bg-background-light text-sm"
+								/>
+							</div>
+
+							{/* RIGHT — Navigation */}
+							<div className="flex items-center gap-1">
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => table.firstPage()}
+									disabled={!table.getCanPreviousPage()}
+									className="border rounded p-1 bg-background-light text-sm"
+								>
+									<ChevronsLeft className="h-4 w-4" />
+								</Button>
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => table.previousPage()}
+									disabled={!table.getCanPreviousPage()}
+									className="border rounded py-1 px-2 bg-background-light text-sm"
+								>
+									Prev
+								</Button>
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => table.nextPage()}
+									disabled={!table.getCanNextPage()}
+									className="border rounded py-1 px-2 bg-background-light text-sm"
+								>
+									Next
+								</Button>
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => table.lastPage()}
+									disabled={!table.getCanNextPage()}
+									className="border rounded p-1 bg-background-light text-sm"
+								>
+									<ChevronsRight className="h-4 w-4" />
+								</Button>
+							</div>
 						</div>
 					</div>
-				</div>
+				</>
 			) : (
 				loadingOrNone
 			)}
 			{dialog}
-		</>
+		</div>
 	);
 }

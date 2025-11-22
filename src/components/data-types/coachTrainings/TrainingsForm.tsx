@@ -10,9 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import { generalSchema } from "../../../tableInteractions/schemas";
-import { createCoachTraining, updateCoachTraining } from "@/tableInteractions/actions";
+import { createTraining, updateTraining } from "@/tableInteractions/actions";
 
-export default function CoachTrainingsForm({
+export default function TrainingsForm({
 	coachTraining,
 	onSuccess,
 }: {
@@ -28,7 +28,7 @@ export default function CoachTrainingsForm({
 	});
 
 	const onSubmit = async (values: z.infer<typeof generalSchema>) => {
-		const action = coachTraining == null ? createCoachTraining : updateCoachTraining.bind(null, coachTraining.id);
+		const action = coachTraining == null ? createTraining : updateTraining.bind(null, coachTraining.id);
 
 		const actionData = await action(values);
 

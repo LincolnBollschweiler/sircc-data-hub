@@ -75,7 +75,11 @@ export const user = pgTable(
 		photoUrl: varchar("photo_url", { length: 500 }),
 		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
 		phone: varchar("phone", { length: 12 }),
-		address: varchar("address", { length: 255 }),
+		address1: varchar("address1", { length: 100 }),
+		address2: varchar("address2", { length: 100 }),
+		city: varchar("city", { length: 50 }),
+		state: varchar("state", { length: 2 }),
+		zip: varchar("zip", { length: 5 }),
 		birthMonth: integer("birth_month"),
 		birthDay: integer("birth_day"),
 		accepted: boolean("accepted"),
@@ -92,6 +96,23 @@ export const user = pgTable(
 	]
 );
 
+export const coach = pgTable(
+	"coach",
+	{
+		id: uuid("id")
+			.references(() => user.id, { onDelete: "cascade" })
+			.primaryKey(),
+		isActive: boolean("is_active").default(true),
+		llc: varchar("llc", { length: 100 }),
+		website: varchar("website", { length: 255 }),
+		notes: varchar("notes", { length: 1000 }),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("coach_deleted_at_idx").on(table.deletedAt)]
+);
+
 export const client = pgTable(
 	"client",
 	{
@@ -102,6 +123,7 @@ export const client = pgTable(
 		isReentryClient: boolean("is_reentry_client").default(false),
 		followUpNeeded: boolean("follow_up_needed").default(false),
 		followUpDate: timestamp("follow_up_date", { withTimezone: true }),
+		followUpNotes: varchar("follow_up_notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
 		deletedAt,
@@ -114,17 +136,15 @@ export const coachMileage = pgTable(
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		coachId: uuid("coach_id")
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => coach.id, { onDelete: "cascade" })
 			.notNull(),
-		miles: integer("miles").notNull(),
+		miles: decimal("miles", { precision: 5, scale: 2 }),
+		date: timestamp("date", { withTimezone: true }).notNull().defaultNow(),
+		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
-		deletedAt,
 	},
-	(table) => [
-		index("coach_mileage_coach_id_idx").on(table.coachId),
-		index("coach_mileage_deleted_at_idx").on(table.deletedAt),
-	]
+	(table) => [index("coach_mileage_coach_id_idx").on(table.coachId)]
 );
 
 export const coachHours = pgTable(
@@ -132,10 +152,12 @@ export const coachHours = pgTable(
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		coachId: uuid("coach_id")
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => coach.id, { onDelete: "cascade" })
 			.notNull(),
 		paidHours: decimal("paid_hours", { precision: 5, scale: 2 }),
 		volunteerHours: decimal("volunteer_hours", { precision: 5, scale: 2 }),
+		date: timestamp("date", { withTimezone: true }).notNull().defaultNow(),
+		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
 	},
@@ -301,9 +323,7 @@ export const clientService = pgTable(
 		cityId: uuid("city_id").references(() => city.id, { onDelete: "set null" }),
 		locationId: uuid("location_id").references(() => location.id, { onDelete: "set null" }),
 		requestedServiceId: uuid("requested_service_id").references(() => service.id, { onDelete: "restrict" }),
-		providedServiceId: uuid("provided_service_id")
-			.references(() => service.id, { onDelete: "restrict" })
-			.notNull(),
+		providedServiceId: uuid("provided_service_id").references(() => service.id, { onDelete: "restrict" }),
 		referralSourceId: uuid("referral_source_id").references(() => referralSource.id, { onDelete: "set null" }),
 		referredOutId: uuid("referred_out_id").references(() => referredOut.id, { onDelete: "set null" }),
 		visitId: uuid("visit_id").references(() => visit.id, { onDelete: "set null" }),
@@ -311,12 +331,10 @@ export const clientService = pgTable(
 		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
-		deletedAt,
 	},
 	(table) => [
 		index("client_service_site_id_idx").on(table.siteId),
 		index("client_service_city_id_idx").on(table.cityId),
-		index("client_service_deleted_at_idx").on(table.deletedAt),
 		index("client_service_client_id_idx").on(table.clientId),
 		index("client_service_requested_service_id_idx").on(table.requestedServiceId),
 		index("client_service_provided_service_id_idx").on(table.providedServiceId),
@@ -328,7 +346,7 @@ export const clientReentryCheckListItem = pgTable(
 	"client_reentry_check_list_item",
 	{
 		clientId: uuid("client_id")
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => client.id, { onDelete: "cascade" })
 			.notNull(),
 		reentryCheckListItemId: uuid("reentry_check_list_item_id")
 			.references(() => reentryCheckListItem.id, { onDelete: "restrict" })
@@ -341,11 +359,12 @@ export const coachTraining = pgTable(
 	"coach_training",
 	{
 		coachId: uuid("coach_id")
-			.references(() => user.id, { onDelete: "cascade" })
+			.references(() => coach.id, { onDelete: "cascade" })
 			.notNull(),
 		trainingId: uuid("training_id")
 			.references(() => training.id, { onDelete: "restrict" })
 			.notNull(),
+		createdAt,
 	},
 	(table) => [uniqueIndex("coach_id_training_id").on(table.coachId, table.trainingId)]
 );

@@ -16,7 +16,7 @@ export default function PageHeader({
 }) {
 	return (
 		<>
-			<div className={cn("mb-8 flex gap-4 items-center justify-between", className)}>
+			<div className={cn("mb-8 flex gap-x-4 gap-y-0 flex-wrap items-center justify-between", className)}>
 				<h1 className="text-2xl font-semibold flex items-center gap-2">
 					{title}
 					{role && (

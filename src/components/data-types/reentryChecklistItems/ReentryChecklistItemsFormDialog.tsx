@@ -21,7 +21,7 @@ export default function ReentryChecklistItemsFormDialog({
 			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
 					<DialogTitle>
-						{reentryChecklistItem ? "Edit Reentry Checklist Item" : "Add Reentry Checklist Item"}
+						{reentryChecklistItem ? "Edit Re-entry Checklist Item" : "Add Re-entry Checklist Item"}
 					</DialogTitle>
 				</DialogHeader>
 				<div className="mt-4 grid gap-4">
