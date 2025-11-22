@@ -763,11 +763,9 @@ export const updateSiteOrders = async (orderedIds: string[]) => {
 //#region Service DB Interactions
 export const insertService = async (data: typeof dbTable.service.$inferInsert) => {
 	const [newService] = await db.insert(dbTable.service).values(data).returning();
-
+	if (!newService) console.error("Failed to insert new service");
 	if (!newService) return;
-
 	cache.revalidateServiceCache(newService.id);
-
 	return newService;
 };
 

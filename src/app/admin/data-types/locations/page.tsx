@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import { getLocations } from "@/tableInteractions/db";
 import LocationsFormDialog from "@/components/data-types/locations/LocationsFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
-import Cities from "@/components/data-types/cities/Cities";
+import Locations from "@/components/data-types/locations/Locations";
 
 export default async function LocationsPage() {
 	const locations = await getLocations();
@@ -17,7 +17,7 @@ export default async function LocationsPage() {
 					</DialogTrigger>
 				</LocationsFormDialog>
 			</PageHeader>
-			<Cities items={locations} />
+			<Locations items={locations} />
 		</div>
 	);
 }
