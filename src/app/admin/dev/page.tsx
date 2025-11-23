@@ -1,17 +1,8 @@
+// @ts-nocheck
 "use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createNewTheme } from "@/utils/createNewTheme";
-import {
-	createCity,
-	createLocation,
-	createReentryChecklistItem,
-	createReferralSource,
-	createReferredOut,
-	createService,
-	createVisit,
-	createVolunteerType,
-} from "@/tableInteractions/actions";
 import {
 	deleteAllCity,
 	deleteAllLocation,
@@ -19,9 +10,24 @@ import {
 	deleteAllReferralSource,
 	deleteAllReferredOut,
 	deleteAllService,
+	deleteAllUser,
 	deleteAllVisit,
 	deleteAllVolunteerTypes,
+	insertClerkUserDev,
+	createCity,
+	createLocation,
+	createReferralSource,
+	createReferredOut,
+	createService,
+	createVisit,
+	createVolunteerType,
+	createUser,
+	addClientService,
+	deleteAllClientService,
+	deleteAllClient,
 } from "@/tableInteractions/adminActions";
+import Papa from "papaparse";
+import { queryUserById } from "@/userInteractions/actions";
 
 export default function Dev() {
 	const iamsajidThemeInputText = `
@@ -97,15 +103,7 @@ body.light {
 	};
 
 	const loadDataTypeValues = async () => {
-		await loadGeneral("");
-		// await loadGeneral("city");
-		// await loadGeneral("visit");
-		// await loadGeneral("location");
-		// await loadGeneral("service");
-		// await loadGeneral("reentryCheckListItem");
-		// await loadGeneral("referralSource");
-		// await loadGeneral("referredOut");
-		// await loadGeneral("volunteeringType");
+		await loadClients();
 	};
 
 	return (
@@ -160,63 +158,54 @@ body.light {
 			</section>
 			<section>
 				<h2 className="text-2xl font-semibold mb-2">Parse CSV</h2>
-				<Button onClick={loadDataTypeValues}>Load in Data Types</Button>
+				<Button onClick={loadDataTypeValues}>Load in Clients and Client Data Types</Button>
 			</section>
 		</main>
 	);
 }
 
-const addToDb = async (type: string, name: string) => {
-	let action;
+const deleteAllFromDb = async (type: string) => {
 	let deleteAction;
 	switch (type) {
+		case "user":
+			deleteAction = deleteAllClientService;
+			await deleteAction();
+			deleteAction = deleteAllClient;
+			await deleteAction();
+			deleteAction = deleteAllUser;
+			await deleteAction();
+			break;
 		case "city":
 			deleteAction = deleteAllCity;
 			await deleteAction();
-			action = createCity;
-			await action({ name });
 			break;
 		case "visit":
 			deleteAction = deleteAllVisit;
 			await deleteAction();
-			action = createVisit;
-			await action({ name });
 			break;
 		case "location":
 			deleteAction = deleteAllLocation;
 			await deleteAction();
-			action = createLocation;
-			await action({ name, description: "" });
 			break;
 		case "service":
 			deleteAction = deleteAllService;
 			await deleteAction();
-			action = createService;
-			await action({ name, description: "", requiresFunding: false });
 			break;
 		case "reentryCheckListItem":
 			deleteAction = deleteAllReentryChecklistItem;
 			await deleteAction();
-			action = createReentryChecklistItem;
-			await action({ name, description: "" });
 			break;
 		case "referralSource":
 			deleteAction = deleteAllReferralSource;
 			await deleteAction();
-			action = createReferralSource;
-			await action({ name, description: "" });
 			break;
 		case "referredOut":
 			deleteAction = deleteAllReferredOut;
 			await deleteAction();
-			action = createReferredOut;
-			await action({ name, description: "" });
 			break;
 		case "volunteeringType":
 			deleteAction = deleteAllVolunteerTypes;
 			await deleteAction();
-			action = createVolunteerType;
-			await action({ name, description: "" });
 			break;
 		default:
 			console.warn(`No action defined for type: ${name}`);
@@ -224,13 +213,332 @@ const addToDb = async (type: string, name: string) => {
 	}
 };
 
-const loadGeneral = async (type: string) => {
-	if (type === "") return;
-	const response = await fetch(`/temp-load-in/${type}.csv`);
+const addDataToDb = async (type: string, data: any) => {
+	let action;
+	switch (type) {
+		case "user":
+			action = insertClerkUserDev;
+			await action(data);
+			break;
+		default:
+			console.warn(`No action defined for type: ${name}`);
+			return;
+	}
+};
+
+const addToDb = async (type: string, name: string) => {
+	const requiresFunding = ["Gas Voucher", "Laundry Voucher", "Phone"];
+	let action;
+	switch (type) {
+		case "city":
+			action = createCity;
+			return await action({ name });
+			break;
+		case "visit":
+			action = createVisit;
+			return await action({ name });
+			break;
+		case "location":
+			action = createLocation;
+			return await action({ name, description: "" });
+			break;
+		case "service":
+			action = createService;
+			return await action({ name, description: "", requiresFunding: requiresFunding.includes(name) });
+			break;
+		case "referralSource":
+			action = createReferralSource;
+			return await action({ name, description: "" });
+			break;
+		case "referredOut":
+			action = createReferredOut;
+			return await action({ name, description: "" });
+			break;
+		case "volunteeringType":
+			action = createVolunteerType;
+			return await action({ name, description: "" });
+			break;
+		default:
+			console.warn(`No action defined for type: ${name}`);
+			return;
+	}
+};
+
+const lookup = {};
+
+/* tslint:disable */
+const addUniqueColumnData = async (data) => {
+	const uniqueValueColumns = ["city", "location", "referralSource", "referredOut", "visit"];
+	// const uniqueValueColumns = ["city"];
+	uniqueValueColumns.forEach((col) => {
+		const values = data.map((row: any) => row[col]).filter((value: string) => value && value.trim().length > 0);
+		const uniqueValues = Array.from(new Set(values)).sort();
+		const realUnique = Array.from(new Set(uniqueValues.map((v) => v.trim()))).sort();
+		deleteAllFromDb(col);
+		realUnique.forEach(async (value) => {
+			const id = await addToDb(col, value);
+			if (!lookup[col]) {
+				lookup[col] = {};
+			}
+			lookup[col][value] = id;
+		});
+	});
+};
+
+const addDuplicateColumnData = async (data) => {
+	const duplicateColumns = ["requestedService", "providedService"];
+	const duplicates = [];
+	duplicateColumns.forEach((col) => {
+		const values = data.map((row: any) => row[col]).filter((value: string) => value && value.trim().length > 0);
+		const uniqueValues = Array.from(new Set(values)).sort();
+		duplicates.push(uniqueValues);
+	});
+
+	const combinedDuplicates = Array.from(new Set(duplicates.flat())).sort();
+	deleteAllFromDb("service");
+	combinedDuplicates.forEach(async (value) => {
+		const id = await addToDb("service", value);
+		if (!lookup["service"]) {
+			lookup["service"] = {};
+		}
+		lookup["service"][value] = id;
+	});
+};
+
+const addUserData = async (data) => {
+	// filter out any entries without firstName, createdAt, and providedService or success
+	data = data.filter((row: any) => row.firstName && row.createdAt && (row.providedService || row.success));
+	// set any missing lastName to "Unknown"
+	data.forEach((row: any) => {
+		if (!row.lastName || row.lastName.trim().length === 0) {
+			row.lastName = "Unknown";
+		}
+	});
+	// sort by lastName, firstName, phone
+	data.sort((a: any, b: any) => {
+		if (a.lastName < b.lastName) return -1;
+		if (a.lastName > b.lastName) return 1;
+		if (a.firstName < b.firstName) return -1;
+		if (a.firstName > b.firstName) return 1;
+		if (a.phone < b.phone) return -1;
+		if (a.phone > b.phone) return 1;
+		return 0;
+	});
+
+	// create new array that groups by lastName, firstName, phone
+	const groupedClients: any[] = [];
+	let currentGroup: any[] = [];
+	let lastLastName = "";
+	let lastFirstName = "";
+	let lastPhone = "";
+	data.forEach((row: any) => {
+		if (row.lastName !== lastLastName || row.firstName !== lastFirstName || row.phone !== lastPhone) {
+			if (currentGroup.length > 0) {
+				groupedClients.push(currentGroup);
+			}
+			currentGroup = [];
+		}
+		currentGroup.push(row);
+		lastLastName = row.lastName;
+		lastFirstName = row.firstName;
+		lastPhone = row.phone;
+	});
+
+	if (currentGroup.length > 0) {
+		groupedClients.push(currentGroup);
+	}
+
+	// pull out the existing coach and admin user IDs to save and push back later
+	const saveUserIds = [
+		"71b7ebe9-9497-4a8f-91b4-f3b930ebeec5",
+		"bb01ccbe-2a86-4401-b70e-7464520cda40",
+		"cbc7caf3-776c-4bd9-99aa-22a983fb4f3e",
+	];
+
+	const getUserAction = queryUserById.bind(null);
+	const savedUsers = await Promise.all(saveUserIds.map((id) => getUserAction(id)));
+
+	await deleteAllFromDb("user");
+
+	// const savedUsers = [
+	// 	{
+	// 		id: "71b7ebe9-9497-4a8f-91b4-f3b930ebeec5",
+	// 		clerkUserId: "user_35PAF0563ZcQcwyyYhhXHkMxDjP",
+	// 		firstName: "Linc",
+	// 		lastName: "Star",
+	// 		role: "coach",
+	// 		desiredRole: "coach",
+	// 		email: "lincstar182@hotmail.com",
+	// 		photoUrl:
+	// 			"https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18zNExnYjg0UVBpRmttNnpubnFxb2JzOEpmWjciLCJyaWQiOiJ1c2VyXzM1UEFGMDU2M1pjUWN3eXlZaGhYSGtNeERqUCIsImluaXRpYWxzIjoiTFMifQ",
+	// 		siteId: null,
+	// 		phone: "+12083405365",
+	// 		address1: "",
+	// 		address2: "",
+	// 		city: "Nampa",
+	// 		state: "",
+	// 		zip: "",
+	// 		birthMonth: 10,
+	// 		birthDay: 11,
+	// 		accepted: true,
+	// 		notes: "I'd like to be a coach",
+	// 		themePreference: "dark",
+	// 		deletedAt: null,
+	// 	},
+	// 	{
+	// 		id: "bb01ccbe-2a86-4401-b70e-7464520cda40",
+	// 		clerkUserId: "user_35OkgFuAhI6FEATxUAKsnFYLDMS",
+	// 		firstName: "Lincoln",
+	// 		lastName: "Bollschweiler",
+	// 		role: "admin",
+	// 		desiredRole: null,
+	// 		email: "lincolnbollschweiler@gmail.com",
+	// 		photoUrl:
+	// 			"https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zNU9rZ0ZPcTE2cjUzYnh0aWk1N3NueXVGMVgifQ",
+	// 		siteId: null,
+	// 		phone: "+12083405367",
+	// 		address1: "10768 Cloudless Ct",
+	// 		address2: "line 2",
+	// 		city: "Nampa",
+	// 		state: "ID",
+	// 		zip: "83687",
+	// 		birthMonth: null,
+	// 		birthDay: null,
+	// 		accepted: true,
+	// 		notes: "Setting up the DB",
+	// 		themePreference: "dark",
+	// 		deletedAt: null,
+	// 	},
+	// 	{
+	// 		id: "cbc7caf3-776c-4bd9-99aa-22a983fb4f3e",
+	// 		clerkUserId: "user_35OlPKfcndCAZvLnx4yxDngjxsV",
+	// 		firstName: "George",
+	// 		lastName: "Bollschweiler",
+	// 		role: "coach",
+	// 		desiredRole: "client",
+	// 		email: "georgebollschweiler@gmail.com",
+	// 		photoUrl:
+	// 			"https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zNU9sUFBBRWdYOXRNT0pNQXBzYm45Y2FsdzQifQ",
+	// 		siteId: "a9ca9828-d427-4a12-b824-9a09933009a2",
+	// 		phone: "+12083405367",
+	// 		address1: "10768 Cloudless Ct",
+	// 		address2: "",
+	// 		city: "Nampa",
+	// 		state: "ID",
+	// 		zip: "83687",
+	// 		birthMonth: 12,
+	// 		birthDay: 21,
+	// 		accepted: true,
+	// 		notes: "Help me!",
+	// 		themePreference: "system",
+	// 		deletedAt: null,
+	// 	},
+	// ];
+
+	savedUsers.forEach(async (user) => {
+		delete user?.createdAt;
+		delete user?.updatedAt;
+		await addDataToDb("user", user);
+	});
+
+	groupedClients.forEach(async (group) => {
+		await addClientToDb(group);
+	});
+};
+
+const loadClients = async () => {
+	const response = await fetch(`/temp-load-in/clients.csv`);
 	const csvText = await response.text();
-	const valuesSet = new Set<string>(csvText.split(",").map((value) => value.trim()));
-	const valuesArray = Array.from(valuesSet).filter((value) => value.length > 0);
-	valuesArray.sort();
-	console.log(`Parsed ${type}:`, valuesArray);
-	valuesArray.forEach((value) => addToDb(type, value)); // Example function to insert value into database
+
+	const parsed = Papa.parse(csvText, {
+		header: true, // use first row as keys
+		skipEmptyLines: true,
+	});
+
+	await addUniqueColumnData(parsed.data);
+	await addDuplicateColumnData(parsed.data);
+	await addUserData(parsed.data);
+
+	return;
+};
+
+const createClientServideInDb = async (clientServiceInfo: any) => {
+	const action = addClientService;
+	return await action(clientServiceInfo);
+};
+
+const createClientInDb = async (userInfo: any, clientInfo: any) => {
+	const action = createUser;
+	return await action(userInfo, clientInfo);
+};
+
+const clientService = (clientId, client, funds) => {
+	return {
+		clientId,
+		requestedServiceId: lookup["service"]?.[client.requestedService?.trim()] || null,
+		providedServiceId: lookup["service"]?.[client.providedService?.trim()] || null,
+		visitId: lookup["visit"]?.[client.visit?.trim()] || null,
+		cityId: lookup["city"]?.[client.city?.trim()] || null,
+		locationId: lookup["location"]?.[client.location?.trim()] || null,
+		referralSourceId: lookup["referralSource"]?.[client.referralSource?.trim()] || null,
+		referredOutId: lookup["referredOut"]?.[client.referredOut?.trim()] || null,
+		funds,
+		notes: client.followUpNotes ? client.followUpNotes.trim() : null,
+		createdAt: new Date(client.createdAt),
+		updatedAt: new Date(client.createdAt),
+	};
+};
+
+const addClientToDb = async (group: any[]) => {
+	const client = group[0];
+	let phone = null;
+	if (client.phone && client.phone.trim().length > 0) {
+		phone = `+1${client.phone.trim().replace(/\D/g, "")}`;
+	}
+	if (client.phone && phone?.length !== 12) {
+		// debugger;
+		phone = null;
+	}
+	const sanitizedUser = {
+		firstName: client.firstName.trim(),
+		lastName: client.lastName.trim(),
+		role: "client",
+		email: client.email ? client.email.trim() : null,
+		phone,
+		accepted: true,
+		createdAt: new Date(client.createdAt),
+		updatedAt: new Date(client.createdAt),
+	};
+
+	const followUpNeeded = client.followUpNeeded?.toLowerCase() === "yes";
+	const sanitizedClient = {
+		followUpNeeded: followUpNeeded,
+		followUpDate: followUpNeeded ? (client.followUpDate ? new Date(client.followUpDate) : new Date()) : null,
+		followUpNotes: client.followUpNotes ? client.followUpNotes.trim() : null,
+		createdAt: new Date(client.createdAt),
+		updatedAt: new Date(client.createdAt),
+	};
+	const clientId = await createClientInDb(sanitizedUser, sanitizedClient);
+
+	const fundingIds = ["Gas Voucher", "Laundry Voucher", "Phone"];
+	let funds;
+
+	if (fundingIds.includes(client.providedService)) {
+		funds = 20;
+
+		if (new Date(client.createdAt) < new Date("2025-03-01")) {
+			// console.log("Reducing funds for date:", client.createdAt, client.firstName, client.lastName);
+			funds = 15;
+		}
+	}
+
+	const clientServiceData = clientService(clientId, client, funds);
+	await createClientServideInDb(clientServiceData);
+
+	const extraVisits = group.slice(1);
+	if (extraVisits.length === 0) return;
+	for (const visitInfo of extraVisits) {
+		const clientServiceData = clientService(clientId, visitInfo, funds);
+		await createClientServideInDb(clientServiceData);
+	}
 };

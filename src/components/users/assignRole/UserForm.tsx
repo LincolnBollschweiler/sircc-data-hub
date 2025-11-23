@@ -285,6 +285,16 @@ export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
 														? "bg-primary text-primary-foreground border-primary"
 														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
 												)}
+												onKeyDown={(e) => {
+													if (e.key === " " || e.key === "Enter") {
+														e.preventDefault();
+														const value = role.id;
+														setShowReentryClientOption(
+															value === "client" || value === "client-volunteer"
+														);
+														field.onChange(value);
+													}
+												}}
 											>
 												<RadioGroupItem value={role.id} className="hidden" />
 												{role.name}

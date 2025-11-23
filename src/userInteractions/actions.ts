@@ -24,6 +24,7 @@ import {
 	updateCoachMileageById,
 	updateClerkUserById,
 	updateUserById,
+	getUserById,
 } from "@/userInteractions/db";
 import { assignRoleSchema, clerkUserSchema, userSchema } from "@/userInteractions/schema";
 
@@ -40,6 +41,11 @@ export const updateUser = async (id: string, unsafeData: Partial<typeof user.$in
 	if (!success) return { error: true, message: "Invalid data" };
 	const rv = await updateUserById(id, data);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
+};
+
+export const queryUserById = async (id: string) => {
+	const rv = await getUserById(id);
+	return rv;
 };
 
 export const updateClerkUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {

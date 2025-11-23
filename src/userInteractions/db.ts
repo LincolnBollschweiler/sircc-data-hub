@@ -96,6 +96,11 @@ export async function updateUserById(id: string, data: Partial<typeof user.$infe
 	return updatedUser;
 }
 
+export async function getUserById(id: string) {
+	const [userRow] = await db.select().from(user).where(eq(user.id, id)).limit(1);
+	return userRow;
+}
+
 export async function updateClerkUserById(
 	id: string,
 	data: Partial<typeof user.$inferInsert> & { isReentryClient?: boolean }

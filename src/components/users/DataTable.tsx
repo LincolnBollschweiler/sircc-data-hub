@@ -21,6 +21,8 @@ import { userDataTableColumns } from "./UserDataTableColumns";
 import { CSTables, Service } from "@/tableInteractions/db";
 import { useDeleteClientService } from "../DeleteConfirm";
 import { ClientServices, NewClientService } from "./clients/ClientServices";
+import UserFormDialog from "./assignRole/UserFormDialog";
+import { DialogTrigger } from "../ui/dialog";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -142,6 +144,13 @@ export default function DataTable<TData>({
 							{userType === "single-client-view" && (
 								<NewClientService clientId={clientId!} services={services!} />
 							)}
+							{userType === "client" && (
+								<UserFormDialog>
+									<DialogTrigger asChild>
+										<button className="btn-primary">Add New User</button>
+									</DialogTrigger>
+								</UserFormDialog>
+							)}
 						</>
 					)}
 				</div>
@@ -170,6 +179,13 @@ export default function DataTable<TData>({
 						)}
 						{userType === "single-client-view" && (
 							<NewClientService clientId={clientId!} services={services!} />
+						)}
+						{userType === "client" && (
+							<UserFormDialog>
+								<DialogTrigger asChild>
+									<Button className="mr-1">Add New User</Button>
+								</DialogTrigger>
+							</UserFormDialog>
 						)}
 					</div>
 
