@@ -1,6 +1,6 @@
 "use client";
 import { ClientFull } from "@/userInteractions/db";
-import { useState } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
@@ -19,6 +19,18 @@ export const ClientCoach = ({
 }) => {
 	const [open, setOpen] = useState(false);
 	const [value, setValue] = useState<string | null>(client ? client.coachId : null);
+	const [search, setSearch] = useState("");
+	const [highlightIndex, setHighlightIndex] = useState(-1);
+
+	const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+	const filteredCoaches = useMemo(
+		() =>
+			allCoaches.filter((c) =>
+				`${c?.firstName} ${c?.lastName}`.toLowerCase().includes(search.trim().toLowerCase())
+			),
+		[allCoaches, search]
+	);
 
 	const updateCoach = async (newCoachId: string | null) => {
 		const action = updateClientsCoach.bind(null, client?.id ?? null);
@@ -26,6 +38,23 @@ export const ClientCoach = ({
 		if (actionData) {
 			setValue(newCoachId);
 			actionToast({ actionData });
+		}
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (!filteredCoaches.length) return;
+
+		if (e.key === "ArrowDown") {
+			e.preventDefault();
+			setHighlightIndex((prev) => (prev + 1) % filteredCoaches.length);
+		} else if (e.key === "ArrowUp") {
+			e.preventDefault();
+			setHighlightIndex((prev) => (prev - 1 + filteredCoaches.length) % filteredCoaches.length);
+		} else if (e.key === "Enter" && highlightIndex >= 0) {
+			e.preventDefault();
+			const coach = filteredCoaches[highlightIndex];
+			updateCoach(coach?.id === value ? null : coach?.id || null);
+			setOpen(false);
 		}
 	};
 
@@ -52,23 +81,39 @@ export const ClientCoach = ({
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent className="w-[200px] p-0 m-0">
-					<Command>
-						<CommandInput placeholder="Search coach..." />
+					<Command onKeyDown={handleKeyDown}>
+						<CommandInput
+							placeholder="Search coach..."
+							value={search}
+							onValueChange={(v) => setSearch(v)}
+							className="h-9"
+						/>
 						<CommandEmpty>No coach found.</CommandEmpty>
 						<CommandGroup>
-							{allCoaches.map((coach) => (
-								<CommandItem
+							{filteredCoaches.map((coach, index) => (
+								<div
 									key={coach?.id}
-									onSelect={(currentValue) => {
-										updateCoach(currentValue === value ? null : currentValue);
-										setOpen(false);
+									ref={(el) => {
+										if (el) itemRefs.current.set(coach?.id || "", el);
 									}}
-									className="text-sm"
-									value={`${coach?.firstName} ${coach?.lastName}`}
+									className="relative flex items-center w-full group"
 								>
-									{coach?.firstName} {coach?.lastName}
-									{value === coach?.id && <Check className="ml-auto h-4 w-4" />}
-								</CommandItem>
+									<CommandItem
+										value={`${coach?.firstName} ${coach?.lastName}`}
+										onSelect={() => {
+											const coachId = coach?.id;
+											if (!coachId) return;
+											updateCoach(coachId === value ? null : coachId);
+											setOpen(false);
+										}}
+										className={`flex items-center w-full pl-2 text-sm ${
+											index === highlightIndex ? "bg-muted text-muted-foreground" : ""
+										} ${value === coach?.id ? "bg-primary text-primary-foreground" : ""}`}
+									>
+										{coach?.firstName} {coach?.lastName}
+										{value === coach?.id && <Check className="ml-auto h-4 w-4" />}
+									</CommandItem>
+								</div>
 							))}
 						</CommandGroup>
 					</Command>

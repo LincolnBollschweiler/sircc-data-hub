@@ -34,7 +34,7 @@ import { syncClerkUserMetadata } from "@/services/clerk";
 import { alias } from "drizzle-orm/pg-core";
 
 //#region User CRUD operations
-export async function insertUser(data: typeof user.$inferInsert) {
+export async function insertclerkUser(data: typeof user.$inferInsert) {
 	const [applicant] = await db
 		.insert(user)
 		.values(data)
@@ -53,14 +53,50 @@ export async function insertUser(data: typeof user.$inferInsert) {
 	return applicant;
 }
 
-export async function updateUser({ clerkUserId }: { clerkUserId: string }, data: Partial<typeof user.$inferInsert>) {
+export async function updateClerkUser(
+	{ clerkUserId }: { clerkUserId: string },
+	data: Partial<typeof user.$inferInsert>
+) {
 	const [updatedUser] = await db.update(user).set(data).where(eq(user.clerkUserId, clerkUserId)).returning();
 	if (updatedUser == null) throw new Error("Failed to update user");
 	revalidateUserCache(updatedUser.id);
 	return updatedUser;
 }
 
-export async function updateUserById(
+export async function addUser(data: typeof user.$inferInsert & { isReentryClient?: boolean }) {
+	const userInsert = await db.transaction(async (tx) => {
+		const [newUser] = await tx
+			.insert(user)
+			.values({ ...data, accepted: true })
+			.returning();
+		if (!newUser) throw new Error("Failed to add user");
+
+		if (data.role === "client" || data.role === "client-volunteer") {
+			const [newClient] = await tx
+				.insert(client)
+				.values({
+					id: newUser.id,
+					isReentryClient: data.isReentryClient ?? false,
+				})
+				.returning();
+			if (!newClient) throw new Error("Failed to create client for user");
+		}
+		return newUser;
+	});
+
+	revalidateUserCache(userInsert.id);
+	revalidateClientCache(userInsert.id);
+	return userInsert;
+}
+
+export async function updateUserById(id: string, data: Partial<typeof user.$inferInsert>) {
+	const [updatedUser] = await db.update(user).set(data).where(eq(user.id, id)).returning();
+	if (updatedUser == null) throw new Error("Failed to update user");
+	revalidateUserCache(updatedUser.id);
+	return updatedUser;
+}
+
+export async function updateClerkUserById(
 	id: string,
 	data: Partial<typeof user.$inferInsert> & { isReentryClient?: boolean }
 ) {
@@ -97,13 +133,16 @@ export async function updateUserById(
 
 					if (!newCoach) throw new Error("Failed to create coach for user");
 				}
-
-				await syncClerkUserMetadata(userUpdated);
+				if (userUpdated.clerkUserId) {
+					await syncClerkUserMetadata(userUpdated);
+				}
 			}
 			return userUpdated; // returned if successfull
 		});
 
 		revalidateUserCache(updatedUser.id);
+		revalidateClientCache(updatedUser.id);
+		revalidateCoachCache(updatedUser.id);
 		return { error: false, message: "User updated successfully" };
 	} catch (error) {
 		console.error(error);
@@ -118,7 +157,7 @@ export async function updateUserFull({ id }: { id: string }, data: Partial<typeo
 	return updatedUser;
 }
 
-export async function deleteUser({ clerkUserId }: { clerkUserId: string }) {
+export async function deleteClerkUser({ clerkUserId }: { clerkUserId: string }) {
 	const [deletedUser] = await db
 		.update(user)
 		.set({

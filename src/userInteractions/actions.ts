@@ -6,6 +6,7 @@ import {
 	addCoachHoursById,
 	addCoachMileageById,
 	addCoachTrainingById,
+	addUser,
 	ClientServiceInsert,
 	CoachHours,
 	CoachMiles,
@@ -21,11 +22,19 @@ import {
 	updateCoachById,
 	updateCoachHoursById,
 	updateCoachMileageById,
+	updateClerkUserById,
 	updateUserById,
 } from "@/userInteractions/db";
-import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
+import { assignRoleSchema, clerkUserSchema, userSchema } from "@/userInteractions/schema";
 
 //#region User Actions
+export const createUser = async (unsafeData: Partial<typeof user.$inferInsert>) => {
+	const { success, data } = userSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Invalid data" };
+	const rv = await addUser(data);
+	return { error: !rv, message: rv ? "User created successfully" : "Failed to create user" };
+};
+
 export const updateUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
 	const { success, data } = userSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Invalid data" };
@@ -33,10 +42,17 @@ export const updateUser = async (id: string, unsafeData: Partial<typeof user.$in
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
 };
 
+export const updateClerkUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
+	const { success, data } = clerkUserSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Invalid data" };
+	const rv = await updateClerkUserById(id, data);
+	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
+};
+
 export const updateUserRoleAndAccept = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
 	const { success, data } = assignRoleSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Invalid data" };
-	return await updateUserById(id, { ...data, accepted: true });
+	return await updateClerkUserById(id, { ...data, accepted: true });
 };
 
 export const updateClientsCoach = async (userId: string | null, coachId: string | null) => {

@@ -13,7 +13,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteCoachMiles, deleteCoachHours, updateUser } from "@/userInteractions/actions";
+import { deleteCoachMiles, deleteCoachHours, updateClerkUser } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
@@ -37,7 +37,7 @@ const asHours = (row: unknown): CoachHours => row as CoachHours;
 const asMiles = (row: unknown): CoachMiles => row as CoachMiles;
 
 const processAcceptance = async (user: Partial<User>, accepted: boolean | null) => {
-	const action = user.id ? updateUser.bind(null, user.id) : undefined;
+	const action = user.id ? updateClerkUser.bind(null, user.id) : undefined;
 	if (!action) return;
 	const actionData = await action({ ...user, accepted });
 	if (actionData) actionToast({ actionData });
