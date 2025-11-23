@@ -8,7 +8,7 @@ export const assignRoleSchema = z.object({
 	isReentryClient: z.boolean().optional(),
 });
 
-export const userSchema = z
+export const clerkUserSchema = z
 	.object({
 		firstName: z.string().min(2, "Required").max(30),
 		lastName: z.string().min(1, "Required").max(30),
@@ -36,7 +36,7 @@ export const userSchema = z
 			if (val == null) return ""; // convert null/undefined → ""
 			if (typeof val === "string") return val.trim();
 			return val;
-		}, z.string().min(2).max(1000).optional()),
+		}, z.string().max(1000).optional()),
 		desiredRole: z.enum(["developer", "admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
 		themePreference: z.enum(["light", "dark", "system"]).default("system"),
 		accepted: z.boolean().nullable(),
@@ -55,6 +55,64 @@ export const userSchema = z
 				code: z.ZodIssueCode.custom,
 				message: "Please provide either a phone number or your birth month and day.",
 				path: ["birthMonth"],
+			});
+		}
+	});
+
+export const userSchema = z
+	.object({
+		firstName: z.string().min(2, "Required").max(30),
+		lastName: z.string().min(1, "Required").max(30),
+		role: z.enum(["client", "volunteer", "client-volunteer"]),
+		email: z
+			.string()
+			.email()
+			.max(255)
+			.nullable()
+			.transform((v) => (v === "" ? null : v))
+			.optional(),
+		phone: z
+			.string()
+			.nullable()
+			.optional()
+			.transform((v) => (v === "" ? null : v)),
+		address1: z.string().max(100).optional(),
+		address2: z.string().max(100).optional(),
+		city: z.string().max(50).optional(),
+		state: z.string().max(2, "Two letter state abbreviation").nullable().optional(),
+		zip: z.string().max(5, "Five digit zip code").optional(),
+		birthMonth: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(12).nullable().optional()
+		),
+		birthDay: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(31).nullable().optional()
+		),
+		notes: z.preprocess((val) => {
+			if (val == null) return ""; // convert null/undefined → ""
+			if (typeof val === "string") return val.trim();
+			return val;
+		}, z.string().max(1000).optional()),
+		isReentryClient: z.boolean().optional(),
+	})
+	.superRefine((data, ctx) => {
+		const hasPhone = !!data.phone;
+		const hasBirthDate = !!data.birthMonth && !!data.birthDay;
+
+		if (hasPhone && (data.phone as string).length !== 12) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number must be 12 characters (Ex: 208-555-1234)",
+				path: ["phone"],
+			});
+		}
+
+		if (!hasPhone && !hasBirthDate) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Please provide either a phone number or your birth month and day.",
+				path: ["phone"],
 			});
 		}
 	});

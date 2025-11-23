@@ -3,7 +3,7 @@
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { z } from "zod";
-import { userSchema } from "@/userInteractions/schema";
+import { clerkUserSchema } from "@/userInteractions/schema";
 import { User } from "@/types";
 import ProfileForm from "./ProfileForm";
 
@@ -26,7 +26,7 @@ export default function ProfileFormDialog({
 				</DialogHeader>
 				<div className="mt-4 grid gap-4">
 					<ProfileForm
-						profile={profile as z.infer<typeof userSchema> & { id: string }}
+						profile={profile as z.infer<typeof clerkUserSchema> & { id: string }}
 						onSuccess={() => setIsOpen(false)}
 					/>
 				</div>

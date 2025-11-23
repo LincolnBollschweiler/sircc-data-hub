@@ -21,7 +21,8 @@ import { userDataTableColumns } from "./UserDataTableColumns";
 import { CSTables, Service } from "@/tableInteractions/db";
 import { useDeleteClientService } from "../DeleteConfirm";
 import { ClientServices, NewClientService } from "./clients/ClientServices";
-import { cn } from "@/lib/utils";
+import UserFormDialog from "./assignRole/UserFormDialog";
+import { DialogTrigger } from "../ui/dialog";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -81,19 +82,14 @@ export default function DataTable<TData>({
 	useEffect(() => {
 		if (data.length === 0) {
 			setLoadingOrNone(
-				<div
-					className={cn(
-						"flex justify-center items-center p-20 text-foreground text-xl font-semibold",
-						title && "-translate-y-5"
-					)}
-				>
-					No data to display.
+				<div className={"flex justify-center items-center p-20 text-foreground text-xl font-semibold"}>
+					<span className={title ? "-translate-y-5" : ""}>No data to display.</span>
 				</div>
 			);
 		} else {
 			setLoadingOrNone(null);
 		}
-	}, [data]);
+	}, [data, title]);
 
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
@@ -132,7 +128,33 @@ export default function DataTable<TData>({
 
 	return (
 		<div className="container mx-auto border border-[border-muted/50] p-2.5 rounded-lg shadow-md bg-background-light">
-			{title && <h2 className="text-xl font-semibold mb-1">{title}</h2>}
+			{title && (
+				<div className="flex items-center justify-between">
+					<h2 className="text-xl font-semibold mb-1">{title}</h2>
+
+					{!data?.length && (
+						<>
+							{userType === "single-client" && (
+								<ClientServices
+									clientId={clientId!}
+									csTables={csTables!}
+									coachIsViewing={coachIsViewing}
+								/>
+							)}
+							{userType === "single-client-view" && (
+								<NewClientService clientId={clientId!} services={services!} />
+							)}
+							{userType === "client" && (
+								<UserFormDialog>
+									<DialogTrigger asChild>
+										<button className="btn-primary">Add New User</button>
+									</DialogTrigger>
+								</UserFormDialog>
+							)}
+						</>
+					)}
+				</div>
+			)}
 			{data.length > 0 ? (
 				<>
 					<div className="flex flex-wrap gap-1 items-center justify-between mb-2">
@@ -157,6 +179,13 @@ export default function DataTable<TData>({
 						)}
 						{userType === "single-client-view" && (
 							<NewClientService clientId={clientId!} services={services!} />
+						)}
+						{userType === "client" && (
+							<UserFormDialog>
+								<DialogTrigger asChild>
+									<Button className="mr-1">Add New User</Button>
+								</DialogTrigger>
+							</UserFormDialog>
 						)}
 					</div>
 

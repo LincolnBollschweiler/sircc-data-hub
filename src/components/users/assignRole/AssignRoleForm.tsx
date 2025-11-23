@@ -14,7 +14,7 @@ import { updateUserRoleAndAccept } from "../../../userInteractions/actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 
-export default function ProfileForm({
+export default function AssignRoleForm({
 	profile,
 	onSuccess,
 }: {

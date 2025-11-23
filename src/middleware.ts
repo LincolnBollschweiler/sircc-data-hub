@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 const adminRoutes = createRouteMatcher(["/admin", "/admin/(.*)"]);
 const coachRoutes = createRouteMatcher(["/admin/clients/(.*)/edit"]);
+const developerRoutes = createRouteMatcher(["/admin/dev/(.*)"]);
 const authRoutes = createRouteMatcher([
 	"/sign-in",
 	"/sign-up",
@@ -30,6 +31,15 @@ export default clerkMiddleware(async (auth, req) => {
 			console.warn("Access denied to admin route for role:", role);
 		}
 		return NextResponse.next();
+	}
+
+	// --- DEVELOPER ROUTES ---
+	if (developerRoutes(req)) {
+		// developers only
+		if (role !== "developer") {
+			return NextResponse.redirect(new URL("/", req.url));
+			console.warn("Access denied to developer route for role:", role);
+		}
 	}
 
 	// Allow everything else (including "/")

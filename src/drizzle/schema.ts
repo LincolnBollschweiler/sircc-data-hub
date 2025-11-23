@@ -66,7 +66,7 @@ export const user = pgTable(
 	"user",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
-		clerkUserId: varchar("clerk_user_id", { length: 100 }).notNull().unique(),
+		clerkUserId: varchar("clerk_user_id", { length: 100 }).unique(),
 		firstName: varchar("first_name", { length: 30 }).notNull(),
 		lastName: varchar("last_name", { length: 30 }).notNull(),
 		role: userRoleEnum().notNull().default("client"),

@@ -3,8 +3,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { userSchema } from "@/userInteractions/schema";
+import { createUser } from "@/userInteractions/actions";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import RequiredLabelIcon from "@/components/RequiredLabelIcon";
@@ -13,105 +15,73 @@ import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import PhoneInput from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
-import { clerkUserSchema } from "@/userInteractions/schema";
-import { updateClerkUser } from "@/userInteractions/actions";
-import { redirect } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
-import { useTheme } from "next-themes";
 
-export default function ProfileForm({
-	profile,
-	onSuccess,
-	isIntake,
-}: {
-	profile: z.infer<typeof clerkUserSchema> & { id: string };
-	onSuccess?: () => void;
-	isIntake?: boolean;
-}) {
-	// if (!profile) redirect("/");
-	const form = useForm<z.infer<typeof clerkUserSchema>>({
-		resolver: zodResolver(clerkUserSchema),
-		defaultValues: {
-			...profile,
-			phone: profile?.phone || "",
-			address1: profile?.address1 || "",
-			address2: profile?.address2 || "",
-			state: profile?.state || "",
-			zip: profile?.zip || "",
-		},
+export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
+	const form = useForm<z.infer<typeof userSchema>>({
+		resolver: zodResolver(userSchema),
 	});
 
-	const onSubmit = async (values: z.infer<typeof clerkUserSchema>) => {
-		const action = updateClerkUser.bind(null, profile.id);
-
+	const onSubmit = async (values: z.infer<typeof userSchema>) => {
+		const action = createUser;
 		const actionData = await action(values);
-
 		if (actionData) {
 			actionToast({ actionData });
-		}
-
-		if (!actionData?.error) {
-			if (!isIntake) onSuccess?.();
-			else redirect("/");
+			requestAnimationFrame(() => window.location.reload());
 		}
 	};
 
-	const [phone, setPhone] = useState(profile?.phone || "");
-	const updatePhone = (value: string) => {
-		setPhone(value);
-		form.setValue("phone", value);
-	};
-
-	const { setTheme, theme } = useTheme();
-
-	const [focusedField, setFocusedField] = useState<string | null>(null);
 	const roles = [
 		{ id: "client", name: "Client" },
-		{ id: "coach", name: "Coach" },
 		{ id: "volunteer", name: "Volunteer" },
 		{ id: "client-volunteer", name: "Client-Volunteer" },
 	];
 
-	const themePreferences = [
-		{ id: "light", name: "Light" },
-		{ id: "dark", name: "Dark" },
-		{ id: "system", name: "System" },
-	];
+	const [showReentryClientOption, setShowReentryClientOption] = useState(false);
+
+	const [phone, setPhone] = useState("");
+	const updatePhone = (value: string) => {
+		setPhone(value);
+		form.setValue("phone", value);
+	};
 
 	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => setMounted(true), []);
 	if (!mounted) return null; // prevents hydration mismatch
 
-	if (!profile) {
-		setTimeout(() => window.location.reload(), 1);
-		return <></>;
-	}
-
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2 flex-col">
 				<FormField
 					name="firstName"
-					render={() => (
+					render={({ field }) => (
 						<FormItem className="flex flex-col">
 							<div className="flex items-center gap-2">
-								<FormLabel>Name</FormLabel>
+								<div className="flex items-center">
+									<RequiredLabelIcon />
+									<FormLabel className="w-[70px] text-nowrap">First Name</FormLabel>
+								</div>
 								<FormControl>
-									<Input
-										value={`${profile.firstName} ${profile.lastName}`}
-										readOnly
-										tabIndex={-1}
-										onFocus={() => setFocusedField("name")}
-										onBlur={() => setFocusedField(null)}
-									/>
+									<Input {...field} value={field.value ?? ""} />
 								</FormControl>
 							</div>
-							{focusedField === "name" && (
-								<FormDescription>
-									Use the icon at the very top right of the page to update your name.
-								</FormDescription>
-							)}
+						</FormItem>
+					)}
+				/>
+				<FormField
+					name="lastName"
+					render={({ field }) => (
+						<FormItem className="flex flex-col">
+							<div className="flex items-center gap-2">
+								<div className="flex items-center">
+									<RequiredLabelIcon />
+									<FormLabel className="w-[70px] text-nowrap">Last Name</FormLabel>
+								</div>
+								<FormControl>
+									<Input {...field} value={field.value ?? ""} />
+								</FormControl>
+							</div>
 						</FormItem>
 					)}
 				/>
@@ -123,21 +93,9 @@ export default function ProfileForm({
 							<div className="flex items-center gap-2">
 								<FormLabel>Email</FormLabel>
 								<FormControl>
-									<Input
-										{...field}
-										value={field.value ?? ""}
-										readOnly
-										tabIndex={-1}
-										onFocus={() => setFocusedField("email")}
-										onBlur={() => setFocusedField(null)}
-									/>
+									<Input {...field} value={field.value ?? ""} placeholder="(optional)" />
 								</FormControl>
 							</div>
-							{focusedField === "email" && (
-								<FormDescription>
-									Use the icon at the very top right of the page to update your email.
-								</FormDescription>
-							)}
 						</FormItem>
 					)}
 				/>
@@ -179,9 +137,8 @@ export default function ProfileForm({
 						render={({ field }) => (
 							<FormItem>
 								<FormControl>
-									<Input {...field} value={field.value ?? ""} placeholder="City (required)" />
+									<Input {...field} value={field.value ?? ""} placeholder="City" />
 								</FormControl>
-								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -293,100 +250,104 @@ export default function ProfileForm({
 									)}
 								/>
 							</div>
-							<FormMessage />
 						</FormItem>
 					)}
 				/>
 				<FormField
 					control={form.control}
-					name="themePreference"
+					name="role"
 					render={({ field }) => (
-						<FormItem className="flex flex-col">
-							<div className="flex gap-2 items-center">
-								<FormLabel className="w-[100px]">Color Theme</FormLabel>
+						<FormItem>
+							<div className="flex items-center gap-2">
+								<div className="flex items-center gap-2">
+									<RequiredLabelIcon />
+									<FormLabel tabIndex={-1}>Assign Role</FormLabel>
+								</div>
 								<FormControl>
-									<Select
+									<RadioGroup
+										tabIndex={-1}
 										onValueChange={(value) => {
-											field.onChange(value);
-											setTheme(value);
+											setShowReentryClientOption(
+												value === "client" || value === "client-volunteer"
+											);
+											return field.onChange(value);
 										}}
-										value={mounted ? field.value ?? theme ?? "system" : "system"} // ✅ safe fallback
+										value={field.value}
+										className="flex gap-2 justify-center"
 									>
-										<SelectTrigger className="max-w-[150px]">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{themePreferences.map((theme) => (
-												<SelectItem key={theme.id} value={theme.id}>
-													{theme.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+										{roles.map((role) => (
+											<label
+												tabIndex={0}
+												key={role.id}
+												className={cn(
+													"cursor-pointer select-none rounded-md border px-3 py-0.5 text-sm font-medium transition-colors",
+													field.value === role.id
+														? "bg-primary text-primary-foreground border-primary"
+														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+												)}
+												onKeyDown={(e) => {
+													if (e.key === " " || e.key === "Enter") {
+														e.preventDefault();
+														const value = role.id;
+														setShowReentryClientOption(
+															value === "client" || value === "client-volunteer"
+														);
+														field.onChange(value);
+													}
+												}}
+											>
+												<RadioGroupItem value={role.id} className="hidden" />
+												{role.name}
+											</label>
+										))}
+									</RadioGroup>
 								</FormControl>
+								<FormMessage />
 							</div>
 						</FormItem>
 					)}
 				/>
-				{isIntake && (
-					<>
-						<FormField
-							control={form.control}
-							name="desiredRole"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel className="mb-2">Select Your Desired Role at SIRCC</FormLabel>
+				{showReentryClientOption && (
+					<FormField
+						control={form.control}
+						name="isReentryClient"
+						render={({ field }) => (
+							<FormItem>
+								<div className="flex items-center gap-3">
+									<FormLabel className="m-0 leading-none">Is Re-entry Client?</FormLabel>
 									<FormControl>
-										<RadioGroup
-											onValueChange={field.onChange}
-											value={field.value}
-											className="flex flex-wrap gap-2"
-										>
-											{roles.map((role) => (
-												<label
-													key={role.id}
-													className={cn(
-														"cursor-pointer select-none rounded-md border px-4 py-0.5 text-sm font-medium transition-colors",
-														field.value === role.id
-															? "bg-primary text-primary-foreground border-primary"
-															: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-													)}
-												>
-													<RadioGroupItem value={role.id} className="hidden" />
-													{role.name}
-												</label>
-											))}
-										</RadioGroup>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="notes"
-							render={({ field }) => (
-								<FormItem>
-									<div className="flex gap-0.5 items-center">
-										<RequiredLabelIcon />
-										<FormLabel>Provide A Few Notes About Yourself</FormLabel>
-									</div>
-									<FormControl>
-										<Textarea
-											{...field}
-											value={field.value ?? ""}
-											onChange={(e) => field.onChange(e.target.value)}
-											placeholder="Enter comments here... (1000 character max)"
+										<Checkbox
+											className="mt-0 align-middle size-5"
+											checked={!!field.value}
+											onCheckedChange={(checked) => field.onChange(checked)}
+											ref={field.ref}
+											name={field.name}
 										/>
 									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</>
+								</div>
+							</FormItem>
+						)}
+					/>
 				)}
-
-				<div className="self-end gap-2 flex">
+				<FormField
+					control={form.control}
+					name="notes"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Notes</FormLabel>
+							<FormControl>
+								<Textarea
+									{...field}
+									value={field.value ?? ""}
+									onChange={(e) => field.onChange(e.target.value)}
+									placeholder="Enter comments here... (1000 character max)"
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<div className="self-end gap-2 flex mt-1">
 					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel
 					</Button>

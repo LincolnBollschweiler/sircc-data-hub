@@ -1,7 +1,7 @@
 import PageHeader from "@/components/PageHeader";
 import { getCurrentUser } from "@/services/clerk";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { userSchema } from "@/userInteractions/schema";
+import { clerkUserSchema } from "@/userInteractions/schema";
 import ProfileForm from "@/components/users/profile/ProfileForm";
 import { z } from "zod";
 import ClientDetailsWrapper from "@/components/users/clients/ClientDetailsWrapper";
@@ -9,7 +9,7 @@ import CoachDetailsWrapper from "@/components/users/coaches/CoachDetailsWrapper"
 
 export default async function Home() {
 	const currentUser = await getCurrentUser({ allData: true });
-	const profile = currentUser?.data as z.infer<typeof userSchema> & { id: string };
+	const profile = currentUser?.data as z.infer<typeof clerkUserSchema> & { id: string };
 	const intakeComplete = (profile?.birthDay && profile?.birthMonth) || profile?.phone;
 	const clientUser = currentUser?.role === "client" || currentUser?.role === "client-volunteer";
 	return (
