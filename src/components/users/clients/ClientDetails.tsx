@@ -9,7 +9,7 @@ import { updateClientIsReentryStatus } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { DialogTrigger } from "@/components/ui/dialog";
-import EditClientDialog from "./EditClientDialog";
+import UserFormDialog from "../assignRole/UserFormDialog";
 
 export const ClientDetails = ({
 	user,
@@ -39,11 +39,11 @@ export const ClientDetails = ({
 		<div className="flex flex-wrap gap-x-2 gap-y-0 items-center container mx-auto mb-6 border border-[border-muted/50] p-2.5 rounded-lg shadow-md  bg-background-light">
 			<div className="flex w-full justify-between items-center">
 				<div className="font-semibold text-xl mb-1">General Info</div>
-				<EditClientDialog user={user} client={client} reentryUpdateCallback={setIsReentryClient}>
+				<UserFormDialog user={user} client={client} reentryUpdateCallback={setIsReentryClient}>
 					<DialogTrigger asChild>
-						<Button>Edit Client</Button>
+						<Button className="mr-1">Edit Client</Button>
 					</DialogTrigger>
-				</EditClientDialog>
+				</UserFormDialog>
 			</div>
 			<div>
 				{user?.firstName} {user?.lastName}

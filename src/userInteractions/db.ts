@@ -16,8 +16,7 @@ import {
 	coachHours,
 	coachMileage,
 } from "@/drizzle/schema";
-import { eq, and, sql } from "drizzle-orm";
-// import { eq, and, or, sql } from "drizzle-orm";
+import { eq, and, sql, or } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import {
@@ -89,10 +88,40 @@ export async function addUser(data: typeof user.$inferInsert & { isReentryClient
 	return userInsert;
 }
 
-export async function updateUserById(id: string, data: Partial<typeof user.$inferInsert>) {
-	const [updatedUser] = await db.update(user).set(data).where(eq(user.id, id)).returning();
-	if (updatedUser == null) throw new Error("Failed to update user");
+export async function updateUserById(
+	id: string,
+	data: Partial<typeof user.$inferInsert> & {
+		isReentryClient?: boolean;
+		followUpNeeded?: boolean;
+		followUpDate?: Date | null;
+		followUpNotes?: string | null;
+	}
+) {
+	const updatedUser = await db.transaction(async (tx) => {
+		const [userUpdated] = await tx.update(user).set(data).where(eq(user.id, id)).returning();
+		if (!userUpdated) throw new Error("Failed to update user");
+
+		if (data.role === "client" || data.role === "client-volunteer") {
+			const [clientUpdated] = await tx
+				.update(client)
+				.set({
+					isReentryClient: data.isReentryClient ?? false,
+					followUpNeeded: data.followUpNeeded ?? false,
+					followUpDate: data.followUpDate ?? null,
+					followUpNotes: data.followUpNotes ?? null,
+				})
+				.where(eq(client.id, id))
+				.returning();
+			if (!clientUpdated) {
+				throw new Error("Failed to update client for user");
+			}
+		}
+
+		return userUpdated;
+	});
+
 	revalidateUserCache(updatedUser.id);
+	revalidateClientCache(updatedUser.id);
 	return updatedUser;
 }
 
@@ -319,7 +348,14 @@ const getCachedClient = (id: string) => {
 				.leftJoin(referredOut, eq(clientService.referredOutId, referredOut.id))
 				.leftJoin(visit, eq(clientService.visitId, visit.id))
 				.leftJoin(clientReentryCheckListItem, eq(client.id, clientReentryCheckListItem.clientId))
-				.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "client"), isNull(user.deletedAt)))
+				.where(
+					and(
+						eq(user.id, id),
+						eq(user.accepted, true),
+						or(eq(user.role, "client"), eq(user.role, "client-volunteer")),
+						isNull(user.deletedAt)
+					)
+				)
 				.orderBy(desc(clientService.updatedAt));
 
 			if (rows.length === 0) return null;
@@ -426,7 +462,13 @@ const cachedClients = unstable_cache(
 			.from(user)
 			.leftJoin(client, eq(user.id, client.id)) // join user.id to client.id
 			.leftJoin(coachUser, eq(client.coachId, coachUser.id))
-			.where(and(isNull(user.deletedAt), eq(user.accepted, true), eq(user.role, "client")))
+			.where(
+				and(
+					isNull(user.deletedAt),
+					eq(user.accepted, true),
+					or(eq(user.role, "client"), eq(user.role, "client-volunteer"))
+				)
+			)
 			.orderBy(
 				desc(
 					sql`
@@ -622,29 +664,6 @@ export const updateCoachById = async (
 	revalidateUserCache(coachId);
 	revalidateCoachCache(coachId);
 	return updatedCoach;
-};
-
-export type ClientUpdate = Awaited<ReturnType<typeof updateClientUserById>>;
-export const updateClientUserById = async (
-	clientId: string,
-	data: { user: Partial<typeof user.$inferInsert>; client: Partial<typeof client.$inferInsert> }
-) => {
-	const updatedClient = await db.transaction(async (tx) => {
-		const [clientUpdated] = await tx.update(client).set(data.client).where(eq(client.id, clientId)).returning();
-		if (!clientUpdated) throw new Error("Failed to update client");
-
-		const [userUpdated] = await tx.update(user).set(data.user).where(eq(user.id, clientId)).returning();
-		if (!userUpdated) throw new Error("Failed to update user");
-
-		return {
-			client: clientUpdated,
-			user: userUpdated,
-		};
-	});
-
-	revalidateUserCache(clientId);
-	revalidateClientCache(clientId);
-	return updatedClient;
 };
 
 export type CoachTrainings = (typeof coachTraining.$inferSelect)[];
