@@ -4,9 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { userSchema } from "@/userInteractions/schema";
-import { createUser } from "@/userInteractions/actions";
+import { createUser, updateUser } from "@/userInteractions/actions";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import RequiredLabelIcon from "@/components/RequiredLabelIcon";
@@ -16,15 +16,46 @@ import { actionToast } from "@/hooks/use-toast";
 import PhoneInput from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { ChevronDownIcon } from "lucide-react";
 
-export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
+export default function UserForm({
+	user,
+	onSuccess,
+	reentryUpdateCallback,
+}: {
+	user?: z.infer<typeof userSchema> & { id: string } & { isClerkUser: boolean };
+	onSuccess?: () => void;
+	reentryUpdateCallback?: (checked: boolean) => void;
+}) {
 	const form = useForm<z.infer<typeof userSchema>>({
 		resolver: zodResolver(userSchema),
+		defaultValues: user || {
+			firstName: "",
+			lastName: "",
+			role: "client",
+			email: null,
+			phone: null,
+			address1: null,
+			address2: null,
+			city: null,
+			state: null,
+			zip: null,
+			birthMonth: null,
+			birthDay: null,
+			notes: "",
+			isReentryClient: false,
+			followUpNeeded: false,
+			followUpNotes: null,
+			followUpDate: null,
+		},
 	});
 
 	const onSubmit = async (values: z.infer<typeof userSchema>) => {
-		const action = createUser;
+		const action = user == null ? createUser : updateUser.bind(null, user.id);
 		const actionData = await action(values);
+		reentryUpdateCallback?.(!!values.isReentryClient);
 		if (actionData) {
 			actionToast({ actionData });
 			requestAnimationFrame(() => window.location.reload());
@@ -37,15 +68,21 @@ export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
 		{ id: "client-volunteer", name: "Client-Volunteer" },
 	];
 
-	const [showReentryClientOption, setShowReentryClientOption] = useState(false);
+	const [showReentryClientOption, setShowReentryClientOption] = useState(
+		user ? user.role === "client" || user.role === "client-volunteer" : true
+	);
 
-	const [phone, setPhone] = useState("");
+	const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(user ? !!user.followUpDate : false);
+
+	const [phone, setPhone] = useState(user?.phone || "");
 	const updatePhone = (value: string) => {
 		setPhone(value);
 		form.setValue("phone", value);
 	};
 
 	const [mounted, setMounted] = useState(false);
+	const [focusedField, setFocusedField] = useState<string | null>(null);
+	const [calendarOpen, setCalendarOpen] = useState(false);
 
 	useEffect(() => setMounted(true), []);
 	if (!mounted) return null; // prevents hydration mismatch
@@ -63,9 +100,21 @@ export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
 									<FormLabel className="w-[70px] text-nowrap">First Name</FormLabel>
 								</div>
 								<FormControl>
-									<Input {...field} value={field.value ?? ""} />
+									<Input
+										{...field}
+										value={field.value ?? ""}
+										readOnly={user?.isClerkUser}
+										tabIndex={user?.isClerkUser ? -1 : 0}
+										onFocus={() => setFocusedField(user?.isClerkUser ? "firstName" : null)}
+										onBlur={() => setFocusedField(null)}
+									/>
 								</FormControl>
 							</div>
+							{focusedField === "firstName" && (
+								<FormDescription>
+									User has a site login and must update their name through their profile settings.
+								</FormDescription>
+							)}
 						</FormItem>
 					)}
 				/>
@@ -79,9 +128,21 @@ export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
 									<FormLabel className="w-[70px] text-nowrap">Last Name</FormLabel>
 								</div>
 								<FormControl>
-									<Input {...field} value={field.value ?? ""} />
+									<Input
+										{...field}
+										value={field.value ?? ""}
+										readOnly={user?.isClerkUser}
+										tabIndex={user?.isClerkUser ? -1 : 0}
+										onFocus={() => setFocusedField(user?.isClerkUser ? "lastName" : null)}
+										onBlur={() => setFocusedField(null)}
+									/>
 								</FormControl>
 							</div>
+							{focusedField === "lastName" && (
+								<FormDescription>
+									User has a site login and must update their name through their profile settings.
+								</FormDescription>
+							)}
 						</FormItem>
 					)}
 				/>
@@ -93,9 +154,22 @@ export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
 							<div className="flex items-center gap-2">
 								<FormLabel>Email</FormLabel>
 								<FormControl>
-									<Input {...field} value={field.value ?? ""} placeholder="(optional)" />
+									<Input
+										{...field}
+										value={field.value ?? ""}
+										placeholder="(optional)"
+										readOnly={user?.isClerkUser}
+										tabIndex={user?.isClerkUser ? -1 : 0}
+										onFocus={() => setFocusedField(user?.isClerkUser ? "email" : null)}
+										onBlur={() => setFocusedField(null)}
+									/>
 								</FormControl>
 							</div>
+							{focusedField === "email" && (
+								<FormDescription>
+									User has a site login and must update their email through their profile settings.
+								</FormDescription>
+							)}
 						</FormItem>
 					)}
 				/>
@@ -259,7 +333,7 @@ export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
 					render={({ field }) => (
 						<FormItem>
 							<div className="flex items-center gap-2">
-								<div className="flex items-center gap-2">
+								<div className="flex items-center gap-0.5">
 									<RequiredLabelIcon />
 									<FormLabel tabIndex={-1}>Assign Role</FormLabel>
 								</div>
@@ -313,7 +387,7 @@ export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
 						name="isReentryClient"
 						render={({ field }) => (
 							<FormItem>
-								<div className="flex items-center gap-3">
+								<div className="mt-1 flex items-center gap-4">
 									<FormLabel className="m-0 leading-none">Is Re-entry Client?</FormLabel>
 									<FormControl>
 										<Checkbox
@@ -329,24 +403,122 @@ export default function UserForm({ onSuccess }: { onSuccess?: () => void }) {
 						)}
 					/>
 				)}
-				<FormField
-					control={form.control}
-					name="notes"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Notes</FormLabel>
-							<FormControl>
-								<Textarea
-									{...field}
-									value={field.value ?? ""}
-									onChange={(e) => field.onChange(e.target.value)}
-									placeholder="Enter comments here... (1000 character max)"
+				{!user && (
+					<FormField
+						control={form.control}
+						name="notes"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Notes</FormLabel>
+								<FormControl>
+									<Textarea
+										{...field}
+										value={field.value ?? ""}
+										onChange={(e) => field.onChange(e.target.value)}
+										placeholder="Enter comments here... (1000 character max)"
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				)}
+				{user && (
+					<>
+						<FormField
+							control={form.control}
+							name={"followUpNeeded"}
+							render={({ field }) => (
+								<FormItem>
+									<div className="mt-1 flex items-center gap-3">
+										<FormLabel className="m-0 leading-none">Follow-up Needed?</FormLabel>
+										<FormControl>
+											<Checkbox
+												className="mt-0 align-middle size-5"
+												checked={!!field.value}
+												onCheckedChange={(checked) => {
+													const v = checked === true;
+													setShowFollowUpDatePicker(v);
+													field.onChange(v);
+												}}
+												ref={field.ref}
+												name={field.name}
+											/>
+										</FormControl>
+									</div>
+								</FormItem>
+							)}
+						/>
+						{showFollowUpDatePicker && (
+							<>
+								<FormField
+									control={form.control}
+									name="followUpDate"
+									render={({ field }) => {
+										const selectedDate = field.value ? new Date(field.value) : null;
+
+										return (
+											<FormItem className="flex gap-3 items-center">
+												<div className="flex gap-0.5">
+													<RequiredLabelIcon />
+													<FormLabel>Follow-up Date</FormLabel>
+												</div>
+												<Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+													<PopoverTrigger asChild>
+														<Button
+															variant="outline"
+															className="w-48 justify-between font-normal"
+														>
+															{selectedDate
+																? selectedDate.toLocaleDateString()
+																: "Select date"}
+															<ChevronDownIcon />
+														</Button>
+													</PopoverTrigger>
+
+													<PopoverContent
+														className="w-auto overflow-hidden p-0"
+														align="start"
+													>
+														<Calendar
+															mode="single"
+															selected={selectedDate || undefined}
+															captionLayout="dropdown"
+															onSelect={(newDate) => {
+																field.onChange(
+																	newDate ? newDate.toISOString().slice(0, 10) : null
+																);
+																setCalendarOpen(false);
+															}}
+														/>
+													</PopoverContent>
+												</Popover>
+											</FormItem>
+										);
+									}}
 								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
+								<FormField
+									control={form.control}
+									name="followUpNotes"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Notes</FormLabel>
+											<FormControl>
+												<Textarea
+													{...field}
+													value={field.value ?? ""}
+													onChange={(e) => field.onChange(e.target.value)}
+													placeholder="Follow up notes... (1000 character max)"
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</>
+						)}
+					</>
+				)}
 				<div className="self-end gap-2 flex mt-1">
 					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel

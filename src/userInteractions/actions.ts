@@ -1,6 +1,6 @@
 "use server";
 
-import { client, coach, user } from "@/drizzle/schema";
+import { coach, user } from "@/drizzle/schema";
 import {
 	addClientReentryCheckListItemForClient,
 	addCoachHoursById,
@@ -18,7 +18,6 @@ import {
 	removeClientReentryCheckListItemForClient,
 	updateClientById,
 	updateClientServiceById,
-	updateClientUserById,
 	updateCoachById,
 	updateCoachHoursById,
 	updateCoachMileageById,
@@ -117,14 +116,6 @@ export const updateCoachDetails = async (
 ) => {
 	const rv = await updateCoachById(coachId, data);
 	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
-};
-
-export const updateClientDetails = async (
-	clientId: string,
-	data: { client: Partial<typeof client.$inferInsert>; user: Partial<typeof user.$inferInsert> }
-) => {
-	const rv = await updateClientUserById(clientId, data);
-	return { error: !rv, message: rv ? "Client updated successfully" : "Failed to update client" };
 };
 
 export const insertCoachTraining = async (coachId: string, trainingId: string) => {

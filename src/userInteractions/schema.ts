@@ -76,11 +76,11 @@ export const userSchema = z
 			.nullable()
 			.optional()
 			.transform((v) => (v === "" ? null : v)),
-		address1: z.string().max(100).optional(),
-		address2: z.string().max(100).optional(),
-		city: z.string().max(50).optional(),
+		address1: z.string().max(100).nullable().optional(),
+		address2: z.string().max(100).nullable().optional(),
+		city: z.string().max(50).nullable().optional(),
 		state: z.string().max(2, "Two letter state abbreviation").nullable().optional(),
-		zip: z.string().max(5, "Five digit zip code").optional(),
+		zip: z.string().max(5, "Five digit zip code").nullable().optional(),
 		birthMonth: z.preprocess(
 			(val) => (val === "" || val == null ? null : Number(val)),
 			z.number().min(1).max(12).nullable().optional()
@@ -95,10 +95,17 @@ export const userSchema = z
 			return val;
 		}, z.string().max(1000).optional()),
 		isReentryClient: z.boolean().optional(),
+		followUpNeeded: z.boolean().optional(),
+		followUpNotes: z.string().max(1000).optional().nullable(),
+		followUpDate: z.preprocess((val) => {
+			if (val === "" || val == null) return null;
+			return new Date(val as string);
+		}, z.date().nullable().optional()),
 	})
 	.superRefine((data, ctx) => {
 		const hasPhone = !!data.phone;
 		const hasBirthDate = !!data.birthMonth && !!data.birthDay;
+		const hasFollowUpDate = !!data.followUpDate;
 
 		if (hasPhone && (data.phone as string).length !== 12) {
 			ctx.addIssue({
@@ -113,6 +120,14 @@ export const userSchema = z
 				code: z.ZodIssueCode.custom,
 				message: "Please provide either a phone number or your birth month and day.",
 				path: ["phone"],
+			});
+		}
+
+		if (data.followUpNeeded && !hasFollowUpDate) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Please provide a follow-up date if follow-up is needed.",
+				path: ["followUpDate"],
 			});
 		}
 	});
