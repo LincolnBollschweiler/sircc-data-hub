@@ -491,7 +491,7 @@ const cachedCoaches = unstable_cache(
 			.orderBy(user.lastName);
 	},
 	["getAllCoachesDetailed"],
-	{ tags: [getAllUsersGlobalTag(), getCoachGlobalTag()] }
+	{ tags: [getAllUsersGlobalTag(), getCoachGlobalTag(), getClientGlobalTag()] }
 );
 export const getAllCoaches = async () => cachedCoaches();
 
