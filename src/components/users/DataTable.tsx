@@ -236,7 +236,7 @@ export default function DataTable<TData>({
 										<SelectValue placeholder={`Show ${pageSize}`} />
 									</SelectTrigger>
 									<SelectContent position="popper" className="bg-background-light">
-										{[5, 10, 20, 30, 40, 50].map((size) => (
+										{[5, 10, 15, 20, 50, 100].map((size) => (
 											<SelectItem key={size} value={size.toString()}>
 												Show {size}
 											</SelectItem>
