@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ApplyUserTheme } from "@/components/users/ApplyUserTheme";
 import ProfileDialog from "@/components/users/profile/ProfileDialog";
 import { User } from "@/types";
-import { canAccessAdminPages } from "@/permissions/general";
+import { canAccessAdminPages, canAccessCoachPages } from "@/permissions/general";
 import { getCurrentClerkUser } from "@/services/clerk";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { DialogTrigger } from "@radix-ui/react-dialog";
@@ -54,7 +54,7 @@ const HeaderLinks = async () => {
 		<>
 			<ApplyUserTheme userTheme={user.data?.themePreference ?? undefined} />
 			{AdminLink(user.data as User)}
-			{/* {YourClients()} */}
+			{CoachLink(user.data as User)}
 			{ProfileLink(user.data as User)}
 		</>
 	);
@@ -65,6 +65,15 @@ const AdminLink = (user: User) => {
 	return (
 		<Link className="flex items-center px-2 hover:bg-accent/50" href="/admin">
 			<span className="hover-underline-border">Admin</span>
+		</Link>
+	);
+};
+
+const CoachLink = (user: User) => {
+	if (!user || !canAccessCoachPages(user)) return null;
+	return (
+		<Link className="flex items-center px-2 hover:bg-accent/50" href="/coach">
+			<span className="hover-underline-border">Coach</span>
 		</Link>
 	);
 };

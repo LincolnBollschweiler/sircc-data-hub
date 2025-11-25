@@ -5,7 +5,6 @@ import { clerkUserSchema } from "@/userInteractions/schema";
 import ProfileForm from "@/components/users/profile/ProfileForm";
 import { z } from "zod";
 import ClientDetailsWrapper from "@/components/users/clients/ClientDetailsWrapper";
-import CoachDetailsWrapper from "@/components/users/coaches/CoachDetailsWrapper";
 
 export default async function Home() {
 	const currentUser = await getCurrentClerkUser({ allData: true });
@@ -23,10 +22,7 @@ export default async function Home() {
 						</div>
 					</div>
 				) : (
-					<>
-						{clientUser && <ClientDetailsWrapper clientId={profile.id} />}
-						{currentUser?.role === "coach" && <CoachDetailsWrapper coachId={profile.id} />}
-					</>
+					<>{clientUser && <ClientDetailsWrapper clientId={profile.id} />}</>
 				)}
 			</SignedIn>
 			<SignedOut>

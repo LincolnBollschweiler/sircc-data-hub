@@ -14,12 +14,15 @@ export const revalidateClientCache = async (id: string, coachIsViewing?: boolean
 	revalidateTag(cacheTags.getClientIdTag(id), "max");
 	revalidatePath("/admin/clients");
 	revalidatePath(`/admin/clients/${id}/edit`);
+	revalidatePath("/coach");
+	revalidatePath(`/coach/clients/${id}/edit`);
 	if (coachIsViewing) revalidatePath(`/`);
 };
 
 export const revalidateCoachCache = async (id: string) => {
 	revalidateTag(cacheTags.getCoachGlobalTag(), "max");
 	revalidateTag(cacheTags.getCoachIdTag(id), "max");
+	revalidatePath("/coach");
 	revalidatePath("/admin/coaches");
 	revalidatePath(`/admin/coaches/${id}/edit`);
 };
