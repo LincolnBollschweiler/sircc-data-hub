@@ -3,7 +3,7 @@ import { ApplyUserTheme } from "@/components/users/ApplyUserTheme";
 import ProfileDialog from "@/components/users/profile/ProfileDialog";
 import { User } from "@/types";
 import { canAccessAdminPages } from "@/permissions/general";
-import { getCurrentUser } from "@/services/clerk";
+import { getCurrentClerkUser } from "@/services/clerk";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import Link from "next/link";
@@ -48,7 +48,7 @@ const Navbar = () => {
 };
 
 const HeaderLinks = async () => {
-	const user = await getCurrentUser({ allData: true });
+	const user = await getCurrentClerkUser({ allData: true });
 
 	return (
 		<>

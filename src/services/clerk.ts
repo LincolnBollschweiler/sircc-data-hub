@@ -7,7 +7,7 @@ import { unstable_cache } from "next/cache";
 
 const client = await clerkClient();
 
-const getCachedUser = (userId: string) => {
+const getCachedClerkUser = (userId: string) => {
 	const cachedFn = unstable_cache(
 		async () => {
 			return await db.query.user.findFirst({
@@ -20,14 +20,14 @@ const getCachedUser = (userId: string) => {
 	return cachedFn(); // execute it only when this function is called
 };
 
-export const getCurrentUser = async ({ allData = false } = {}) => {
+export const getCurrentClerkUser = async ({ allData = false } = {}) => {
 	const { userId, sessionClaims, redirectToSignIn } = await auth();
 
 	return {
 		clerkUserId: userId,
 		userId: sessionClaims?.dbId,
 		role: sessionClaims?.role as UserRole | undefined,
-		data: allData && sessionClaims?.dbId != null ? await getCachedUser(sessionClaims.dbId) : undefined,
+		data: allData && sessionClaims?.dbId != null ? await getCachedClerkUser(sessionClaims.dbId) : undefined,
 		redirectToSignIn,
 	};
 };

@@ -1,7 +1,7 @@
 import DataTypesDropdownMenu from "@/components/DataTypesDropdownMenu";
 import PeopleDropdownMenu from "@/components/PeopleDropdownMenu";
 import { Badge } from "@/components/ui/badge";
-import { getCurrentUser } from "@/services/clerk";
+import { getCurrentClerkUser } from "@/services/clerk";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { ReactNode } from "react";
@@ -44,6 +44,6 @@ const Navbar = () => {
 };
 
 const People = async () => {
-	const user = await getCurrentUser();
+	const user = await getCurrentClerkUser();
 	return <PeopleDropdownMenu role={user.role ?? "client"} />;
 };

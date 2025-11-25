@@ -6,7 +6,7 @@ import { ClientDetails } from "@/components/users/clients/ClientDetails";
 import { getAllClientServiceTables } from "@/tableInteractions/db";
 import { getClientById, getAllCoachUsers, ClientServiceFull } from "@/userInteractions/db";
 import Link from "next/link";
-import { getCurrentUser } from "@/services/clerk";
+import { getCurrentClerkUser } from "@/services/clerk";
 
 export default async function ViewClientPage({
 	params,
@@ -18,7 +18,7 @@ export default async function ViewClientPage({
 	const [{ clientId }, { coachId }, currentUser] = await Promise.all([
 		params,
 		searchParams,
-		getCurrentUser({ allData: true }),
+		getCurrentClerkUser({ allData: true }),
 	]);
 
 	const coachIsViewing = currentUser?.role === "coach";
