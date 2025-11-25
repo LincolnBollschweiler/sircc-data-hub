@@ -18,7 +18,7 @@ import {
 } from "@/drizzle/schema";
 import { eq, and, sql, or } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import {
 	getAllUsersGlobalTag,
 	getClientGlobalTag,
@@ -153,7 +153,6 @@ export async function updateClerkUserById(
 							set: { isReentryClient: data.isReentryClient ?? false },
 						})
 						.returning();
-
 					if (!newClient) throw new Error("Failed to create client for user");
 				}
 				if (data.role === "coach") {
@@ -174,6 +173,7 @@ export async function updateClerkUserById(
 			return userUpdated; // returned if successfull
 		});
 
+		revalidatePath("/admin/applicants");
 		revalidateUserCache(updatedUser.id);
 		revalidateClientCache(updatedUser.id);
 		revalidateCoachCache(updatedUser.id);
