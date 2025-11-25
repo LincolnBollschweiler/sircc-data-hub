@@ -80,6 +80,14 @@ export default function ProfileForm({
 
 	const [mounted, setMounted] = useState(false);
 
+	const [localTheme, setLocalTheme] = useState<string | undefined>(undefined);
+
+	useEffect(() => {
+		if (localTheme) {
+			setTheme(localTheme);
+		}
+	}, [localTheme, setTheme]);
+
 	useEffect(() => setMounted(true), []);
 	if (!mounted) return null; // prevents hydration mismatch
 
@@ -308,7 +316,7 @@ export default function ProfileForm({
 									<Select
 										onValueChange={(value) => {
 											field.onChange(value);
-											setTheme(value);
+											setLocalTheme(value);
 										}}
 										value={mounted ? field.value ?? theme ?? "system" : "system"} // ✅ safe fallback
 									>
@@ -367,10 +375,7 @@ export default function ProfileForm({
 							name="notes"
 							render={({ field }) => (
 								<FormItem>
-									<div className="flex gap-0.5 items-center">
-										<RequiredLabelIcon />
-										<FormLabel>Provide A Few Notes About Yourself</FormLabel>
-									</div>
+									<FormLabel>Provide A Few Notes About Yourself</FormLabel>
 									<FormControl>
 										<Textarea
 											{...field}
@@ -379,7 +384,6 @@ export default function ProfileForm({
 											placeholder="Enter comments here... (1000 character max)"
 										/>
 									</FormControl>
-									<FormMessage />
 								</FormItem>
 							)}
 						/>

@@ -358,11 +358,9 @@ export const userDataTableColumns = (
 				header: "Coach",
 				cell: (info) => {
 					const r = asClient(info.row.original);
-					return r.coach ? (
-						<div className="text-nowrap">{`${r.coach.firstName} ${r.coach.lastName.charAt(0)}`}</div>
-					) : (
-						"N/A"
-					);
+					let coachName = r.coach ? `${r.coach.firstName} ${r.coach.lastName.charAt(0)}` : "N/A";
+					if (r.coach?.firstName === "deleted user") coachName = "deleted user";
+					return <div className="text-nowrap">{coachName}</div>;
 				},
 			},
 			{
