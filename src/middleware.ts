@@ -21,7 +21,7 @@ export default clerkMiddleware(async (auth, req) => {
 	// --- ADMIN ROUTES ---
 	if (adminRoutes(req)) {
 		// admins & developers only
-		if (role !== "admin" && role !== "developer") {
+		if (!role.includes("admin") && role !== "developer") {
 			return NextResponse.redirect(new URL("/", req.url));
 			console.warn("Access denied to admin route for role:", role);
 		}
@@ -30,7 +30,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 	if (coachRoutes(req)) {
 		// coaches, admins & developers only
-		if (role !== "coach") {
+		if (!role.includes("coach")) {
 			return NextResponse.redirect(new URL("/", req.url));
 			console.warn("Access denied to coach route for role:", role);
 		}

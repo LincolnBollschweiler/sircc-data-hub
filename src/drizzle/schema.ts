@@ -21,7 +21,7 @@ const deletedAt = timestamp("deleted_at", { withTimezone: true });
 
 // In your generated migration .sql, add these two CREATE TYPE lines to .sql migration (before any CREATE TABLE statements):
 // -- Enums
-// CREATE TYPE "user_role" AS ENUM ('developer', 'admin', 'coach', 'client', 'volunteer', 'client-volunteer');
+// CREATE TYPE "user_role" AS ENUM ('developer', 'admin', 'admin-coach', 'admin-coach-volunteer', 'staff', 'staff-volunteer', 'coach', 'coach-staff', 'coach-volunteer', 'coach-staff-volunteer', 'client', 'volunteer', 'client-volunteer', 'client-volunteer-staff');
 // CREATE TYPE "theme_preference" AS ENUM ('light', 'dark', 'system');
 
 // When rolling back add these to .sql migration (after all DROP TABLE statements):
@@ -37,7 +37,22 @@ const deletedAt = timestamp("deleted_at", { withTimezone: true });
 // exit with \q
 
 // Enums
-const userRoles = ["developer", "admin", "coach", "client", "volunteer", "client-volunteer"] as const;
+const userRoles = [
+	"developer",
+	"admin",
+	"admin-coach",
+	"admin-coach-volunteer",
+	"staff",
+	"staff-volunteer",
+	"coach",
+	"coach-staff",
+	"coach-volunteer",
+	"coach-staff-volunteer",
+	"client",
+	"volunteer",
+	"client-volunteer",
+	"client-volunteer-staff",
+] as const;
 export type UserRole = (typeof userRoles)[number];
 const userRoleEnum = pgEnum("user_role", userRoles);
 
@@ -105,6 +120,7 @@ export const coach = pgTable(
 		isActive: boolean("is_active").default(true),
 		llc: varchar("llc", { length: 100 }),
 		website: varchar("website", { length: 255 }),
+		therapyNotesUrl: varchar("therapy_notes_url", { length: 500 }),
 		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
