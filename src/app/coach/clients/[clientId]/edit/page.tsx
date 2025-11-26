@@ -6,9 +6,33 @@ import { ClientDetails } from "@/components/users/clients/ClientDetails";
 import { getAllClientServiceTables } from "@/tableInteractions/db";
 import { getClientById, getAllCoachUsers, ClientServiceFull } from "@/userInteractions/db";
 import Link from "next/link";
+import { getCurrentClerkUser } from "@/services/clerk";
 
-export default async function ViewClientPage({ params }: { params: Promise<{ clientId: string }> }) {
-	const { clientId } = await params;
+export default async function ViewClientPage({
+	params,
+	searchParams,
+}: {
+	params: Promise<{ clientId: string }>;
+	searchParams: Promise<{ coachId?: string | undefined }>;
+}) {
+	const [{ clientId }, { coachId }, currentUser] = await Promise.all([
+		params,
+		searchParams,
+		getCurrentClerkUser({ allData: true }),
+	]);
+
+	const coachIsViewing = currentUser?.role === "coach";
+
+	if (!currentUser || (coachIsViewing && currentUser.data?.id !== coachId)) {
+		return (
+			<div className="text-center py-10 text-xl font-semibold flex flex-col items-center">
+				Access Denied
+				<Button className="mt-4" asChild>
+					<Link href="/">Back to Home</Link>
+				</Button>
+			</div>
+		);
+	}
 
 	const [fullClient, allCoaches, csTables] = await Promise.all([
 		getClientById(clientId),
@@ -36,7 +60,7 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 		<div className="container py-4 mx-auto">
 			<PageHeader title={`View Client`}>
 				<Button asChild>
-					<Link href="/admin/clients">Back to Clients</Link>
+					<Link href="/coach">Back to Coach</Link>
 				</Button>
 			</PageHeader>
 			{fullClient && (
@@ -60,13 +84,13 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 						user={fullClient.user}
 						client={fullClient.client}
 						allCoaches={allCoaches}
-						coachIsViewing={false}
+						coachIsViewing={true}
 					/>
 					{fullClient.client.isReentryClient && (
 						<ReentryCheckListWrapper
 							clientId={clientId}
 							clientCheckListItems={fullClient.checkListItems}
-							coachIsViewing={false}
+							coachIsViewing={true}
 						/>
 					)}
 					<DataTable
@@ -75,7 +99,7 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 						userType="single-client"
 						csTables={csTables}
 						clientId={clientId}
-						coachIsViewing={false}
+						coachIsViewing={true}
 					/>
 				</>
 			)}

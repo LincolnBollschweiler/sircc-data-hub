@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const adminRoutes = createRouteMatcher(["/admin", "/admin/(.*)"]);
-const coachRoutes = createRouteMatcher(["/admin/clients/(.*)/edit"]);
+const coachRoutes = createRouteMatcher(["/coach", "/coach/(.*)"]);
 const developerRoutes = createRouteMatcher(["/admin/dev/(.*)"]);
 const authRoutes = createRouteMatcher([
 	"/sign-in",
@@ -18,11 +18,6 @@ export default clerkMiddleware(async (auth, req) => {
 	const { sessionClaims } = await auth();
 	const role = sessionClaims?.role ?? "no-user";
 
-	// --- COACH ROUTES ---
-	if (coachRoutes(req) && role === "coach") {
-		return NextResponse.next();
-	}
-
 	// --- ADMIN ROUTES ---
 	if (adminRoutes(req)) {
 		// admins & developers only
@@ -31,6 +26,14 @@ export default clerkMiddleware(async (auth, req) => {
 			console.warn("Access denied to admin route for role:", role);
 		}
 		return NextResponse.next();
+	}
+
+	if (coachRoutes(req)) {
+		// coaches, admins & developers only
+		if (role !== "coach") {
+			return NextResponse.redirect(new URL("/", req.url));
+			console.warn("Access denied to coach route for role:", role);
+		}
 	}
 
 	// --- DEVELOPER ROUTES ---

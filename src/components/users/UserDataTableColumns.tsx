@@ -1351,7 +1351,7 @@ export const userDataTableColumns = (
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
-											href={`/admin/clients/${user.id}/edit?coachId=${coachId}`}
+											href={`/coach/clients/${user.id}/edit?coachId=${coachId}`}
 										>
 											View or Edit Client
 										</a>
