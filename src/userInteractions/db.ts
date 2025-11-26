@@ -15,8 +15,10 @@ import {
 	coachTraining,
 	coachHours,
 	coachMileage,
+	coachRoles,
+	clientRoles,
 } from "@/drizzle/schema";
-import { eq, and, sql, or } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
 import { revalidatePath, unstable_cache } from "next/cache";
 import {
@@ -70,7 +72,7 @@ export async function addUser(data: typeof user.$inferInsert & { isReentryClient
 			.returning();
 		if (!newUser) throw new Error("Failed to add user");
 
-		if (data.role === "client" || data.role === "client-volunteer") {
+		if (data.role?.includes("client")) {
 			const [newClient] = await tx
 				.insert(client)
 				.values({
@@ -101,7 +103,7 @@ export async function updateUserById(
 		const [userUpdated] = await tx.update(user).set(data).where(eq(user.id, id)).returning();
 		if (!userUpdated) throw new Error("Failed to update user");
 
-		if (data.role === "client" || data.role === "client-volunteer") {
+		if (userUpdated.role?.includes("client")) {
 			const [clientUpdated] = await tx
 				.update(client)
 				.set({
@@ -141,7 +143,7 @@ export async function updateClerkUserById(
 			if (!userUpdated) throw new Error("Failed to update user");
 
 			if ("role" in data) {
-				if (data.role === "client" || data.role === "client-volunteer") {
+				if (data.role?.includes("client")) {
 					const [newClient] = await tx
 						.insert(client)
 						.values({
@@ -155,7 +157,7 @@ export async function updateClerkUserById(
 						.returning();
 					if (!newClient) throw new Error("Failed to create client for user");
 				}
-				if (data.role === "coach") {
+				if (data.role?.includes("coach")) {
 					const [newCoach] = await tx
 						.insert(coach)
 						.values({
@@ -352,7 +354,7 @@ const getCachedClient = (id: string) => {
 					and(
 						eq(user.id, id),
 						eq(user.accepted, true),
-						or(eq(user.role, "client"), eq(user.role, "client-volunteer")),
+						inArray(user.role, clientRoles),
 						isNull(user.deletedAt)
 					)
 				)
@@ -462,13 +464,7 @@ const cachedClients = unstable_cache(
 			.from(user)
 			.leftJoin(client, eq(user.id, client.id)) // join user.id to client.id
 			.leftJoin(coachUser, eq(client.coachId, coachUser.id))
-			.where(
-				and(
-					isNull(user.deletedAt),
-					eq(user.accepted, true),
-					or(eq(user.role, "client"), eq(user.role, "client-volunteer"))
-				)
-			)
+			.where(and(isNull(user.deletedAt), eq(user.accepted, true), inArray(user.role, clientRoles)))
 			.orderBy(
 				desc(
 					sql`
@@ -493,7 +489,7 @@ export const cachedCoachUsers = unstable_cache(
 		return await db
 			.select()
 			.from(user)
-			.where(and(eq(user.role, "coach"), isNull(user.deletedAt)))
+			.where(and(inArray(user.role, coachRoles), isNull(user.deletedAt)))
 			.orderBy(user.lastName);
 	},
 	["getAllCoaches"],
@@ -529,7 +525,7 @@ const cachedCoaches = unstable_cache(
 			})
 			.from(user)
 			.leftJoin(coach, eq(user.id, coach.id)) // join user.id to coach.id
-			.where(and(isNull(user.deletedAt), eq(user.role, "coach")))
+			.where(and(isNull(user.deletedAt), inArray(user.role, coachRoles)))
 			.orderBy(user.lastName);
 	},
 	["getAllCoachesDetailed"],
@@ -558,7 +554,14 @@ const getCachedCoach = (id: string) => {
 				.select({ user, coach })
 				.from(user)
 				.leftJoin(coach, eq(user.id, coach.id))
-				.where(and(eq(user.id, id), eq(user.accepted, true), eq(user.role, "coach"), isNull(user.deletedAt)))
+				.where(
+					and(
+						eq(user.id, id),
+						eq(user.accepted, true),
+						inArray(user.role, coachRoles),
+						isNull(user.deletedAt)
+					)
+				)
 				.limit(1);
 
 			if (row.length === 0) return null;
@@ -646,7 +649,8 @@ export const getCoachById = async (id: string) => getCachedCoach(id);
 export type CoachUpdate = Awaited<ReturnType<typeof updateCoachById>>;
 export const updateCoachById = async (
 	coachId: string,
-	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
+	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> },
+	previousRole?: string
 ) => {
 	const updatedCoach = await db.transaction(async (tx) => {
 		const [coachUpdated] = await tx.update(coach).set(data.coach).where(eq(coach.id, coachId)).returning();
@@ -654,6 +658,10 @@ export const updateCoachById = async (
 
 		const [userUpdated] = await tx.update(user).set(data.user).where(eq(user.id, coachId)).returning();
 		if (!userUpdated) throw new Error("Failed to update user");
+
+		if (previousRole && userUpdated.role !== previousRole) {
+			await syncClerkUserMetadata(userUpdated);
+		}
 
 		return {
 			coach: coachUpdated,

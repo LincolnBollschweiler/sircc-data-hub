@@ -21,7 +21,7 @@ export default async function ViewClientPage({
 		getCurrentClerkUser({ allData: true }),
 	]);
 
-	const coachIsViewing = currentUser?.role === "coach";
+	const coachIsViewing = currentUser?.role?.includes("coach");
 
 	if (!currentUser || (coachIsViewing && currentUser.data?.id !== coachId)) {
 		return (
