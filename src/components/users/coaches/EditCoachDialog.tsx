@@ -21,6 +21,11 @@ export default function EditCoachDialog({ user, coach, children }: { user: User;
 	const [llc, setLlc] = useState<string>(coach.llc || "");
 	const [phone, setPhone] = useState<string>(user.phone || "");
 	const [notes, setNotes] = useState<string>(coach.notes || "");
+	const [address1, setAddress1] = useState<string>(user.address1 || "");
+	const [address2, setAddress2] = useState<string>(user.address2 || "");
+	const [city, setCity] = useState<string>(user.city || "");
+	const [state, setState] = useState<string>(user.state || "");
+	const [zip, setZip] = useState<string>(user.zip || "");
 	const [action, setAction] = useState<"save" | "cancel" | "dismiss" | null>(null);
 
 	const handleCancel = () => {
@@ -30,15 +35,30 @@ export default function EditCoachDialog({ user, coach, children }: { user: User;
 		setLlc(coach.llc || "");
 		setPhone(user.phone || "");
 		setNotes(coach.notes || "");
+		setAddress1(user.address1 || "");
+		setAddress2(user.address2 || "");
+		setCity(user.city || "");
+		setState(user.state || "");
+		setZip(user.zip || "");
 	};
 
 	const handleSave = async () => {
+		if (state && state.length > 2) {
+			alert("Please enter the 2-letter state abbreviation.");
+			return;
+		}
+
 		setAction("save");
 		setIsOpen(false);
 
 		const coachUpdate = {
 			user: {
 				phone: phone,
+				address1: address1,
+				address2: address2,
+				city: city,
+				state: state,
+				zip: zip,
 			},
 			coach: {
 				website: website,
@@ -69,8 +89,8 @@ export default function EditCoachDialog({ user, coach, children }: { user: User;
 				</DialogHeader>
 				<div className="my-4 flex flex-col gap-2">
 					<p className="w-full text-muted-foreground text-sm">
-						A coach&apos;s email and name are managed through their user account. If they want to change it
-						let them know to click their profile icon in the top right and go to &quot;Manage Account&quot;.
+						{`${user.firstName}'s email and name are managed through their user account. If they want to change it
+						let them know to click their profile icon in the top right and go to &quot;Manage Account&quot;.`}
 					</p>
 					<div className="flex gap-2 items-center">
 						<Label className="font-medium text-right w-[30%]">Phone</Label>
@@ -80,6 +100,58 @@ export default function EditCoachDialog({ user, coach, children }: { user: User;
 							onChange={(value) => setPhone(value ?? "")}
 							className="flex h-9 w-[70%] rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 						/>
+					</div>
+					<div className="flex flex-col w-full">
+						<div className="flex gap-2 items-center">
+							<Label className="font-medium text-right w-[30%]">Address</Label>
+							<Input
+								type="text"
+								placeholder="Address Line 1"
+								value={address1}
+								onChange={(e) => setAddress1(e.target.value)}
+								className="flex h-9 w-[70%] rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mb-1"
+							/>
+						</div>
+						<div className="flex gap-2 items-center">
+							<Label className="font-medium text-right w-[30%]"></Label>
+							<Input
+								type="text"
+								placeholder="Address Line 2"
+								value={address2}
+								onChange={(e) => setAddress2(e.target.value)}
+								className="flex h-9 w-[70%] rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mb-1"
+							/>
+						</div>
+						<div className="flex gap-2 items-center">
+							<Label className="font-medium text-right w-[30%]"></Label>
+							<Input
+								type="text"
+								placeholder="City"
+								value={city}
+								onChange={(e) => setCity(e.target.value)}
+								className="flex h-9 w-[70%] rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+							/>
+						</div>
+						<div className="flex gap-2 items-center mt-1">
+							<Label className="font-medium text-right w-[30%]"></Label>
+							<Input
+								type="text"
+								placeholder="State"
+								value={state}
+								onChange={(e) => setState(e.target.value)}
+								className="flex h-9 w-[70%] rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mr-2"
+							/>
+						</div>
+						<div className="flex gap-2 items-center mt-1">
+							<Label className="font-medium text-right w-[30%]"></Label>
+							<Input
+								type="text"
+								placeholder="Zip Code"
+								value={zip}
+								onChange={(e) => setZip(e.target.value)}
+								className="flex h-9 w-[70%] rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm mr-2"
+							/>
+						</div>
 					</div>
 					<div className="flex gap-2 items-center">
 						<Label className="font-medium text-right w-[30%]">LLC</Label>
