@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { coachRoleSchema, coachSchema, genUserSchema } from "@/userInteractions/schema";
+import { coachSchema } from "@/userInteractions/schema";
 import { updateCoachDetails } from "@/userInteractions/actions";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -17,25 +17,19 @@ import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { CoachUpdate } from "@/userInteractions/db";
 
-export default function UserForm({
+export default function ClientUserForm({
 	user,
 	onSuccess,
 }: {
-	user: z.infer<typeof genUserSchema> &
-		z.infer<typeof coachSchema> &
-		z.infer<typeof coachRoleSchema> & { id: string };
+	user: z.infer<typeof coachSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
-	const form = useForm<z.infer<typeof genUserSchema> & z.infer<typeof coachSchema> & z.infer<typeof coachRoleSchema>>(
-		{
-			resolver: zodResolver(genUserSchema.merge(coachSchema).merge(coachRoleSchema)),
-			defaultValues: user,
-		}
-	);
+	const form = useForm<z.infer<typeof coachSchema>>({
+		resolver: zodResolver(coachSchema),
+		defaultValues: user,
+	});
 
-	const onSubmit = async (
-		values: z.infer<typeof genUserSchema> & z.infer<typeof coachSchema> & z.infer<typeof coachRoleSchema>
-	) => {
+	const onSubmit = async (values: z.infer<typeof coachSchema>) => {
 		const coachUpdate = {
 			user: {
 				phone: values.phone,
@@ -44,6 +38,7 @@ export default function UserForm({
 				city: values.city,
 				state: values.state,
 				zip: values.zip,
+				role: values.role,
 			},
 			coach: {
 				website: values.website,
@@ -53,7 +48,7 @@ export default function UserForm({
 		} as CoachUpdate;
 
 		const action = updateCoachDetails.bind(null, user.id);
-		const actionData = await action(coachUpdate);
+		const actionData = await action(coachUpdate, user.role);
 		if (actionData) actionToast({ actionData });
 
 		if (!actionData?.error) onSuccess?.();
@@ -256,7 +251,7 @@ export default function UserForm({
 						</FormItem>
 					)}
 				/>
-				<FormField
+				{/* <FormField
 					control={form.control}
 					name="role"
 					render={({ field }) => (
@@ -264,7 +259,7 @@ export default function UserForm({
 							<div className="flex items-center gap-2">
 								<div className="flex items-center gap-0.5">
 									<RequiredLabelIcon />
-									<FormLabel tabIndex={-1}>Assign Role</FormLabel>
+									<FormLabel tabIndex={-1}>Assign Roles</FormLabel>
 								</div>
 								<FormControl>
 									<RadioGroup
@@ -279,6 +274,52 @@ export default function UserForm({
 												key={role.id}
 												className={cn(
 													"cursor-pointer select-none rounded-md border px-3 py-0.5 text-sm font-medium transition-colors",
+													field.value === role.id
+														? "bg-primary text-primary-foreground border-primary"
+														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+												)}
+												onKeyDown={(e) => {
+													if (e.key === " " || e.key === "Enter") {
+														e.preventDefault();
+														const value = role.id;
+														field.onChange(value);
+													}
+												}}
+											>
+												<RadioGroupItem value={role.id} className="hidden" />
+												{role.name}
+											</label>
+										))}
+									</RadioGroup>
+								</FormControl>
+								<FormMessage />
+							</div>
+						</FormItem>
+					)}
+				/> */}
+				<FormField
+					control={form.control}
+					name="role"
+					render={({ field }) => (
+						<FormItem>
+							<div className="flex flex-col gap-3">
+								<div className="flex items-center gap-0.5">
+									<RequiredLabelIcon />
+									<FormLabel tabIndex={-1}>Assign Roles</FormLabel>
+								</div>
+								<FormControl>
+									<RadioGroup
+										tabIndex={-1}
+										onValueChange={(value) => field.onChange(value)}
+										value={field.value}
+										className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+									>
+										{roles.map((role) => (
+											<label
+												tabIndex={0}
+												key={role.id}
+												className={cn(
+													"cursor-pointer select-none rounded-md border p-1 text-center text-sm font-medium shadow-sm transition-colors",
 													field.value === role.id
 														? "bg-primary text-primary-foreground border-primary"
 														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"

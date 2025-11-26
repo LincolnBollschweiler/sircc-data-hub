@@ -85,7 +85,7 @@ async function addUser(userData: typeof user.$inferInsert, clientData: typeof cl
 			.returning();
 		if (!newUser) throw new Error("Failed to add user");
 
-		if (userData.role === "client" || userData.role === "client-volunteer") {
+		if (userData.role?.includes("client")) {
 			const [newClient] = await tx
 				.insert(client)
 				.values({

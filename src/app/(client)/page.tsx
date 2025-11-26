@@ -10,7 +10,7 @@ export default async function Home() {
 	const currentUser = await getCurrentClerkUser({ allData: true });
 	const profile = currentUser?.data as z.infer<typeof clerkUserSchema> & { id: string };
 	const intakeComplete = (profile?.birthDay && profile?.birthMonth) || profile?.phone;
-	const clientUser = currentUser?.role === "client" || currentUser?.role === "client-volunteer";
+	const clientUser = currentUser?.role!.includes("client");
 	return (
 		<>
 			<SignedIn>

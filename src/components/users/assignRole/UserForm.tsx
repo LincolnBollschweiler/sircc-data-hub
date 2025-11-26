@@ -68,10 +68,7 @@ export default function UserForm({
 		{ id: "client-volunteer", name: "Client-Volunteer" },
 	];
 
-	const [showReentryClientOption, setShowReentryClientOption] = useState(
-		user ? user.role === "client" || user.role === "client-volunteer" : true
-	);
-
+	const [showReentryClientOption, setShowReentryClientOption] = useState(user && user.role.includes("client"));
 	const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(user ? !!user.followUpDate : false);
 
 	const [phone, setPhone] = useState(user?.phone || "");
@@ -335,15 +332,13 @@ export default function UserForm({
 							<div className="flex items-center gap-2">
 								<div className="flex items-center gap-0.5">
 									<RequiredLabelIcon />
-									<FormLabel tabIndex={-1}>Assign Role</FormLabel>
+									<FormLabel tabIndex={-1}>Assign Roles</FormLabel>
 								</div>
 								<FormControl>
 									<RadioGroup
 										tabIndex={-1}
 										onValueChange={(value) => {
-											setShowReentryClientOption(
-												value === "client" || value === "client-volunteer"
-											);
+											setShowReentryClientOption(value.includes("client"));
 											return field.onChange(value);
 										}}
 										value={field.value}

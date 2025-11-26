@@ -112,9 +112,10 @@ export const deleteClientChecklistItem = async (clientId: string, itemId: string
 //#region Coach Actions
 export const updateCoachDetails = async (
 	coachId: string,
-	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
+	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> },
+	previousRole?: string
 ) => {
-	const rv = await updateCoachById(coachId, data);
+	const rv = await updateCoachById(coachId, data, previousRole);
 	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
 };
 

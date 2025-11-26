@@ -132,15 +132,6 @@ export const userSchema = z
 		}
 	});
 
-export const coachSchema = z.object({
-	website: z.string().max(255).nullable().optional(),
-	llc: z.string().max(100).nullable().optional(),
-	therapyNotesUrl: z.string().max(500).nullable().optional(),
-});
-
-export const coachRoleSchema = z.object({
-	role: z.enum(["coach", "coach-staff", "coach-volunteer", "coach-staff-volunteer"]),
-});
 export const volunteerRoleSchema = z.object({
 	role: z.enum(["volunteer", "client-volunteer", "staff-volunteer", "client-volunteer-staff"]),
 });
@@ -148,6 +139,23 @@ export const staffRoleSchema = z.object({
 	role: z.enum(["staff", "staff-volunteer", "coach-staff", "coach-staff-volunteer", "client-volunteer-staff"]),
 });
 export const adminRolesSchema = z.object({ role: z.enum(["admin", "admin-coach", "admin-coach-volunteer"]) });
+
+const getUserSchemaBase = {
+	firstName: z.string().min(2, "Required").max(30),
+	lastName: z.string().min(1, "Required").max(30),
+	email: z.string().email().max(255).nullable(),
+	phone: z.string().min(12, "Phone number must be 12 characters (Ex: 208-555-1234)").max(12),
+	address1: z.string().max(100).nullable().optional(),
+	address2: z.string().max(100).nullable().optional(),
+	city: z.string().max(50).nullable().optional(),
+	state: z.string().max(2, "Two letter state abbreviation").nullable().optional(),
+	zip: z.string().max(5, "Five digit zip code").nullable().optional(),
+	notes: z.preprocess((val) => {
+		if (val == null) return ""; // convert null/undefined → ""
+		if (typeof val === "string") return val.trim();
+		return val;
+	}, z.string().max(1000).optional()),
+};
 
 export const genUserSchema = z.object({
 	firstName: z.string().min(2, "Required").max(30),
@@ -164,6 +172,14 @@ export const genUserSchema = z.object({
 		if (typeof val === "string") return val.trim();
 		return val;
 	}, z.string().max(1000).optional()),
+});
+
+export const coachSchema = z.object({
+	...getUserSchemaBase,
+	website: z.string().max(255).nullable().optional(),
+	llc: z.string().max(100).nullable().optional(),
+	therapyNotesUrl: z.string().max(500).nullable().optional(),
+	role: z.enum(["coach", "coach-staff", "coach-volunteer", "coach-staff-volunteer"]),
 });
 
 // const roleEnum = (values: string[]) => z.enum(values);

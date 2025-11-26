@@ -7,7 +7,7 @@ export default async function CoachPage() {
 	const currentUser = await getCurrentClerkUser({ allData: true });
 	const profile = currentUser?.data as z.infer<typeof clerkUserSchema> & { id: string };
 
-	if (!currentUser || currentUser.role !== "coach") {
+	if (!currentUser || !currentUser.role!.includes("coach")) {
 		return (
 			<div className="container py-4 mx-auto">
 				<span>

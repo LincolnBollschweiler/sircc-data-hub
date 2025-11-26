@@ -43,9 +43,7 @@ export default function AssignRoleForm({
 		{ id: "admin", name: "Admin" },
 	];
 
-	const [showReentryClientOption, setShowReentryClientOption] = useState(
-		profile.role === "client" || profile.role === "client-volunteer"
-	);
+	const [showReentryClientOption, setShowReentryClientOption] = useState(profile.role.includes("client"));
 
 	return (
 		<Form {...form}>

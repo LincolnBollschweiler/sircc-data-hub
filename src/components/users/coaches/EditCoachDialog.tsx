@@ -4,9 +4,9 @@ import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Coach } from "@/userInteractions/db";
 import { User } from "@/types";
-import GenUserUpdateForm from "../GenUserUpdateForm";
+import GenUserUpdateForm from "./CoachUpdateForm";
 import { z } from "zod";
-import { coachRoleSchema, coachSchema, genUserSchema } from "@/userInteractions/schema";
+import { coachSchema } from "@/userInteractions/schema";
 
 export default function EditCoachDialog({ user, coach, children }: { user: User; coach: Coach; children: ReactNode }) {
 	const mergedUser = {
@@ -26,11 +26,7 @@ export default function EditCoachDialog({ user, coach, children }: { user: User;
 				</DialogHeader>
 				<div className="mt-4 grid gap-4">
 					<GenUserUpdateForm
-						user={
-							mergedUser as z.infer<typeof genUserSchema> &
-								z.infer<typeof coachSchema> &
-								z.infer<typeof coachRoleSchema> & { id: string }
-						}
+						user={mergedUser as z.infer<typeof coachSchema> & { id: string }}
 						onSuccess={() => setIsOpen(false)}
 					/>
 				</div>

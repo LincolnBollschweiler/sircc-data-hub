@@ -56,6 +56,12 @@ const userRoles = [
 export type UserRole = (typeof userRoles)[number];
 const userRoleEnum = pgEnum("user_role", userRoles);
 
+export const coachRoles: UserRole[] = userRoles.filter((role) => role.includes("coach"));
+export const clientRoles: UserRole[] = userRoles.filter((role) => role.includes("client"));
+export const volunteerRoles: UserRole[] = userRoles.filter((role) => role.includes("volunteer"));
+export const staffRoles: UserRole[] = userRoles.filter((role) => role.includes("staff"));
+export const adminRoles: UserRole[] = userRoles.filter((role) => role.includes("admin"));
+
 const themes = ["light", "dark", "system"] as const;
 export type ThemePreference = (typeof themes)[number];
 const themePreferenceEnum = pgEnum("theme_preference", themes);
