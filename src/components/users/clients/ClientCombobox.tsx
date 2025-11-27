@@ -94,9 +94,11 @@ export function ClientCombobox<T extends { id: string; name: string; description
 									className="relative flex items-center w-full group"
 								>
 									<CommandItem
-										value={item.id}
+										value={item.name}
 										onSelect={() => {
-											props.onChange(item.id === props.value ? null : item.id);
+											const itemId = filteredItems[index]?.id;
+											if (!itemId) return;
+											props.onChange(itemId === props.value ? null : itemId);
 											setOpen(false);
 										}}
 										className={cn(

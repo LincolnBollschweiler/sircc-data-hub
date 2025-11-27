@@ -7,6 +7,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { actionToast } from "@/hooks/use-toast";
 
+type UseSortableReturn = ReturnType<typeof useSortable>;
+
 export default function SortableList<T extends { id: string }>({
 	items,
 	onOrderChange,
@@ -52,7 +54,10 @@ export function SortableItem({
 	className,
 }: {
 	id: string;
-	children: (props: { attributes: any; listeners: any }) => ReactNode;
+	children: (props: {
+		attributes: UseSortableReturn["attributes"];
+		listeners: UseSortableReturn["listeners"];
+	}) => ReactNode;
 	className?: string;
 }) {
 	const { setNodeRef, transform, transition, attributes, listeners, isDragging } = useSortable({ id });
@@ -60,10 +65,7 @@ export function SortableItem({
 	return (
 		<div
 			ref={setNodeRef}
-			style={{
-				transform: CSS.Transform.toString(transform),
-				transition,
-			}}
+			style={{ transform: CSS.Transform.toString(transform), transition }}
 			className={cn("flex items-center rounded-md", isDragging && "z-10 border shadow-md", className)}
 		>
 			{children({ attributes, listeners })}

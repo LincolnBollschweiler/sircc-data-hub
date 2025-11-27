@@ -1,11 +1,12 @@
 "use server";
 
-import { client, coach, user } from "@/drizzle/schema";
+import { coach, user } from "@/drizzle/schema";
 import {
 	addClientReentryCheckListItemForClient,
 	addCoachHoursById,
 	addCoachMileageById,
 	addCoachTrainingById,
+	addUser,
 	ClientServiceInsert,
 	CoachHours,
 	CoachMiles,
@@ -17,26 +18,49 @@ import {
 	removeClientReentryCheckListItemForClient,
 	updateClientById,
 	updateClientServiceById,
-	updateClientUserById,
 	updateCoachById,
 	updateCoachHoursById,
 	updateCoachMileageById,
+	updateClerkUserById,
 	updateUserById,
+	getUserById,
 } from "@/userInteractions/db";
-import { assignRoleSchema, userSchema } from "@/userInteractions/schema";
+import { assignRoleSchema, clerkUserSchema, userSchema } from "@/userInteractions/schema";
 
 //#region User Actions
-export const updateUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
+export const createUser = async (unsafeData: Partial<typeof user.$inferInsert>) => {
 	const { success, data } = userSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Invalid data" };
-	const rv = await updateUserById(id, data);
+	const rv = await addUser(data);
+	return { error: !rv, message: rv ? "User created successfully" : "Failed to create user" };
+};
+
+export const updateUser = async (
+	id: string,
+	unsafeData: Partial<typeof user.$inferInsert> & { previousRole?: string }
+) => {
+	const { success, data } = userSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Invalid data" };
+	const rv = await updateUserById(id, data, unsafeData.previousRole);
+	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
+};
+
+export const queryUserById = async (id: string) => {
+	const rv = await getUserById(id);
+	return rv;
+};
+
+export const updateClerkUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
+	const { success, data } = clerkUserSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Invalid data" };
+	const rv = await updateClerkUserById(id, data);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
 };
 
 export const updateUserRoleAndAccept = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
 	const { success, data } = assignRoleSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Invalid data" };
-	return await updateUserById(id, { ...data, accepted: true });
+	return await updateClerkUserById(id, { ...data, accepted: true });
 };
 
 export const updateClientsCoach = async (userId: string | null, coachId: string | null) => {
@@ -91,18 +115,11 @@ export const deleteClientChecklistItem = async (clientId: string, itemId: string
 //#region Coach Actions
 export const updateCoachDetails = async (
 	coachId: string,
-	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> }
+	data: { coach: Partial<typeof coach.$inferInsert>; user: Partial<typeof user.$inferInsert> },
+	previousRole?: string
 ) => {
-	const rv = await updateCoachById(coachId, data);
+	const rv = await updateCoachById(coachId, data, previousRole);
 	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
-};
-
-export const updateClientDetails = async (
-	clientId: string,
-	data: { client: Partial<typeof client.$inferInsert>; user: Partial<typeof user.$inferInsert> }
-) => {
-	const rv = await updateClientUserById(clientId, data);
-	return { error: !rv, message: rv ? "Client updated successfully" : "Failed to update client" };
 };
 
 export const insertCoachTraining = async (coachId: string, trainingId: string) => {

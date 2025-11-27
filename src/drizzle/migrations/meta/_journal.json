@@ -162,6 +162,20 @@
       "when": 1763672952690,
       "tag": "0022_clean_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1763848070579,
+      "tag": "0023_colossal_captain_britain",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1764123589674,
+      "tag": "0024_overconfident_lionheart",
+      "breakpoints": true
     }
   ]
 }

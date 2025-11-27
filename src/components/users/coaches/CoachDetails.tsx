@@ -5,7 +5,7 @@ import { User } from "@/types";
 import { Coach } from "@/userInteractions/db";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import { formatPhoneNumber } from "react-phone-number-input";
-import EditCoachDialog from "./EditCoachDialog";
+import CoachUpdateDialog from "./CoachUpdateDialog";
 
 export default function CoachDetails({ user, coach }: { user: User; coach: Coach }) {
 	if (!coach) return <div className="text-center py-10 text-xl font-semibold">No coach assigned</div>;
@@ -14,11 +14,11 @@ export default function CoachDetails({ user, coach }: { user: User; coach: Coach
 		<div className="flex flex-wrap gap-x-2 gap-y-0 items-center container mx-auto mb-6 border border-[border-muted/50] p-2.5 rounded-lg shadow-md  bg-background-light">
 			<div className="flex w-full justify-between items-center">
 				<div className="font-semibold text-xl mb-1">General Info</div>
-				<EditCoachDialog user={user} coach={coach}>
+				<CoachUpdateDialog user={user} coach={coach}>
 					<DialogTrigger asChild>
 						<Button>Edit Coach</Button>
 					</DialogTrigger>
-				</EditCoachDialog>
+				</CoachUpdateDialog>
 			</div>
 			<div>{`${user.firstName} ${user.lastName}`}</div>
 			{user.phone && <div>Ph: {formatPhoneNumber(user.phone)}</div>}
