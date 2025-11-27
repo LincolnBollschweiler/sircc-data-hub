@@ -25,7 +25,7 @@ export default async function ClientDetailsWrapper({ clientId }: { clientId: str
 						title="Services"
 						data={fullClient.clientServices as ClientServiceFull[]}
 						userType="single-client-view"
-						clientId={clientId}
+						userId={clientId}
 						services={services}
 					/>
 				</div>

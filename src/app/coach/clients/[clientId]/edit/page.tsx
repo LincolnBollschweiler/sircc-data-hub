@@ -98,7 +98,7 @@ export default async function ViewClientPage({
 						data={fullClient.clientServices as ClientServiceFull[]}
 						userType="single-client"
 						csTables={csTables}
-						clientId={clientId}
+						userId={clientId}
 						coachIsViewing={true}
 					/>
 				</>

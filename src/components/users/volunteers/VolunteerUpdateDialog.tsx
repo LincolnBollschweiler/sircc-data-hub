@@ -2,39 +2,30 @@
 
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Coach } from "@/userInteractions/db";
 import { User } from "@/types";
-import CoachUpdateForm from "./CoachUpdateForm";
+import VolunteerUpdateForm from "./VolunteerUpdateForm";
 import { z } from "zod";
-import { coachSchema } from "@/userInteractions/schema";
+import { volunteerSchema } from "@/userInteractions/schema";
 
-export default function CoachUpdateDialog({
-	user,
-	coach,
-	children,
-}: {
-	user: User;
-	coach: Coach;
-	children: ReactNode;
-}) {
-	const mergedUser = {
-		...user,
-		...coach,
-		id: user.id,
-	};
-
+export default function VolunteerUpdateDialog({ user, children }: { user?: User; children: ReactNode }) {
 	const [isOpen, setIsOpen] = useState(false);
+
+	const userWithClerkFlag = { ...user, isClerkUser: !!user?.clerkUserId };
 
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			{children}
 			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
-					<DialogTitle>Edit Coach Details</DialogTitle>
+					<DialogTitle>{`${user ? "Edit" : "Add"} Volunteer Details`}</DialogTitle>
 				</DialogHeader>
 				<div className="mt-4 grid gap-4">
-					<CoachUpdateForm
-						user={mergedUser as z.infer<typeof coachSchema> & { id: string }}
+					<VolunteerUpdateForm
+						user={
+							userWithClerkFlag as z.infer<typeof volunteerSchema> & { id: string } & {
+								isClerkUser?: boolean;
+							}
+						}
 						onSuccess={() => setIsOpen(false)}
 					/>
 				</div>
