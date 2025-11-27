@@ -20,7 +20,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { ChevronDownIcon } from "lucide-react";
 
-export default function UserForm({
+export default function ClientUpdateForm({
 	user,
 	onSuccess,
 	reentryUpdateCallback,
@@ -52,8 +52,9 @@ export default function UserForm({
 		},
 	});
 
-	const onSubmit = async (values: z.infer<typeof userSchema>) => {
+	const onSubmit = async (values: z.infer<typeof userSchema> & { previousRole?: string }) => {
 		const action = user == null ? createUser : updateUser.bind(null, user.id);
+		if (user?.isClerkUser) values = { ...values, previousRole: user.role };
 		const actionData = await action(values);
 		reentryUpdateCallback?.(!!values.isReentryClient);
 		if (actionData) {
@@ -64,11 +65,10 @@ export default function UserForm({
 
 	const roles = [
 		{ id: "client", name: "Client" },
-		{ id: "volunteer", name: "Volunteer" },
-		{ id: "client-volunteer", name: "Client-Volunteer" },
+		{ id: "client-volunteer", name: "Client & Volunteer" },
+		{ id: "client-volunteer-staff", name: "Client & Volunteer & Staff" },
 	];
 
-	const [showReentryClientOption, setShowReentryClientOption] = useState(user && user.role.includes("client"));
 	const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(user ? !!user.followUpDate : false);
 
 	const [phone, setPhone] = useState(user?.phone || "");
@@ -329,7 +329,7 @@ export default function UserForm({
 					name="role"
 					render={({ field }) => (
 						<FormItem>
-							<div className="flex items-center gap-2">
+							<div className="flex flex-col gap-3">
 								<div className="flex items-center gap-0.5">
 									<RequiredLabelIcon />
 									<FormLabel tabIndex={-1}>Assign Roles</FormLabel>
@@ -337,19 +337,20 @@ export default function UserForm({
 								<FormControl>
 									<RadioGroup
 										tabIndex={-1}
-										onValueChange={(value) => {
-											setShowReentryClientOption(value.includes("client"));
-											return field.onChange(value);
-										}}
+										onValueChange={(value) => field.onChange(value)}
 										value={field.value}
-										className="flex gap-2 justify-center"
+										className={cn(
+											"grid grid-cols-1 sm:grid-cols-2 gap-2",
+											roles.length % 2 === 1 &&
+												"sm:[&>*:last-child]:col-span-2 sm:[&>*:last-child]:justify-self-center"
+										)}
 									>
 										{roles.map((role) => (
 											<label
 												tabIndex={0}
 												key={role.id}
 												className={cn(
-													"cursor-pointer select-none rounded-md border px-3 py-0.5 text-sm font-medium transition-colors",
+													"cursor-pointer select-none rounded-md border py-1 px-3 text-center text-sm font-medium shadow-sm transition-colors",
 													field.value === role.id
 														? "bg-primary text-primary-foreground border-primary"
 														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
@@ -358,9 +359,6 @@ export default function UserForm({
 													if (e.key === " " || e.key === "Enter") {
 														e.preventDefault();
 														const value = role.id;
-														setShowReentryClientOption(
-															value === "client" || value === "client-volunteer"
-														);
 														field.onChange(value);
 													}
 												}}
@@ -376,28 +374,27 @@ export default function UserForm({
 						</FormItem>
 					)}
 				/>
-				{showReentryClientOption && (
-					<FormField
-						control={form.control}
-						name="isReentryClient"
-						render={({ field }) => (
-							<FormItem>
-								<div className="mt-1 flex items-center gap-4">
-									<FormLabel className="m-0 leading-none">Is Re-entry Client?</FormLabel>
-									<FormControl>
-										<Checkbox
-											className="mt-0 align-middle size-5"
-											checked={!!field.value}
-											onCheckedChange={(checked) => field.onChange(checked)}
-											ref={field.ref}
-											name={field.name}
-										/>
-									</FormControl>
-								</div>
-							</FormItem>
-						)}
-					/>
-				)}
+				<FormField
+					control={form.control}
+					name="isReentryClient"
+					render={({ field }) => (
+						<FormItem>
+							<div className="mt-1 flex items-center gap-4">
+								<FormLabel className="m-0 leading-none">Is Re-entry Client?</FormLabel>
+								<FormControl>
+									<Checkbox
+										className="mt-0 align-middle size-5"
+										checked={!!field.value}
+										onCheckedChange={(checked) => field.onChange(checked)}
+										ref={field.ref}
+										name={field.name}
+									/>
+								</FormControl>
+							</div>
+						</FormItem>
+					)}
+				/>
+
 				{!user && (
 					<FormField
 						control={form.control}

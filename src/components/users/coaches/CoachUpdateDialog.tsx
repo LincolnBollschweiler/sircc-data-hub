@@ -8,7 +8,15 @@ import GenUserUpdateForm from "./CoachUpdateForm";
 import { z } from "zod";
 import { coachSchema } from "@/userInteractions/schema";
 
-export default function EditCoachDialog({ user, coach, children }: { user: User; coach: Coach; children: ReactNode }) {
+export default function CoachUpdateDialog({
+	user,
+	coach,
+	children,
+}: {
+	user: User;
+	coach: Coach;
+	children: ReactNode;
+}) {
 	const mergedUser = {
 		...user,
 		...coach,

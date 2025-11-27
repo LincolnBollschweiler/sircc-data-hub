@@ -2,13 +2,13 @@
 
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import UserForm from "./UserForm";
+import ClientUpdateForm from "./ClientUpdateForm";
 import { User } from "@/types";
 import { Client } from "@/userInteractions/db";
 import { userSchema } from "@/userInteractions/schema";
 import { z } from "zod";
 
-export default function UserFormDialog({
+export default function ClientUpdateDialog({
 	user,
 	client,
 	reentryUpdateCallback,
@@ -50,10 +50,10 @@ export default function UserFormDialog({
 			{children}
 			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
-					<DialogTitle>{values ? "Edit Client or Volunteer" : "Add a Client or Volunteer"}</DialogTitle>
+					<DialogTitle>{values ? "Edit Client" : "Add a Client"}</DialogTitle>
 				</DialogHeader>
 				<div className="mt-4 grid gap-4">
-					<UserForm
+					<ClientUpdateForm
 						user={values as z.infer<typeof userSchema> & { id: string } & { isClerkUser: boolean }}
 						onSuccess={() => setIsOpen(false)}
 						reentryUpdateCallback={reentryUpdateCallback}

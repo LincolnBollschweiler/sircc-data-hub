@@ -97,11 +97,13 @@ export async function updateUserById(
 		followUpNeeded?: boolean;
 		followUpDate?: Date | null;
 		followUpNotes?: string | null;
-	}
+	},
+	previousRole?: string
 ) {
 	const updatedUser = await db.transaction(async (tx) => {
 		const [userUpdated] = await tx.update(user).set(data).where(eq(user.id, id)).returning();
 		if (!userUpdated) throw new Error("Failed to update user");
+		if (previousRole && previousRole !== userUpdated.role) await syncClerkUserMetadata(userUpdated);
 
 		if (userUpdated.role?.includes("client")) {
 			const [clientUpdated] = await tx

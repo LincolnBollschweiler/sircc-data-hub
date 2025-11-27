@@ -35,10 +35,13 @@ export const createUser = async (unsafeData: Partial<typeof user.$inferInsert>) 
 	return { error: !rv, message: rv ? "User created successfully" : "Failed to create user" };
 };
 
-export const updateUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
+export const updateUser = async (
+	id: string,
+	unsafeData: Partial<typeof user.$inferInsert> & { previousRole?: string }
+) => {
 	const { success, data } = userSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Invalid data" };
-	const rv = await updateUserById(id, data);
+	const rv = await updateUserById(id, data, unsafeData.previousRole);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
 };
 
