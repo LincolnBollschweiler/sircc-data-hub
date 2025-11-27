@@ -7,23 +7,25 @@ import { ClientCombobox } from "./ClientCombobox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createClientService } from "@/userInteractions/actions";
+import { createClientService, updateClientService } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ClientServiceInsert } from "@/userInteractions/db";
 
-export default function ClientServiceFormDialog({
+export default function ClientServicesDialog({
 	clientId,
 	csTables,
 	values,
 	children,
+	coachIsViewing,
 }: {
 	clientId: string | null;
 	values?: Partial<ClientServiceInsert>;
 	csTables: CSTables;
 	children: ReactNode;
+	coachIsViewing?: boolean;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [requestedServiceId, setRequestedServiceId] = useState<string | null>(values?.requestedServiceId || null);
@@ -57,9 +59,7 @@ export default function ClientServiceFormDialog({
 
 	const [action, setAction] = useState<"save" | "cancel" | "dismiss" | null>(null);
 
-	const handleCancel = () => {
-		setAction("cancel");
-		setIsOpen(false);
+	const resetAll = () => {
 		setProvidedServiceId(null);
 		setRequestedServiceId(null);
 		setCityId(null);
@@ -69,6 +69,12 @@ export default function ClientServiceFormDialog({
 		setVisitTypeId(null);
 		setFunds("");
 		setClientNotes("");
+	};
+
+	const handleCancel = () => {
+		setAction("cancel");
+		setIsOpen(false);
+		resetAll();
 	};
 
 	const handleSave = async () => {
@@ -99,20 +105,17 @@ export default function ClientServiceFormDialog({
 			funds: fundsVisible && funds ? parseFloat(funds) : null,
 		} as ClientServiceInsert;
 
-		const action = createClientService.bind(null, null);
-		const actionData = await action(clientService);
-		if (actionData) {
-			actionToast({ actionData });
-			requestAnimationFrame(() => window.location.reload());
-		}
+		const action = values
+			? updateClientService.bind(null, values?.id || null)
+			: createClientService.bind(null, null);
+		const actionData = await action(clientService, !!coachIsViewing);
+		if (actionData) actionToast({ actionData });
+		if (!actionData.error) resetAll();
 	};
 
 	const handleOpenChange = (open: boolean) => {
 		// When dialog closes without clicking Save or Cancel
-		if (!open && action === null) {
-			setAction("dismiss"); // clicking outside or pressing ESC
-			console.log("Client service dialog dismissed without action.");
-		}
+		if (!open && action === null) setAction("dismiss"); // clicking outside or pressing ESC
 		setIsOpen(open);
 	};
 

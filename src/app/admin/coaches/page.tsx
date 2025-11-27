@@ -1,5 +1,5 @@
-import Applicants from "@/components/users/Applicants";
+import Coaches from "@/components/users/coaches/Coaches";
 
 export default function CoachesPage() {
-	return <Applicants userType="coach" />;
+	return <Coaches />;
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "coach_mileage" ADD COLUMN "notes" varchar(1000);

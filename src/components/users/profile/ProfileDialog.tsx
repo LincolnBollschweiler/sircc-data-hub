@@ -7,10 +7,10 @@ import { Table, TableBody, TableCell, TableRow } from "../../ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
 import { formatPhoneNumber } from "react-phone-number-input";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { Site, User } from "@/types";
+import { User } from "@/types";
 import ProfileFormDialog from "./ProfileFormDialog";
 
-export default function ProfileDialog({ user, sites, children }: { user: User; sites: Site[]; children?: ReactNode }) {
+export default function ProfileDialog({ user, children }: { user: User; children?: ReactNode }) {
 	const role = user?.role
 		? user.role
 				.split("-")
@@ -42,7 +42,19 @@ export default function ProfileDialog({ user, sites, children }: { user: User; s
 								</TableRow>
 								<TableRow key={"address"} className="border-none my-0 hover:bg-0">
 									<TableCell className="py-0">Address</TableCell>
-									<TableCell className="p-0">{user?.address ?? "Not Provided"}</TableCell>
+									{/* put each address line on its own line if it exists */}
+									{/* and format city, state zip on one line only adding the comma */}
+									{/* between city and state if state exists */}
+									<TableCell className="p-0">
+										{user?.address1 && <div>{user.address1}</div>}
+										{user?.address2 && <div>{user.address2}</div>}
+										{user?.city && (
+											<div>
+												{user.city}
+												{user?.state && `, ${user.state}`} {user?.zip ?? ""}
+											</div>
+										)}
+									</TableCell>
 								</TableRow>
 								<TableRow key={"phone"} className="border-none hover:bg-0">
 									<TableCell className="py-0">Phone</TableCell>
@@ -56,15 +68,6 @@ export default function ProfileDialog({ user, sites, children }: { user: User; s
 										{user?.birthMonth ?? "__"}/{user?.birthDay ?? "__"}
 									</TableCell>
 								</TableRow>
-								<TableRow key={"site"} className="border-none hover:bg-0">
-									<TableCell className="py-0">Preferred Site</TableCell>
-									<TableCell className="p-0">
-										{user?.siteId
-											? sites.find((site) => site.id === user.siteId)?.name ??
-											  "Selected Site Closed"
-											: "No Preferrence"}
-									</TableCell>
-								</TableRow>
 							</TableBody>
 						</Table>
 					</div>
@@ -72,7 +75,7 @@ export default function ProfileDialog({ user, sites, children }: { user: User; s
 						<DialogClose asChild>
 							<Button variant="destructiveOutline">Close</Button>
 						</DialogClose>
-						<ProfileFormDialog profile={user} sites={sites}>
+						<ProfileFormDialog profile={user}>
 							<DialogTrigger asChild>
 								<Button className="mr-[1rem]">Edit</Button>
 							</DialogTrigger>

@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const adminRoutes = createRouteMatcher(["/admin", "/admin/(.*)"]);
-const coachRoutes = createRouteMatcher(["/coach", "/coach/(.*)"]);
+const coachRoutes = createRouteMatcher(["/admin/clients/(.*)/edit"]);
 const authRoutes = createRouteMatcher([
 	"/sign-in",
 	"/sign-up",
@@ -10,27 +10,29 @@ const authRoutes = createRouteMatcher([
 	// add any other public/unauthenticated routes
 ]);
 
-// export default clerkMiddleware();
 export default clerkMiddleware(async (auth, req) => {
-	// If this is a public/auth route, skip role checks
-	if (authRoutes(req)) {
-		return NextResponse.next();
-	}
+	// Skip public/auth routes
+	if (authRoutes(req)) return NextResponse.next();
 
 	const { sessionClaims } = await auth();
 	const role = sessionClaims?.role ?? "no-user";
 
-	// Protect admin routes
-	if (adminRoutes(req) && role !== "admin" && role !== "developer") {
-		console.warn("Access denied to admin route for role:", role);
-		return NextResponse.redirect(new URL("/", req.url));
+	// --- COACH ROUTES ---
+	if (coachRoutes(req) && role === "coach") {
+		return NextResponse.next();
 	}
-	// Protect coach routes
-	if (coachRoutes(req) && role !== "coach" && role !== "admin") {
-		console.warn("Access denied to coach route for role:", role);
-		return NextResponse.redirect(new URL("/", req.url));
+
+	// --- ADMIN ROUTES ---
+	if (adminRoutes(req)) {
+		// admins & developers only
+		if (role !== "admin" && role !== "developer") {
+			return NextResponse.redirect(new URL("/", req.url));
+			console.warn("Access denied to admin route for role:", role);
+		}
+		return NextResponse.next();
 	}
-	// Allow all else
+
+	// Allow everything else (including "/")
 	return NextResponse.next();
 });
 
