@@ -55,7 +55,14 @@ export default function DataTable<TData>({
 	trainingsCount?: number;
 	checkListCount?: number;
 }) {
-	const typesWithNoName = ["single-client", "single-client-view", "volunteer-hours", "coach-hours", "coach-miles"];
+	const typesWithNoName = [
+		"single-client",
+		"single-client-view",
+		"volunteer-hours",
+		"volunteer-hours-view",
+		"coach-hours",
+		"coach-miles",
+	];
 	const { startDelete, dialog } = useDeleteClientService();
 
 	const columns = userDataTableColumns(

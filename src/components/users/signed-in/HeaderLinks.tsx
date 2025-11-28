@@ -18,6 +18,7 @@ export default async function HeaderLinks() {
 	const admin = user && canAccessAdminPages(user);
 	const coach = user && canAccessCoachPages(user);
 	const client = user && user.data?.role.includes("client");
+	const volunteer = user && user.data?.role.includes("volunteer");
 
 	return (
 		<>
@@ -41,6 +42,11 @@ export default async function HeaderLinks() {
 			{client && !pathName?.includes("/client") && (
 				<Link className="flex items-center px-2 hover:bg-accent/50" href="/client">
 					<span className="hover-underline-border">Client</span>
+				</Link>
+			)}
+			{volunteer && !pathName?.includes("/volunteer") && (
+				<Link className="flex items-center px-2 hover:bg-accent/50" href="/volunteer">
+					<span className="hover-underline-border">Volunteer</span>
 				</Link>
 			)}
 			{user && (

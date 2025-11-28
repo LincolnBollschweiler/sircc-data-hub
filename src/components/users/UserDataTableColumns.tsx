@@ -1165,6 +1165,110 @@ export const userDataTableColumns = (
 		];
 	}
 
+	if (userType === "volunteer-hours-view") {
+		return [
+			{
+				accessorKey: "date",
+				accessorFn: (row) => {
+					const r = asVolunteerHoursRow(row);
+					const date = r.date ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Date
+					</Button>
+				),
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				accessorKey: "hours",
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Hours
+						</div>
+					</Button>
+				),
+				cell: (info) => {
+					const texVal = info.getValue<string>();
+					const val = texVal ? Number(texVal).toFixed(2) : "";
+					return <div className="text-center">{val}</div>;
+				},
+			},
+			{
+				accessorKey: "volunteerType",
+				header: "Volunteering Type",
+				cell: (info) => {
+					const r = asVolunteerHoursRow(info.row.original);
+					const text =
+						r.volunteeringTypeId && volunteerTypes
+							? volunteerTypes.find((vt) => vt.id === r.volunteeringTypeId)?.name
+							: "N/A";
+					return <div className="text-nowrap">{text}</div>;
+				},
+			},
+			{
+				accessorKey: "notes",
+				header: "Notes",
+				cell: ({ getValue }) => {
+					const notes = getValue<string>() || "";
+					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+					return (
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant="ghost"
+									className="text-left p-0 px-1 h-auto whitespace-nowrap text-ellipsis"
+								>
+									{truncated}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="max-w-sm">
+								<p className="whitespace-pre-wrap">{notes}</p>
+							</PopoverContent>
+						</Popover>
+					);
+				},
+			},
+			{
+				accessorKey: "updatedAt",
+				accessorFn: (row) => {
+					const r = asVolunteerHoursRow(row);
+					const date = r.updatedAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Updated
+						</div>
+					</Button>
+				),
+				cell: (info) => (
+					<div className="text-center">
+						{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}
+					</div>
+				),
+			},
+		];
+	}
+
 	if (userType === "coach") {
 		return [
 			{

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 const adminRoutes = createRouteMatcher(["/admin", "/admin/(.*)"]);
 const coachRoutes = createRouteMatcher(["/coach", "/coach/(.*)"]);
 const developerRoutes = createRouteMatcher(["/admin/dev/(.*)"]);
+const volunteerRoutes = createRouteMatcher(["/volunteer", "/volunteer/(.*)"]);
 const authRoutes = createRouteMatcher([
 	"/sign-in",
 	"/sign-up",
@@ -40,6 +41,14 @@ export default clerkMiddleware(async (auth, req) => {
 	// DEVELOPER ROUTES
 	if (developerRoutes(req)) {
 		if (role !== "developer") {
+			return NextResponse.redirect(new URL("/", req.url));
+		}
+		return NextResponse.next({ request: { headers: requestHeaders } });
+	}
+
+	// VOLUNTEER ROUTES
+	if (volunteerRoutes(req)) {
+		if (!role.includes("volunteer")) {
 			return NextResponse.redirect(new URL("/", req.url));
 		}
 		return NextResponse.next({ request: { headers: requestHeaders } });
