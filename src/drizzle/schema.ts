@@ -255,6 +255,8 @@ export const volunteerHours = pgTable(
 			.notNull(),
 		siteId: uuid("site_id").references(() => site.id, { onDelete: "set null" }),
 		hours: decimal("hours", { precision: 5, scale: 2 }).notNull(),
+		date: timestamp("date", { withTimezone: true }).notNull().defaultNow(),
+		notes: varchar("notes", { length: 1000 }),
 		createdAt,
 		updatedAt,
 	},

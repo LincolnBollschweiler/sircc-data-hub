@@ -4,13 +4,11 @@ import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { clerkUserSchema } from "@/userInteractions/schema";
 import ProfileForm from "@/components/users/profile/ProfileForm";
 import { z } from "zod";
-import ClientDetailsWrapper from "@/components/users/clients/ClientDetailsWrapper";
 
 export default async function Home() {
 	const currentUser = await getCurrentClerkUser({ allData: true });
 	const profile = currentUser?.data as z.infer<typeof clerkUserSchema> & { id: string };
 	const intakeComplete = (profile?.birthDay && profile?.birthMonth) || profile?.phone;
-	const clientUser = currentUser?.role!.includes("client");
 	return (
 		<>
 			<SignedIn>
@@ -22,11 +20,11 @@ export default async function Home() {
 						</div>
 					</div>
 				) : (
-					<>{clientUser && <ClientDetailsWrapper clientId={profile.id} />}</>
+					<div className="container flex gap-3">Signed in stuff</div>
 				)}
 			</SignedIn>
 			<SignedOut>
-				<div className="container flex gap-3">Stuff</div>
+				<div className="container flex gap-3">Signed out stuff</div>
 			</SignedOut>
 		</>
 	);

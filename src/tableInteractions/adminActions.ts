@@ -77,7 +77,6 @@ export const createCity = async (data: typeof table.city.$inferInsert) => {
 };
 
 async function addUser(userData: typeof user.$inferInsert, clientData: typeof client.$inferInsert) {
-	// console.log("Adding user with data:", userData, clientData);
 	const userInsert = await db.transaction(async (tx) => {
 		const [newUser] = await tx
 			.insert(user)
@@ -103,12 +102,10 @@ async function addUser(userData: typeof user.$inferInsert, clientData: typeof cl
 	return userInsert.id;
 }
 
-export const createUser = async (userData: typeof user.$inferInsert, clientData: typeof client.$inferInsert) => {
-	// console.log("Creating user in action with data:", userData, clientData);
-	return await addUser(userData, clientData);
-};
+export const createUser = async (userData: typeof user.$inferInsert, clientData: typeof client.$inferInsert) =>
+	await addUser(userData, clientData);
+
 export const addClientService = async (data: typeof table.clientService.$inferInsert) => {
-	// console.log("Adding client service with data:", data);
 	const [newClientService] = await db.insert(table.clientService).values(data).returning();
 	return newClientService?.id;
 };

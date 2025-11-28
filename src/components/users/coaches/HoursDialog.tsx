@@ -57,7 +57,7 @@ export default function HoursDialog({
 			volunteerHours,
 			paidHours: hours,
 			date,
-			notes,
+			notes: notes?.trim() || null,
 		};
 
 		const action = coachId ? insertCoachHours.bind(null, coachId) : updateCoachHours.bind(null, values?.id ?? null);
@@ -152,7 +152,7 @@ export default function HoursDialog({
 						className="min-h-20 resize-none"
 						placeholder="Optional notes"
 						value={notes}
-						onChange={(e) => setNotes(e.target.value.trim())}
+						onChange={(e) => setNotes(e.target.value)}
 					/>
 				</div>
 				<DialogFooter>

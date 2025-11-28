@@ -12,7 +12,7 @@ export default async function ClientDetailsWrapper({ clientId }: { clientId: str
 		<>
 			{fullClient && (
 				<div className="container py-4 mx-auto">
-					<PageHeader title="Your Account Details" />
+					<PageHeader title="Client Details" />
 					{fullClient.coach && (
 						<CoachDetails coach={fullClient.coach} coachDetails={fullClient.coachDetails} />
 					)}
@@ -25,7 +25,7 @@ export default async function ClientDetailsWrapper({ clientId }: { clientId: str
 						title="Services"
 						data={fullClient.clientServices as ClientServiceFull[]}
 						userType="single-client-view"
-						clientId={clientId}
+						userId={clientId}
 						services={services}
 					/>
 				</div>

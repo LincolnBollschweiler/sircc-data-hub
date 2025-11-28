@@ -74,7 +74,7 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 						data={fullClient.clientServices as ClientServiceFull[]}
 						userType="single-client"
 						csTables={csTables}
-						clientId={clientId}
+						userId={clientId}
 						coachIsViewing={false}
 					/>
 				</>

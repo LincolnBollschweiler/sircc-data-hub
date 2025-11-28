@@ -3,9 +3,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { userSchema } from "@/userInteractions/schema";
-import { createUser, updateUser } from "@/userInteractions/actions";
-import { Checkbox } from "@/components/ui/checkbox";
+import { volunteerSchema } from "@/userInteractions/schema";
+import { createVolunteer, updateVolunteer } from "@/userInteractions/actions";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
@@ -16,27 +15,22 @@ import { actionToast } from "@/hooks/use-toast";
 import PhoneInput from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { ChevronDownIcon } from "lucide-react";
 
-export default function ClientUpdateForm({
+export default function VolunteerUpdateForm({
 	user,
 	onSuccess,
-	reentryUpdateCallback,
 }: {
-	user?: z.infer<typeof userSchema> & { id: string } & { isClerkUser: boolean };
+	user?: z.infer<typeof volunteerSchema> & { id: string } & { isClerkUser?: boolean };
 	onSuccess?: () => void;
-	reentryUpdateCallback?: (checked: boolean) => void;
 }) {
-	const form = useForm<z.infer<typeof userSchema>>({
-		resolver: zodResolver(userSchema),
+	const form = useForm<z.infer<typeof volunteerSchema>>({
+		resolver: zodResolver(volunteerSchema),
 		defaultValues: user || {
 			firstName: "",
 			lastName: "",
-			role: "client",
+			role: "volunteer",
 			email: null,
-			phone: null,
+			phone: "",
 			address1: null,
 			address2: null,
 			city: null,
@@ -45,32 +39,30 @@ export default function ClientUpdateForm({
 			birthMonth: null,
 			birthDay: null,
 			notes: "",
-			isReentryClient: false,
-			followUpNeeded: false,
-			followUpNotes: null,
-			followUpDate: null,
 		},
 	});
 
-	const onSubmit = async (values: z.infer<typeof userSchema> & { previousRole?: string }) => {
-		const action = user == null ? createUser : updateUser.bind(null, user.id);
+	const onSubmit = async (values: z.infer<typeof volunteerSchema> & { previousRole?: string }) => {
+		const action = user?.firstName == null ? createVolunteer : updateVolunteer.bind(null, user.id);
 		if (user?.isClerkUser) values = { ...values, previousRole: user.role };
 		const actionData = await action(values);
-		reentryUpdateCallback?.(!!values.isReentryClient);
 		if (actionData) {
 			actionToast({ actionData });
 			// TODO: is this needed?
-			requestAnimationFrame(() => window.location.reload());
+			// requestAnimationFrame(() => window.location.reload());
 		}
+		onSuccess?.();
 	};
 
 	const roles = [
-		{ id: "client", name: "Client" },
+		{ id: "volunteer", name: "Volunteer" },
 		{ id: "client-volunteer", name: "Client & Volunteer" },
-		{ id: "client-volunteer-staff", name: "Client & Volunteer & Staff" },
+		{ id: "client-volunteer-staff", name: "Client Volunteer & Staff" },
+		{ id: "staff-volunteer", name: "Staff & Volunteer" },
+		{ id: "coach-volunteer", name: "Coach & Volunteer" },
+		{ id: "coach-staff-volunteer", name: "Coach & Staff & Volunteer" },
+		{ id: "admin-coach-volunteer", name: "Admin & Coach & Volunteer" },
 	];
-
-	const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(user ? !!user.followUpDate : false);
 
 	const [phone, setPhone] = useState(user?.phone || "");
 	const updatePhone = (value: string) => {
@@ -80,7 +72,6 @@ export default function ClientUpdateForm({
 
 	const [mounted, setMounted] = useState(false);
 	const [focusedField, setFocusedField] = useState<string | null>(null);
-	const [calendarOpen, setCalendarOpen] = useState(false);
 
 	useEffect(() => setMounted(true), []);
 	if (!mounted) return null; // prevents hydration mismatch
@@ -340,18 +331,14 @@ export default function ClientUpdateForm({
 										tabIndex={-1}
 										onValueChange={(value) => field.onChange(value)}
 										value={field.value}
-										className={cn(
-											"grid grid-cols-1 sm:grid-cols-2 gap-2",
-											roles.length % 2 === 1 &&
-												"sm:[&>*:last-child]:col-span-2 sm:[&>*:last-child]:justify-self-center"
-										)}
+										className="grid grid-cols-1 sm:grid-cols-2 gap-2"
 									>
 										{roles.map((role) => (
 											<label
 												tabIndex={0}
 												key={role.id}
 												className={cn(
-													"cursor-pointer select-none rounded-md border py-1 px-3 text-center text-sm font-medium shadow-sm transition-colors",
+													"cursor-pointer select-none rounded-md border p-1 text-center text-sm font-medium shadow-sm transition-colors",
 													field.value === role.id
 														? "bg-primary text-primary-foreground border-primary"
 														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
@@ -377,141 +364,22 @@ export default function ClientUpdateForm({
 				/>
 				<FormField
 					control={form.control}
-					name="isReentryClient"
+					name="notes"
 					render={({ field }) => (
 						<FormItem>
-							<div className="mt-1 flex items-center gap-4">
-								<FormLabel className="m-0 leading-none">Is Re-entry Client?</FormLabel>
-								<FormControl>
-									<Checkbox
-										className="mt-0 align-middle size-5"
-										checked={!!field.value}
-										onCheckedChange={(checked) => field.onChange(checked)}
-										ref={field.ref}
-										name={field.name}
-									/>
-								</FormControl>
-							</div>
+							<FormLabel>Notes</FormLabel>
+							<FormControl>
+								<Textarea
+									{...field}
+									value={field.value ?? ""}
+									onChange={(e) => field.onChange(e.target.value)}
+									placeholder="notes... (1000 character max)"
+								/>
+							</FormControl>
+							<FormMessage />
 						</FormItem>
 					)}
 				/>
-
-				{!user && (
-					<FormField
-						control={form.control}
-						name="notes"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Notes</FormLabel>
-								<FormControl>
-									<Textarea
-										{...field}
-										value={field.value ?? ""}
-										onChange={(e) => field.onChange(e.target.value)}
-										placeholder="Enter comments here... (1000 character max)"
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-				)}
-				{user && (
-					<>
-						<FormField
-							control={form.control}
-							name={"followUpNeeded"}
-							render={({ field }) => (
-								<FormItem>
-									<div className="mt-1 flex items-center gap-3">
-										<FormLabel className="m-0 leading-none">Follow-up Needed?</FormLabel>
-										<FormControl>
-											<Checkbox
-												className="mt-0 align-middle size-5"
-												checked={!!field.value}
-												onCheckedChange={(checked) => {
-													const v = checked === true;
-													setShowFollowUpDatePicker(v);
-													field.onChange(v);
-												}}
-												ref={field.ref}
-												name={field.name}
-											/>
-										</FormControl>
-									</div>
-								</FormItem>
-							)}
-						/>
-						{showFollowUpDatePicker && (
-							<>
-								<FormField
-									control={form.control}
-									name="followUpDate"
-									render={({ field }) => {
-										const selectedDate = field.value ? new Date(field.value) : null;
-
-										return (
-											<FormItem className="flex gap-3 items-center">
-												<div className="flex gap-0.5">
-													<RequiredLabelIcon />
-													<FormLabel>Follow-up Date</FormLabel>
-												</div>
-												<Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-													<PopoverTrigger asChild>
-														<Button
-															variant="outline"
-															className="w-48 justify-between font-normal"
-														>
-															{selectedDate
-																? selectedDate.toLocaleDateString()
-																: "Select date"}
-															<ChevronDownIcon />
-														</Button>
-													</PopoverTrigger>
-
-													<PopoverContent
-														className="w-auto overflow-hidden p-0"
-														align="start"
-													>
-														<Calendar
-															mode="single"
-															selected={selectedDate || undefined}
-															captionLayout="dropdown"
-															onSelect={(newDate) => {
-																field.onChange(
-																	newDate ? newDate.toISOString().slice(0, 10) : null
-																);
-																setCalendarOpen(false);
-															}}
-														/>
-													</PopoverContent>
-												</Popover>
-											</FormItem>
-										);
-									}}
-								/>
-								<FormField
-									control={form.control}
-									name="followUpNotes"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Notes</FormLabel>
-											<FormControl>
-												<Textarea
-													{...field}
-													value={field.value ?? ""}
-													onChange={(e) => field.onChange(e.target.value)}
-													placeholder="Follow up notes... (1000 character max)"
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</>
-						)}
-					</>
-				)}
 				<div className="self-end gap-2 flex mt-1">
 					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
 						Cancel

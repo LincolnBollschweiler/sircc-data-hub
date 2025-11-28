@@ -18,23 +18,32 @@ import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
 import ClientServicesDialog from "./clients/ClientServicesDialog";
-import { CSTables } from "@/tableInteractions/db";
+import { CSTables, VolunteerType } from "@/tableInteractions/db";
 import HoursDialog from "./coaches/HoursDialog";
 import MilesDialog from "./coaches/MilesDialog";
-import { ClientList, ClientServiceFull, CoachHours, CoachList, CoachMiles } from "@/userInteractions/db";
+import {
+	ClientList,
+	ClientServiceFull,
+	CoachHours,
+	CoachList,
+	CoachMiles,
+	VolunteerHours,
+	VolunteerList,
+} from "@/userInteractions/db";
 import Image from "next/image";
+import VolunteerHoursDialog from "./volunteers/VolunteerHoursDialog";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
 // Helper casts
-const asUser = (row: unknown): User => row as User;
 const asUserRow = (row: unknown): User => row as User;
-const asClient = (row: unknown): ClientList => row as ClientList;
 const asClientRow = (row: unknown): ClientList => row as ClientList;
-const asSingleClient = (row: unknown): ClientServiceFull => row as ClientServiceFull;
-const asCoach = (row: unknown): CoachList => row as CoachList;
-const asHours = (row: unknown): CoachHours => row as CoachHours;
-const asMiles = (row: unknown): CoachMiles => row as CoachMiles;
+const asVolunteerRow = (row: unknown): VolunteerList => row as VolunteerList;
+const asSingleClientRow = (row: unknown): ClientServiceFull => row as ClientServiceFull;
+const asCoachRow = (row: unknown): CoachList => row as CoachList;
+const asCoachHoursRow = (row: unknown): CoachHours => row as CoachHours;
+const asMilesRow = (row: unknown): CoachMiles => row as CoachMiles;
+const asVolunteerHoursRow = (row: unknown): VolunteerHours => row as VolunteerHours;
 
 const processAcceptance = async (user: Partial<User>, accepted: boolean | null) => {
 	const action = user.id ? updateClerkUser.bind(null, user.id) : undefined;
@@ -65,6 +74,7 @@ export const userDataTableColumns = (
 	trainingsCount?: number,
 	checkListCount?: number,
 	csTables?: CSTables,
+	volunteerTypes?: VolunteerType[],
 	startDelete?: (id: string) => void
 ): ColumnDef<unknown>[] => {
 	// -------------------- REJECTED/APPLICANT --------------------
@@ -75,7 +85,7 @@ export const userDataTableColumns = (
 				header: "",
 				accessorKey: "photoUrl",
 				cell: (info) => {
-					const r = asUser(info.row.original);
+					const r = asUserRow(info.row.original);
 					return (
 						<Image
 							src={r.photoUrl ?? "/default-avatar.png"}
@@ -111,7 +121,7 @@ export const userDataTableColumns = (
 						.localeCompare(`${rB.firstName} ${rB.lastName}`.toLowerCase());
 				},
 				cell: (info) => {
-					const r = asUser(info.row.original);
+					const r = asUserRow(info.row.original);
 					return <div className="text-nowrap">{`${r.firstName} ${r.lastName}`}</div>;
 				},
 			},
@@ -245,7 +255,7 @@ export const userDataTableColumns = (
 		];
 	}
 
-	if (userType === "client" || userType === "client-volunteer") {
+	if (userType === "client") {
 		return [
 			{
 				id: "userPhoto",
@@ -288,7 +298,7 @@ export const userDataTableColumns = (
 					return nameA.localeCompare(nameB);
 				},
 				cell: (info) => {
-					const r = asClient(info.row.original);
+					const r = asClientRow(info.row.original);
 					return <div className="text-nowrap">{`${r.user.firstName} ${r.user.lastName}`}</div>;
 				},
 			},
@@ -341,7 +351,7 @@ export const userDataTableColumns = (
 				accessorKey: "client.isReentryClient",
 				header: () => <div className="text-center">Check List</div>,
 				cell: (info) => {
-					const r = asClient(info.row.original);
+					const r = asClientRow(info.row.original);
 					const isReentry = r.client?.isReentryClient;
 					const checkListCountValue = checkListCount || 0;
 					const checkListItemCount = r.checkListItemCount || 0;
@@ -357,7 +367,7 @@ export const userDataTableColumns = (
 				accessorKey: "coachName",
 				header: "Coach",
 				cell: (info) => {
-					const r = asClient(info.row.original);
+					const r = asClientRow(info.row.original);
 					let coachName = r.coach ? `${r.coach.firstName} ${r.coach.lastName.charAt(0)}` : "N/A";
 					if (r.coach?.firstName === "deleted user") coachName = "deleted user";
 					return <div className="text-nowrap">{coachName}</div>;
@@ -417,7 +427,7 @@ export const userDataTableColumns = (
 				accessorKey: "birthday",
 				header: () => <div className="text-center">Birthday</div>,
 				cell: (info) => {
-					const r = asClient(info.row.original);
+					const r = asClientRow(info.row.original);
 					if (r.user.birthMonth && r.user.birthDay) {
 						return <div className="text-center">{`${r.user.birthMonth}/${r.user.birthDay}`}</div>;
 					}
@@ -454,7 +464,7 @@ export const userDataTableColumns = (
 					);
 				},
 				cell: (info) => {
-					const r = asClient(info.row.original);
+					const r = asClientRow(info.row.original);
 					if (r.requestsUpdatedAt) {
 						return (
 							<div className="text-center">
@@ -474,7 +484,7 @@ export const userDataTableColumns = (
 				id: "actions",
 				header: () => <div className="text-right"></div>,
 				cell: ({ row }) => {
-					const clientRow = asClient(row.original); // now TypeScript knows it's ClientWithUser
+					const clientRow = asClientRow(row.original); // now TypeScript knows it's ClientWithUser
 					const user = clientRow.user;
 
 					return (
@@ -515,103 +525,103 @@ export const userDataTableColumns = (
 			{
 				id: "requestedService",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.requestedService?.name ?? "";
 				},
 				header: "Requested Service",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.requestedService?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "providedService",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.providedService?.name ?? "";
 				},
 				header: "Provided Service",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.providedService?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "city",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.city?.name ?? "";
 				},
 				header: "City",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.city?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "location",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.location?.name ?? "";
 				},
 				header: "Location",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.location?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "referralSource",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.referralSource?.name ?? "";
 				},
 				header: "Referral Source",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.referralSource?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "referredOut",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.referredOut?.name ?? "";
 				},
 				header: "Referred Out",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.referredOut?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "visitReason",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.visit?.name ?? "";
 				},
 				header: "Visit Reason",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.visit?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "funding",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.clientService.funds ?? null;
 				},
 				header: "Funding",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return r.clientService.funds != null ? `$${r.clientService.funds}` : "";
 				},
 			},
 			{
 				id: "notes",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.clientService.notes ?? "";
 				},
 				header: "Notes",
@@ -639,7 +649,7 @@ export const userDataTableColumns = (
 			{
 				id: "createdAt",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					const date = r.clientService.createdAt ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
@@ -649,7 +659,7 @@ export const userDataTableColumns = (
 			{
 				id: "updatedAt",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					const date = r.clientService.updatedAt ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
@@ -660,7 +670,7 @@ export const userDataTableColumns = (
 				id: "actions",
 				header: () => <div className="text-right"></div>,
 				cell: ({ row }) => {
-					const clientRow = asSingleClient(row.original);
+					const clientRow = asSingleClientRow(row.original);
 					const service = clientRow.clientService;
 
 					return (
@@ -709,103 +719,103 @@ export const userDataTableColumns = (
 			{
 				id: "requestedService",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.requestedService?.name ?? "";
 				},
 				header: "Requested Service",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.requestedService?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "providedService",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.providedService?.name ?? "";
 				},
 				header: "Provided Service",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.providedService?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "city",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.city?.name ?? "";
 				},
 				header: "City",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.city?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "location",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.location?.name ?? "";
 				},
 				header: "Location",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.location?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "referralSource",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.referralSource?.name ?? "";
 				},
 				header: "Referral Source",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.referralSource?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "referredOut",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.referredOut?.name ?? "";
 				},
 				header: "Referred Out",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.referredOut?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "visitReason",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.visit?.name ?? "";
 				},
 				header: "Visit Reason",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return <div className="text-nowrap">{r.visit?.name ?? ""}</div>;
 				},
 			},
 			{
 				id: "funding",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.clientService.funds ?? null;
 				},
 				header: "Funding",
 				cell: (info) => {
-					const r = asSingleClient(info.row.original);
+					const r = asSingleClientRow(info.row.original);
 					return r.clientService.funds != null ? `$${r.clientService.funds}` : "";
 				},
 			},
 			{
 				id: "notes",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					return r.clientService.notes ?? "";
 				},
 				header: "Notes",
@@ -833,7 +843,7 @@ export const userDataTableColumns = (
 			{
 				id: "createdAt",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					const date = r.clientService.createdAt ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
@@ -843,7 +853,7 @@ export const userDataTableColumns = (
 			{
 				id: "updatedAt",
 				accessorFn: (row) => {
-					const r = asSingleClient(row);
+					const r = asSingleClientRow(row);
 					const date = r.clientService.updatedAt ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
@@ -853,18 +863,18 @@ export const userDataTableColumns = (
 		];
 	}
 
-	if (userType === "volunteer" || userType === "client-volunteer") {
+	if (userType === "volunteer") {
 		return [
 			{
 				id: "userPhoto",
 				header: "",
 				accessorKey: "photoUrl",
 				cell: (info) => {
-					const r = asUser(info.row.original);
+					const r = asVolunteerRow(info.row.original);
 					return (
 						<Image
-							src={r.photoUrl ?? "/default-avatar.png"}
-							alt={`${r.firstName} ${r.lastName}`}
+							src={r.user.photoUrl ?? "/default-avatar.png"}
+							alt={`${r.user.firstName} ${r.user.lastName}`}
 							width={30}
 							height={30}
 							className="rounded-full object-cover mx-auto"
@@ -873,19 +883,40 @@ export const userDataTableColumns = (
 				},
 			},
 			{
-				accessorKey: "name",
-				header: "Name",
+				id: "name",
+				accessorFn: (row) => {
+					const r = asVolunteerRow(row);
+					return `${r.user.firstName} ${r.user.lastName}`;
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="-ml-4 h-4 w-4" />
+						Name
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asVolunteerRow(rowA.original);
+					const b = asVolunteerRow(rowB.original);
+					const nameA = `${a.user.firstName} ${a.user.lastName}`.toLowerCase();
+					const nameB = `${b.user.firstName} ${b.user.lastName}`.toLowerCase();
+					return nameA.localeCompare(nameB);
+				},
 				cell: (info) => {
-					const r = asUserRow(info.row.original);
-					return `${r.firstName} ${r.lastName}`;
+					const r = asVolunteerRow(info.row.original);
+					return `${r.user.firstName} ${r.user.lastName}`;
 				},
 			},
 			{
-				accessorKey: "phone",
-				header: "Phone",
+				accessorKey: "user.phone",
+				header: () => <div className="text-center">Phone</div>,
 				cell: (info) => {
-					const phone = formatPhoneNumber(info.getValue<string>() || "");
-					return phone || "N/A";
+					const r = asVolunteerRow(info.row.original);
+					const phone = formatPhoneNumber(r.user.phone || "");
+					return <div className="text-center">{phone || "N/A"}</div>;
 				},
 			},
 			{
@@ -893,12 +924,163 @@ export const userDataTableColumns = (
 				header: "Email",
 			},
 			{
+				accessorKey: "hours",
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center justify-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Hours
+						</div>
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asVolunteerRow(rowA.original);
+					const b = asVolunteerRow(rowB.original);
+					return (Number(b.hours) ?? 0) - (Number(a.hours) ?? 0);
+				},
+				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
+			},
+			{
+				accessorKey: "lastVolunteerType",
+				header: "Last Volunteer Type",
+				cell: (info) => {
+					const r = asVolunteerRow(info.row.original);
+					return <div className="text-nowrap">{r.lastVolunteerType ?? "N/A"}</div>;
+				},
+			},
+			{
+				accessorKey: "lastVolunteeredAt",
+				accessorFn: (row) => {
+					const r = asVolunteerRow(row);
+					const date = r.lastVolunteeredAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center justify-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Updated
+						</div>
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asVolunteerRow(rowA.original);
+					const b = asVolunteerRow(rowB.original);
+					return new Date(b.lastVolunteeredAt ?? 0).getTime() - new Date(a.lastVolunteeredAt ?? 0).getTime();
+				},
+				cell: (info) => (
+					<div className="text-center">
+						{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}
+					</div>
+				),
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const volunteerRow = asVolunteerRow(row.original); // now TypeScript knows it's ClientWithUser
+					const user = volunteerRow.user;
+
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
+											Send Email
+										</a>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild>
+										<a
+											className="hover:!bg-success hover:!text-success-foreground"
+											href={`/admin/volunteers/${user.id}/edit`}
+										>
+											View or Edit Volunteer
+										</a>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
+			},
+		];
+	}
+
+	if (userType === "volunteer-hours") {
+		return [
+			{
+				accessorKey: "date",
+				accessorFn: (row) => {
+					const r = asVolunteerHoursRow(row);
+					const date = r.date ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Date
+					</Button>
+				),
+				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				accessorKey: "hours",
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Hours
+						</div>
+					</Button>
+				),
+				cell: (info) => {
+					const texVal = info.getValue<string>();
+					const val = texVal ? Number(texVal).toFixed(2) : "";
+					return <div className="text-center">{val}</div>;
+				},
+			},
+			{
+				accessorKey: "volunteerType",
+				header: "Volunteering Type",
+				cell: (info) => {
+					const r = asVolunteerHoursRow(info.row.original);
+					const text =
+						r.volunteeringTypeId && volunteerTypes
+							? volunteerTypes.find((vt) => vt.id === r.volunteeringTypeId)?.name
+							: "N/A";
+					return <div className="text-nowrap">{text}</div>;
+				},
+			},
+			{
 				accessorKey: "notes",
 				header: "Notes",
 				cell: ({ getValue }) => {
 					const notes = getValue<string>() || "";
 					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
-
 					return (
 						<Popover>
 							<PopoverTrigger asChild>
@@ -917,14 +1099,172 @@ export const userDataTableColumns = (
 				},
 			},
 			{
-				accessorKey: "createdAt",
+				accessorKey: "updatedAt",
 				accessorFn: (row) => {
-					const r = asUserRow(row);
-					const date = r.createdAt ?? null;
+					const r = asVolunteerHoursRow(row);
+					const date = r.updatedAt ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
-				header: "Added",
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Updated
+						</div>
+					</Button>
+				),
+				cell: (info) => (
+					<div className="text-center">
+						{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}
+					</div>
+				),
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const hoursRow = asVolunteerHoursRow(row.original); // now TypeScript knows it's CoachHours
+
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<VolunteerHoursDialog
+											values={hoursRow as VolunteerHours}
+											volunteerTypes={volunteerTypes}
+										>
+											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
+												Edit Hours
+											</DialogTrigger>
+										</VolunteerHoursDialog>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => removeCoachHours(hoursRow.id)}
+									>
+										Delete
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
+			},
+		];
+	}
+
+	if (userType === "volunteer-hours-view") {
+		return [
+			{
+				accessorKey: "date",
+				accessorFn: (row) => {
+					const r = asVolunteerHoursRow(row);
+					const date = r.date ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Date
+					</Button>
+				),
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+			{
+				accessorKey: "hours",
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Hours
+						</div>
+					</Button>
+				),
+				cell: (info) => {
+					const texVal = info.getValue<string>();
+					const val = texVal ? Number(texVal).toFixed(2) : "";
+					return <div className="text-center">{val}</div>;
+				},
+			},
+			{
+				accessorKey: "volunteerType",
+				header: "Volunteering Type",
+				cell: (info) => {
+					const r = asVolunteerHoursRow(info.row.original);
+					const text =
+						r.volunteeringTypeId && volunteerTypes
+							? volunteerTypes.find((vt) => vt.id === r.volunteeringTypeId)?.name
+							: "N/A";
+					return <div className="text-nowrap">{text}</div>;
+				},
+			},
+			{
+				accessorKey: "notes",
+				header: "Notes",
+				cell: ({ getValue }) => {
+					const notes = getValue<string>() || "";
+					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+					return (
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant="ghost"
+									className="text-left p-0 px-1 h-auto whitespace-nowrap text-ellipsis"
+								>
+									{truncated}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="max-w-sm">
+								<p className="whitespace-pre-wrap">{notes}</p>
+							</PopoverContent>
+						</Popover>
+					);
+				},
+			},
+			{
+				accessorKey: "updatedAt",
+				accessorFn: (row) => {
+					const r = asVolunteerHoursRow(row);
+					const date = r.updatedAt ?? null;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Updated
+						</div>
+					</Button>
+				),
+				cell: (info) => (
+					<div className="text-center">
+						{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}
+					</div>
+				),
 			},
 		];
 	}
@@ -936,7 +1276,7 @@ export const userDataTableColumns = (
 				header: "",
 				accessorKey: "photoUrl",
 				cell: (info) => {
-					const r = asCoach(info.row.original);
+					const r = asCoachRow(info.row.original);
 					return (
 						<Image
 							src={r.user.photoUrl ?? "/default-avatar.png"}
@@ -951,7 +1291,7 @@ export const userDataTableColumns = (
 			{
 				id: "name",
 				accessorFn: (row) => {
-					const r = asCoach(row);
+					const r = asCoachRow(row);
 					return `${r.user.firstName} ${r.user.lastName}`;
 				},
 				header: ({ column }) => (
@@ -965,14 +1305,14 @@ export const userDataTableColumns = (
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
-					const a = asCoach(rowA.original);
-					const b = asCoach(rowB.original);
+					const a = asCoachRow(rowA.original);
+					const b = asCoachRow(rowB.original);
 					const nameA = `${a.user.firstName} ${a.user.lastName}`.toLowerCase();
 					const nameB = `${b.user.firstName} ${b.user.lastName}`.toLowerCase();
 					return nameA.localeCompare(nameB);
 				},
 				cell: (info) => {
-					const r = asCoach(info.row.original);
+					const r = asCoachRow(info.row.original);
 					return <div className="text-nowrap">{`${r.user.firstName} ${r.user.lastName}`}</div>;
 				},
 			},
@@ -1013,8 +1353,8 @@ export const userDataTableColumns = (
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
-					const a = asCoach(rowA.original);
-					const b = asCoach(rowB.original);
+					const a = asCoachRow(rowA.original);
+					const b = asCoachRow(rowB.original);
 					return (b.clientCount ?? 0) - (a.clientCount ?? 0);
 				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
@@ -1034,8 +1374,8 @@ export const userDataTableColumns = (
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
-					const a = asCoach(rowA.original);
-					const b = asCoach(rowB.original);
+					const a = asCoachRow(rowA.original);
+					const b = asCoachRow(rowB.original);
 					return (b.trainingsCompleted ?? 0) - (a.trainingsCompleted ?? 0);
 				},
 				cell: (info) => {
@@ -1060,8 +1400,8 @@ export const userDataTableColumns = (
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
-					const a = asCoach(rowA.original);
-					const b = asCoach(rowB.original);
+					const a = asCoachRow(rowA.original);
+					const b = asCoachRow(rowB.original);
 					return (b.volunteerHours ?? 0) - (a.volunteerHours ?? 0);
 				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
@@ -1081,8 +1421,8 @@ export const userDataTableColumns = (
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
-					const a = asCoach(rowA.original);
-					const b = asCoach(rowB.original);
+					const a = asCoachRow(rowA.original);
+					const b = asCoachRow(rowB.original);
 					return (b.paidHours ?? 0) - (a.paidHours ?? 0);
 				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
@@ -1090,7 +1430,7 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "coach.updatedAt",
 				accessorFn: (row) => {
-					const r = asCoach(row);
+					const r = asCoachRow(row);
 					const date = r.coach?.updatedAt ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
@@ -1107,8 +1447,8 @@ export const userDataTableColumns = (
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
-					const a = asCoach(rowA.original);
-					const b = asCoach(rowB.original);
+					const a = asCoachRow(rowA.original);
+					const b = asCoachRow(rowB.original);
 					return new Date(b.coach?.updatedAt ?? 0).getTime() - new Date(a.coach?.updatedAt ?? 0).getTime();
 				},
 				cell: (info) => (
@@ -1121,7 +1461,7 @@ export const userDataTableColumns = (
 				id: "actions",
 				header: () => <div className="text-right"></div>,
 				cell: ({ row }) => {
-					const coachRow = asCoach(row.original);
+					const coachRow = asCoachRow(row.original);
 					const user = coachRow.user;
 
 					return (
@@ -1258,7 +1598,7 @@ export const userDataTableColumns = (
 				accessorKey: "client.isReentryClient",
 				header: () => <div className="text-center">Check List</div>,
 				cell: (info) => {
-					const r = asClient(info.row.original);
+					const r = asClientRow(info.row.original);
 					const isReentry = r.client?.isReentryClient;
 					const checkListCountValue = checkListCount || 0;
 					const checkListItemCount = r.checkListItemCount || 0;
@@ -1328,7 +1668,7 @@ export const userDataTableColumns = (
 				id: "actions",
 				header: () => <div className="text-right"></div>,
 				cell: ({ row }) => {
-					const clientRow = asClient(row.original); // now TypeScript knows it's ClientWithUser
+					const clientRow = asClientRow(row.original); // now TypeScript knows it's ClientWithUser
 					const user = clientRow.user;
 					const coachId = clientRow.client?.coachId;
 
@@ -1370,7 +1710,7 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "date",
 				accessorFn: (row) => {
-					const r = asHours(row);
+					const r = asCoachHoursRow(row);
 					const date = r.date ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
@@ -1478,7 +1818,7 @@ export const userDataTableColumns = (
 				id: "actions",
 				header: () => <div className="text-right"></div>,
 				cell: ({ row }) => {
-					const hoursRow = asHours(row.original); // now TypeScript knows it's CoachHours
+					const hoursRow = asCoachHoursRow(row.original); // now TypeScript knows it's CoachHours
 
 					return (
 						<div className="text-right">
@@ -1518,7 +1858,7 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "date",
 				accessorFn: (row) => {
-					const r = asMiles(row);
+					const r = asMilesRow(row);
 					const date = r.date ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
@@ -1535,8 +1875,8 @@ export const userDataTableColumns = (
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
-					const a = asMiles(rowA.original);
-					const b = asMiles(rowB.original);
+					const a = asMilesRow(rowA.original);
+					const b = asMilesRow(rowB.original);
 					return new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime();
 				},
 				cell: (info) => <div>{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}</div>,
@@ -1556,8 +1896,8 @@ export const userDataTableColumns = (
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
-					const a = asMiles(rowA.original);
-					const b = asMiles(rowB.original);
+					const a = asMilesRow(rowA.original);
+					const b = asMilesRow(rowB.original);
 					return (b.miles ? Number(b.miles) : 0) - (a.miles ? Number(a.miles) : 0);
 				},
 				cell: (info) => <div className="text-center">{Number(info.getValue<string>()).toFixed(2)}</div>,
@@ -1605,8 +1945,8 @@ export const userDataTableColumns = (
 					</Button>
 				),
 				sortingFn: (rowA, rowB) => {
-					const a = asMiles(rowA.original);
-					const b = asMiles(rowB.original);
+					const a = asMilesRow(rowA.original);
+					const b = asMilesRow(rowB.original);
 					return new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime();
 				},
 				cell: (info) => (
@@ -1619,7 +1959,7 @@ export const userDataTableColumns = (
 				id: "actions",
 				header: () => <div className="text-right"></div>,
 				cell: ({ row }) => {
-					const milesRow = asMiles(row.original); // now TypeScript knows it's CoachMiles
+					const milesRow = asMilesRow(row.original); // now TypeScript knows it's CoachMiles
 
 					return (
 						<div className="text-right">

@@ -55,6 +55,7 @@ export const deleteVolunteerType = async (id: string) => {
 	return rv;
 };
 
+export type VolunteerType = typeof dbTable.volunteeringType.$inferSelect;
 const cachedVolunteerTypes = unstable_cache(
 	async () => {
 		return await db

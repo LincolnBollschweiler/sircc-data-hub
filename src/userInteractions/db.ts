@@ -17,6 +17,9 @@ import {
 	coachMileage,
 	coachRoles,
 	clientRoles,
+	volunteerRoles,
+	volunteerHours,
+	volunteeringType,
 } from "@/drizzle/schema";
 import { eq, and, sql, inArray } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
@@ -483,6 +486,179 @@ const cachedClients = unstable_cache(
 	{ tags: [getAllUsersGlobalTag()] }
 );
 export const getAllClients = async () => cachedClients();
+//#endregion
+
+//#region Volunteers
+export type VolunteerHours = typeof volunteerHours.$inferSelect;
+export type VolunteerFull = {
+	user: User;
+	volunteerHours: VolunteerHours[];
+	totalVolunteerHours?: number;
+};
+
+const cachedVolunteer = (id: string) => {
+	const cachedFn = unstable_cache(
+		async (): Promise<VolunteerFull | null> => {
+			const rows = await db
+				.select({
+					user,
+					volunteerHours,
+					totalVolunteerHours: sql<number>`
+						(SELECT COALESCE(SUM(vh.hours), 0)
+						FROM volunteer_hours vh
+						WHERE vh.volunteer_id = ${user.id})
+					`,
+				})
+				.from(user)
+				.leftJoin(volunteerHours, eq(user.id, volunteerHours.volunteerId))
+				.where(
+					and(
+						eq(user.id, id),
+						eq(user.accepted, true),
+						inArray(user.role, volunteerRoles),
+						isNull(user.deletedAt)
+					)
+				)
+				.orderBy(desc(volunteerHours.date));
+			if (rows.length === 0) return null;
+			const first = rows[0]!;
+
+			const volunteerHoursFiltered = rows
+				.map((r) => r.volunteerHours)
+				.filter((vh): vh is VolunteerHours => vh !== null);
+			return {
+				user: first.user,
+				volunteerHours: volunteerHoursFiltered,
+			};
+		},
+		["getVolunteerById", id],
+		{ tags: [getUserIdTag(id)] }
+	);
+	return cachedFn();
+};
+export const getVolunteerById = async (id: string) => cachedVolunteer(id);
+
+export type VolunteerList = {
+	user: User;
+	email: string | null;
+	hours: string;
+	lastVolunteeredAt: Date | null;
+	lastVolunteerType: string | null;
+};
+
+const cachedVolunteers = unstable_cache(
+	async (): Promise<VolunteerList[]> => {
+		const volunteerTypes = await db.select().from(volunteeringType);
+		const users = await db
+			.select()
+			.from(user)
+			.where(and(isNull(user.deletedAt), eq(user.accepted, true), inArray(user.role, volunteerRoles)));
+
+		const allHours = await db.select().from(volunteerHours).orderBy(desc(volunteerHours.updatedAt)); // ensures first match per user is latest
+
+		// Build fast lookups
+		const hoursByUser = new Map<string, VolunteerHours[]>();
+		for (const h of allHours) {
+			if (!hoursByUser.has(h.volunteerId)) hoursByUser.set(h.volunteerId, []);
+			hoursByUser.get(h.volunteerId)!.push(h);
+		}
+
+		const rows: VolunteerList[] = [];
+
+		for (const usr of users) {
+			const records = hoursByUser.get(usr.id) || [];
+			const totalHours = records.reduce((sum, r) => sum + Number(r.hours), 0);
+			const lastRec = records[0] ?? null;
+
+			let lastType: string | null = null;
+			if (lastRec) {
+				const vt = volunteerTypes.find((vt) => vt.id === lastRec.volunteeringTypeId);
+				lastType = vt?.name ?? null;
+			}
+
+			rows.push({
+				user: usr as User,
+				email: usr.email || "",
+				hours: totalHours.toString(),
+				lastVolunteeredAt: lastRec ? lastRec.updatedAt : usr.updatedAt,
+				lastVolunteerType: lastType,
+			});
+		}
+
+		// Sort descending
+		return rows.sort((a, b) => (b.lastVolunteeredAt?.getTime() ?? 0) - (a.lastVolunteeredAt?.getTime() ?? 0));
+	},
+	["getAllVolunteers"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
+export const getAllVolunteers = async () => cachedVolunteers();
+
+export async function addVolunteer(data: typeof user.$inferInsert) {
+	const userInsert = await db.transaction(async (tx) => {
+		const [newUser] = await tx
+			.insert(user)
+			.values({ ...data, accepted: true })
+			.returning();
+		if (!newUser) throw new Error("Failed to add user");
+
+		if (data.role?.includes("client")) {
+			const [newClient] = await tx.insert(client).values({ id: newUser.id }).onConflictDoNothing().returning();
+			if (!newClient) throw new Error("Failed to create client for user");
+		}
+		return newUser;
+	});
+
+	revalidateUserCache(userInsert.id);
+	revalidateClientCache(userInsert.id);
+	return userInsert;
+}
+
+export async function updateVolunteerById(id: string, data: Partial<typeof user.$inferInsert>, previousRole?: string) {
+	const updatedUser = await db.transaction(async (tx) => {
+		const [userUpdated] = await tx.update(user).set(data).where(eq(user.id, id)).returning();
+		if (!userUpdated) throw new Error("Failed to update user");
+		if (previousRole && previousRole !== userUpdated.role) await syncClerkUserMetadata(userUpdated);
+
+		if (data.role?.includes("client")) {
+			const [newClient] = await tx
+				.insert(client)
+				.values({ id: userUpdated.id })
+				.onConflictDoNothing()
+				.returning();
+			if (!newClient) {
+				const existing = await tx.query.client.findFirst({ where: eq(client.id, userUpdated.id) });
+				if (!existing) throw new Error("Insert failed (not conflict)");
+			}
+		}
+
+		return userUpdated;
+	});
+
+	revalidateUserCache(updatedUser.id);
+	revalidateClientCache(updatedUser.id);
+	return updatedUser;
+}
+
+export const addVolunteerHoursById = async (volunteerId: string, data: VolunteerHours) => {
+	const [newItem] = await db
+		.insert(volunteerHours)
+		.values({ ...data, volunteerId })
+		.returning();
+
+	revalidateClientCache(volunteerId);
+	return newItem;
+};
+
+export const updateVolunteerHoursById = async (hoursId: string, data: Partial<typeof volunteerHours.$inferInsert>) => {
+	const [updatedItem] = await db.update(volunteerHours).set(data).where(eq(volunteerHours.id, hoursId)).returning();
+	if (updatedItem == null) {
+		console.error("Failed to update coach hours");
+		throw new Error("Failed to update coach hours");
+	}
+
+	revalidateClientCache(updatedItem.volunteerId);
+	return updatedItem;
+};
 //#endregion
 
 //#region CRUD Coaches

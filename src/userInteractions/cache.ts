@@ -14,6 +14,8 @@ export const revalidateClientCache = async (id: string, coachIsViewing?: boolean
 	revalidateTag(cacheTags.getClientIdTag(id), "max");
 	revalidatePath("/admin/clients");
 	revalidatePath(`/admin/clients/${id}/edit`);
+	revalidatePath("/admin/volunteers");
+	revalidatePath(`/admin/volunteers/${id}/edit`);
 	revalidatePath("/coach");
 	revalidatePath(`/coach/clients/${id}/edit`);
 	if (coachIsViewing) revalidatePath(`/`);
