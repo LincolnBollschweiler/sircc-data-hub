@@ -12,41 +12,41 @@ const authRoutes = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
+	const requestHeaders = new Headers(req.headers);
+	requestHeaders.set("x-url", req.url);
+
 	// Skip public/auth routes
-	if (authRoutes(req)) return NextResponse.next();
+	if (authRoutes(req)) return NextResponse.next({ request: { headers: requestHeaders } });
 
 	const { sessionClaims } = await auth();
 	const role = sessionClaims?.role ?? "no-user";
 
-	// --- ADMIN ROUTES ---
+	// ADMIN ROUTES
 	if (adminRoutes(req)) {
-		// admins & developers only
 		if (!role.includes("admin") && role !== "developer") {
 			return NextResponse.redirect(new URL("/", req.url));
-			console.warn("Access denied to admin route for role:", role);
 		}
-		return NextResponse.next();
+		return NextResponse.next({ request: { headers: requestHeaders } });
 	}
 
+	// COACH ROUTES
 	if (coachRoutes(req)) {
-		// coaches, admins & developers only
 		if (!role.includes("coach")) {
 			return NextResponse.redirect(new URL("/", req.url));
-			console.warn("Access denied to coach route for role:", role);
 		}
+		return NextResponse.next({ request: { headers: requestHeaders } });
 	}
 
-	// --- DEVELOPER ROUTES ---
+	// DEVELOPER ROUTES
 	if (developerRoutes(req)) {
-		// developers only
 		if (role !== "developer") {
 			return NextResponse.redirect(new URL("/", req.url));
-			console.warn("Access denied to developer route for role:", role);
 		}
+		return NextResponse.next({ request: { headers: requestHeaders } });
 	}
 
-	// Allow everything else (including "/")
-	return NextResponse.next();
+	// EVERYTHING ELSE
+	return NextResponse.next({ request: { headers: requestHeaders } });
 });
 
 export const config = {

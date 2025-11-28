@@ -96,15 +96,9 @@ body.light {
   --info: oklch(0.5 0.05 260);
 }`;
 
-	const process = () => {
-		createNewTheme(iamsajidThemeInputText);
-		// const { lightOutput, darkOutput } = createNewTheme(iamsajidThemeInputText);
-		// console.log(lightOutput, "\n\n", darkOutput);
-	};
+	const process = () => createNewTheme(iamsajidThemeInputText);
 
-	const loadDataTypeValues = async () => {
-		await loadClients();
-	};
+	const loadDataTypeValues = async () => await loadClients();
 
 	return (
 		<main className="container py-6">
