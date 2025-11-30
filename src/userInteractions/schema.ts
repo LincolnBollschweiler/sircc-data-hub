@@ -3,8 +3,8 @@ import { z } from "zod";
 export const assignRoleSchema = z.object({
 	firstName: z.string(),
 	lastName: z.string(),
-	desiredRole: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
-	role: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]),
+	desiredRole: z.enum(["admin", "coach", "client", "volunteer", "staff"]).nullable(),
+	role: z.enum(["admin", "coach", "client", "volunteer", "staff"]),
 	isReentryClient: z.boolean().optional(),
 });
 
@@ -13,9 +13,9 @@ export const clerkUserSchema = z
 		firstName: z.string().min(2, "Required").max(30),
 		lastName: z.string().min(1, "Required").max(30),
 		email: z.string().email().max(255).nullable(),
-		address1: z.string().max(100).optional(),
-		address2: z.string().max(100).optional(),
-		city: z.string().min(2, "City is required"),
+		address1: z.string().max(100, "Maximum 100 characters").optional(),
+		address2: z.string().max(100, "Maximum 100 characters").optional(),
+		city: z.string().max(50, "Maximum 50 characters").optional(),
 		state: z.string().max(2, "Two letter state abbreviation").optional(),
 		zip: z.string().max(5, "Five digit zip code").optional(),
 		phone: z
@@ -36,8 +36,8 @@ export const clerkUserSchema = z
 			if (val == null) return ""; // convert null/undefined → ""
 			if (typeof val === "string") return val.trim();
 			return val;
-		}, z.string().max(1000).optional()),
-		desiredRole: z.enum(["developer", "admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
+		}, z.string().max(1000, "Maximum 1000 characters").optional()),
+		desiredRole: z.enum(["admin", "coach", "client", "volunteer", "staff"]).nullable(),
 		themePreference: z.enum(["light", "dark", "system"]).default("system"),
 		accepted: z.boolean().nullable(),
 	})
@@ -68,16 +68,16 @@ const userSchemaBase = {
 		.nullable()
 		.optional()
 		.transform((v) => (v === "" ? null : v)),
-	address1: z.string().max(100).nullable().optional(),
-	address2: z.string().max(100).nullable().optional(),
-	city: z.string().max(50).nullable().optional(),
+	address1: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+	address2: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+	city: z.string().max(50, "Maximum 50 characters").nullable().optional(),
 	state: z.string().max(2, "Two letter state abbreviation").nullable().optional(),
 	zip: z.string().max(5, "Five digit zip code").nullable().optional(),
 	notes: z.preprocess((val) => {
 		if (val == null) return ""; // convert null/undefined → ""
 		if (typeof val === "string") return val.trim();
 		return val;
-	}, z.string().max(1000).optional()),
+	}, z.string().max(1000, "Maximum 1000 characters").optional()),
 };
 
 export const userSchema = z
@@ -107,9 +107,9 @@ export const userSchema = z
 			.nullable()
 			.optional()
 			.transform((v) => (v === "" ? null : v)),
-		address1: z.string().max(100).nullable().optional(),
-		address2: z.string().max(100).nullable().optional(),
-		city: z.string().max(50).nullable().optional(),
+		address1: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+		address2: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+		city: z.string().max(50, "Maximum 50 characters").nullable().optional(),
 		state: z.string().max(2, "Two letter state abbreviation").nullable().optional(),
 		zip: z.string().max(5, "Five digit zip code").nullable().optional(),
 		birthMonth: z.preprocess(
@@ -124,10 +124,10 @@ export const userSchema = z
 			if (val == null) return ""; // convert null/undefined → ""
 			if (typeof val === "string") return val.trim();
 			return val;
-		}, z.string().max(1000).optional()),
+		}, z.string().max(1000, "Maximum 1000 characters").optional()),
 		isReentryClient: z.boolean().optional(),
 		followUpNeeded: z.boolean().optional(),
-		followUpNotes: z.string().max(1000).optional().nullable(),
+		followUpNotes: z.string().max(1000, "Maximum 1000 characters").optional().nullable(),
 		followUpDate: z.preprocess((val) => {
 			if (val === "" || val == null) return null;
 			return new Date(val as string);

@@ -16,6 +16,7 @@ import PhoneInput from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { CoachUpdate } from "@/userInteractions/db";
+import { trimStrings } from "@/utils/trim";
 
 export default function ClientUserForm({
 	user,
@@ -30,6 +31,7 @@ export default function ClientUserForm({
 	});
 
 	const onSubmit = async (values: z.infer<typeof coachSchema>) => {
+		values = trimStrings(values);
 		const coachUpdate = {
 			user: {
 				phone: values.phone,
@@ -96,6 +98,7 @@ export default function ClientUserForm({
 									/>
 								</FormControl>
 							</div>
+							<FormMessage />
 							{focusedField === "firstName" && (
 								<FormDescription>
 									User has a site login and must update their name through their profile settings.
@@ -124,6 +127,7 @@ export default function ClientUserForm({
 									/>
 								</FormControl>
 							</div>
+							<FormMessage />
 							{focusedField === "lastName" && (
 								<FormDescription>
 									User has a site login and must update their name through their profile settings.
@@ -150,6 +154,7 @@ export default function ClientUserForm({
 									/>
 								</FormControl>
 							</div>
+							<FormMessage />
 							{focusedField === "email" && (
 								<FormDescription>
 									User has a site login and must update their email through their profile settings.
@@ -172,6 +177,7 @@ export default function ClientUserForm({
 										placeholder="Address Line 1 (optional)"
 									/>
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -187,6 +193,7 @@ export default function ClientUserForm({
 										placeholder="Address Line 2 (optional)"
 									/>
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -198,6 +205,7 @@ export default function ClientUserForm({
 								<FormControl>
 									<Input {...field} value={field.value ?? ""} placeholder="City" />
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -213,6 +221,7 @@ export default function ClientUserForm({
 										placeholder="State (optional) e.g. ID"
 									/>
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -224,6 +233,7 @@ export default function ClientUserForm({
 								<FormControl>
 									<Input {...field} value={field.value ?? ""} placeholder="Zip Code (optional)" />
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -251,52 +261,6 @@ export default function ClientUserForm({
 						</FormItem>
 					)}
 				/>
-				{/* <FormField
-					control={form.control}
-					name="role"
-					render={({ field }) => (
-						<FormItem>
-							<div className="flex items-center gap-2">
-								<div className="flex items-center gap-0.5">
-									<RequiredLabelIcon />
-									<FormLabel tabIndex={-1}>Assign Roles</FormLabel>
-								</div>
-								<FormControl>
-									<RadioGroup
-										tabIndex={-1}
-										onValueChange={(value) => field.onChange(value)}
-										value={field.value}
-										className="flex gap-2 justify-center"
-									>
-										{roles.map((role) => (
-											<label
-												tabIndex={0}
-												key={role.id}
-												className={cn(
-													"cursor-pointer select-none rounded-md border px-3 py-0.5 text-sm font-medium transition-colors",
-													field.value === role.id
-														? "bg-primary text-primary-foreground border-primary"
-														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-												)}
-												onKeyDown={(e) => {
-													if (e.key === " " || e.key === "Enter") {
-														e.preventDefault();
-														const value = role.id;
-														field.onChange(value);
-													}
-												}}
-											>
-												<RadioGroupItem value={role.id} className="hidden" />
-												{role.name}
-											</label>
-										))}
-									</RadioGroup>
-								</FormControl>
-								<FormMessage />
-							</div>
-						</FormItem>
-					)}
-				/> */}
 				<FormField
 					control={form.control}
 					name="role"
