@@ -118,12 +118,12 @@ export default function VolunteerUpdateForm({
 			state: values.state?.trim(),
 			zip: values.zip?.trim(),
 			notes: values.notes?.trim(),
-			role: "volunteer",
 		};
 		if (!user?.firstName) {
 			const isDuplicateUserAction = findDuplicates.bind(null, values as User);
 			const duplicateUsers: User[] = await isDuplicateUserAction();
 			if (duplicateUsers.length) {
+				values.role = "volunteer";
 				setPendingValues(values);
 				setDuplicateUsers(duplicateUsers);
 				return; // stop original submit

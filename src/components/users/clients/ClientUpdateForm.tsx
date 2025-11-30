@@ -143,13 +143,13 @@ export default function ClientUpdateForm({
 			state: values.state?.trim(),
 			zip: values.zip?.trim(),
 			notes: values.notes?.trim(),
-			role: "client",
 		};
 
 		if (!user) {
 			const isDuplicateUserAction = findDuplicates.bind(null, values as User);
 			const duplicateUsers: User[] = await isDuplicateUserAction();
 			if (duplicateUsers.length) {
+				values.role = "client";
 				setPendingValues(values);
 				setDuplicateUsers(duplicateUsers);
 				return; // stop original submit
