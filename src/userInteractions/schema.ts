@@ -84,7 +84,17 @@ export const userSchema = z
 	.object({
 		firstName: z.string().min(2, "Required").max(30),
 		lastName: z.string().min(1, "Required").max(30),
-		role: z.enum(["client", "client-volunteer", "client-volunteer-staff"]),
+		role: z
+			.enum([
+				"staff",
+				"staff-volunteer",
+				"client",
+				"volunteer",
+				"client-volunteer",
+				"client-staff",
+				"client-staff-volunteer",
+			])
+			.optional(),
 		email: z
 			.string()
 			.email()
@@ -164,15 +174,18 @@ export const coachSchema = z.object({
 export const volunteerSchema = z
 	.object({
 		...userSchemaBase,
-		role: z.enum([
-			"volunteer",
-			"client-volunteer",
-			"client-volunteer-staff",
-			"staff-volunteer",
-			"coach-volunteer",
-			"coach-staff-volunteer",
-			"admin-coach-volunteer",
-		]),
+		role: z
+			.enum([
+				"admin-volunteer",
+				"admin-coach-volunteer",
+				"staff-volunteer",
+				"coach-volunteer",
+				"coach-staff-volunteer",
+				"volunteer",
+				"client-volunteer",
+				"client-staff-volunteer",
+			])
+			.optional(),
 		birthMonth: z.preprocess(
 			(val) => (val === "" || val == null ? null : Number(val)),
 			z.number().min(1).max(12).nullable().optional()
@@ -202,11 +215,3 @@ export const volunteerSchema = z
 			});
 		}
 	});
-
-// export const volunteerRoleSchema = z.object({
-// 	role: z.enum(["volunteer", "client-volunteer", "staff-volunteer", "client-volunteer-staff"]),
-// });
-// export const staffRoleSchema = z.object({
-// 	role: z.enum(["staff", "staff-volunteer", "coach-staff", "coach-staff-volunteer", "client-volunteer-staff"]),
-// });
-// export const adminRolesSchema = z.object({ role: z.enum(["admin", "admin-coach", "admin-coach-volunteer"]) });

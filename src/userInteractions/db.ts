@@ -93,7 +93,7 @@ export async function addUser(data: typeof user.$inferInsert & { isReentryClient
 	return userInsert;
 }
 
-export async function updateUserById(
+export async function updateClientUserById(
 	id: string,
 	data: Partial<typeof user.$inferInsert> & {
 		isReentryClient?: boolean;
@@ -109,18 +109,19 @@ export async function updateUserById(
 		if (previousRole && previousRole !== userUpdated.role) await syncClerkUserMetadata(userUpdated);
 
 		if (userUpdated.role?.includes("client")) {
-			const [clientUpdated] = await tx
-				.update(client)
-				.set({
-					isReentryClient: data.isReentryClient ?? false,
-					followUpNeeded: data.followUpNeeded ?? false,
-					followUpDate: data.followUpDate ?? null,
-					followUpNotes: data.followUpNotes ?? null,
-				})
-				.where(eq(client.id, id))
-				.returning();
-			if (!clientUpdated) {
-				throw new Error("Failed to update client for user");
+			const clientUpdates: Partial<typeof client.$inferInsert> = {};
+
+			if ("isReentryClient" in data) clientUpdates.isReentryClient = data.isReentryClient!;
+			if ("followUpNeeded" in data) clientUpdates.followUpNeeded = data.followUpNeeded!;
+			if ("followUpDate" in data) clientUpdates.followUpDate = data.followUpDate!;
+			if ("followUpNotes" in data) clientUpdates.followUpNotes = data.followUpNotes!;
+
+			if (Object.keys(clientUpdates).length > 0) {
+				const [clientUpdated] = await tx.update(client).set(clientUpdates).where(eq(client.id, id)).returning();
+
+				if (!clientUpdated) {
+					throw new Error("Failed to update client for user");
+				}
 			}
 		}
 

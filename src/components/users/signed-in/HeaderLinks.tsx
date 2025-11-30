@@ -14,11 +14,12 @@ export default async function HeaderLinks() {
 
 	const url = h.get("x-url");
 	const pathName = url ? new URL(url).pathname : null;
+	const accepted = user?.data?.accepted;
 
-	const admin = user && canAccessAdminPages(user);
-	const coach = user && canAccessCoachPages(user);
-	const client = user && user.data?.role.includes("client");
-	const volunteer = user && user.data?.role.includes("volunteer");
+	const admin = user && accepted && canAccessAdminPages(user);
+	const coach = user && accepted && canAccessCoachPages(user);
+	const client = user && accepted && user.data?.role.includes("client");
+	const volunteer = user && accepted && user.data?.role.includes("volunteer");
 
 	return (
 		<>

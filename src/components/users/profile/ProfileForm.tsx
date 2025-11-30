@@ -18,6 +18,7 @@ import { updateClerkUser } from "@/userInteractions/actions";
 import { redirect } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
+import { Loader2 } from "lucide-react";
 
 export default function ProfileForm({
 	profile,
@@ -92,8 +93,13 @@ export default function ProfileForm({
 	if (!mounted) return null; // prevents hydration mismatch
 
 	if (!profile) {
-		setTimeout(() => window.location.reload(), 1);
-		return <></>;
+		setTimeout(() => window.location.reload(), 4000);
+		return (
+			<div className="flex justify-center items-center p-7 flex-col gap-4">
+				<div className="text-center text-sm opacity-80">Syncing your profile…</div>
+				<Loader2 className="w-8 h-8 text-foreground/80 animate-spin" />
+			</div>
+		);
 	}
 
 	return (

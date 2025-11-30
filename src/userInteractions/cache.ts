@@ -7,6 +7,12 @@ export const revalidateUserCache = async (id: string) => {
 	revalidateTag(cacheTags.getAllUsersGlobalTag(), "max");
 	revalidateTag(cacheTags.getUserIdTag(id), "max");
 	revalidatePath("/");
+	revalidatePath("/admin/clients");
+	revalidatePath(`/admin/clients/${id}/edit`);
+	revalidatePath("/admin/volunteers");
+	revalidatePath(`/admin/volunteers/${id}/edit`);
+	revalidatePath("/coach");
+	revalidatePath(`/coach/clients/${id}/edit`);
 };
 
 export const revalidateClientCache = async (id: string, coachIsViewing?: boolean) => {

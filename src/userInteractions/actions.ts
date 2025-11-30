@@ -22,7 +22,7 @@ import {
 	updateCoachHoursById,
 	updateCoachMileageById,
 	updateClerkUserById,
-	updateUserById,
+	updateClientUserById,
 	getUserById,
 	VolunteerHours,
 	addVolunteerHoursById,
@@ -46,7 +46,7 @@ export const updateUser = async (
 ) => {
 	const { success, data } = userSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Invalid data" };
-	const rv = await updateUserById(id, data, unsafeData.previousRole);
+	const rv = await updateClientUserById(id, data, unsafeData.previousRole);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
 };
 
@@ -129,7 +129,7 @@ export const updateVolunteer = async (
 	id: string,
 	unsafeData: Partial<typeof user.$inferInsert> & { previousRole?: string }
 ) => {
-	const { success, data } = userSchema.safeParse(unsafeData);
+	const { success, data } = volunteerSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Invalid data" };
 	const rv = await updateVolunteerById(id, data, unsafeData.previousRole);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };

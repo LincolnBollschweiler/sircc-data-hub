@@ -1,1 +1,0 @@
-ALTER TABLE "coach_hours" ADD COLUMN "notes" varchar(1000);
