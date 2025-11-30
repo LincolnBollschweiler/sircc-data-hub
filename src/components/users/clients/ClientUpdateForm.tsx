@@ -514,6 +514,8 @@ export default function ClientUpdateForm({
 														>
 															<Calendar
 																mode="single"
+																startMonth={new Date(2023, 0)}
+																endMonth={new Date(2040, 11)}
 																selected={selectedDate || undefined}
 																captionLayout="dropdown"
 																onSelect={(newDate) => {
