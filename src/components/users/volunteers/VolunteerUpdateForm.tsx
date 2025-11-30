@@ -6,8 +6,6 @@ import { z } from "zod";
 import { volunteerSchema } from "@/userInteractions/schema";
 import { createVolunteer, updateVolunteer } from "@/userInteractions/actions";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { cn } from "@/lib/utils";
 import RequiredLabelIcon from "@/components/RequiredLabelIcon";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DuplicateReviewDialog } from "../duplicate/DuplicateReviewDialog";
 import { User } from "@/types";
 import { findDuplicates } from "../duplicate/duplicates";
+import { mergeRoles } from "../duplicate/mergeRoles";
 
 export default function VolunteerUpdateForm({
 	user,
@@ -69,19 +68,11 @@ export default function VolunteerUpdateForm({
 		duplicateUser: User,
 		newUserValues: z.infer<typeof volunteerSchema> & { previousRole?: string }
 	) => {
-		if (
-			newUserValues.role.includes("client") &&
-			(duplicateUser.role.includes("admin") ||
-				duplicateUser.role.includes("coach") ||
-				duplicateUser.role.includes("developer"))
-		) {
-			let role = "Coach";
-			if (duplicateUser.role.includes("admin")) role = "Admin";
-			else if (duplicateUser.role.includes("developer")) role = "Developer";
+		if (duplicateUser.role.includes("developer")) {
 			actionToast({
 				actionData: {
 					error: true,
-					message: `Not allowed: trying to merge with an existing ${role}.`,
+					message: `Not allowed: trying to merge with an existing developer.`,
 				},
 			});
 			return;
@@ -106,15 +97,13 @@ export default function VolunteerUpdateForm({
 
 		// special merge for notes (append)
 		newUser.notes = [newUserValues.notes, duplicateUser.notes].filter(Boolean).join("\n");
-
-		debugger;
+		newUser.role = mergeRoles(duplicateUser.role, newUserValues.role!) as z.infer<typeof volunteerSchema>["role"];
 
 		const action = updateVolunteer.bind(null, duplicateUser.id);
 		const actionData = await action({ ...newUser, previousRole: duplicateUser.role });
 
 		if (actionData) actionToast({ actionData });
 		if (!actionData.error) onSuccess?.();
-		cleanup();
 	};
 
 	const onSubmit = async (values: z.infer<typeof volunteerSchema> & { previousRole?: string }) => {
@@ -128,6 +117,8 @@ export default function VolunteerUpdateForm({
 			city: values.city?.trim(),
 			state: values.state?.trim(),
 			zip: values.zip?.trim(),
+			notes: values.notes?.trim(),
+			role: "volunteer",
 		};
 		if (!user?.firstName) {
 			const isDuplicateUserAction = findDuplicates.bind(null, values as User);
@@ -141,16 +132,6 @@ export default function VolunteerUpdateForm({
 
 		await runCreateOrUpdate(values);
 	};
-
-	const roles = [
-		{ id: "volunteer", name: "Volunteer" },
-		{ id: "client-volunteer", name: "Client & Volunteer" },
-		{ id: "client-staff-volunteer", name: "Client Volunteer & Staff" },
-		{ id: "staff-volunteer", name: "Staff & Volunteer" },
-		{ id: "coach-volunteer", name: "Coach & Volunteer" },
-		{ id: "coach-staff-volunteer", name: "Coach & Staff & Volunteer" },
-		{ id: "admin-coach-volunteer", name: "Admin & Coach & Volunteer" },
-	];
 
 	const [phone, setPhone] = useState(user?.phone || "");
 	const updatePhone = (value: string) => {
@@ -402,52 +383,6 @@ export default function VolunteerUpdateForm({
 											</FormItem>
 										)}
 									/>
-								</div>
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="role"
-						render={({ field }) => (
-							<FormItem>
-								<div className="flex flex-col gap-3">
-									<div className="flex items-center gap-0.5">
-										<RequiredLabelIcon />
-										<FormLabel tabIndex={-1}>Assign Roles</FormLabel>
-									</div>
-									<FormControl>
-										<RadioGroup
-											tabIndex={-1}
-											onValueChange={(value) => field.onChange(value)}
-											value={field.value}
-											className="grid grid-cols-1 sm:grid-cols-2 gap-2"
-										>
-											{roles.map((role) => (
-												<label
-													tabIndex={0}
-													key={role.id}
-													className={cn(
-														"cursor-pointer select-none rounded-md border p-1 text-center text-sm font-medium shadow-sm transition-colors",
-														field.value === role.id
-															? "bg-primary text-primary-foreground border-primary"
-															: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-													)}
-													onKeyDown={(e) => {
-														if (e.key === " " || e.key === "Enter") {
-															e.preventDefault();
-															const value = role.id;
-															field.onChange(value);
-														}
-													}}
-												>
-													<RadioGroupItem value={role.id} className="hidden" />
-													{role.name}
-												</label>
-											))}
-										</RadioGroup>
-									</FormControl>
-									<FormMessage />
 								</div>
 							</FormItem>
 						)}

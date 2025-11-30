@@ -59,6 +59,10 @@ export const createVolunteerType = async (data: typeof table.volunteeringType.$i
 	const [newVolunteeringType] = await db.insert(table.volunteeringType).values(data).returning();
 	return newVolunteeringType?.id;
 };
+export const createReentryChecklistItem = async (data: typeof table.reentryCheckListItem.$inferInsert) => {
+	const [newReentryChecklistItem] = await db.insert(table.reentryCheckListItem).values(data).returning();
+	return newReentryChecklistItem?.id;
+};
 export const createVisit = async (data: typeof table.visit.$inferInsert) => {
 	const [newVisit] = await db.insert(table.visit).values(data).returning();
 	return newVisit?.id;

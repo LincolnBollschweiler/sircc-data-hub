@@ -25,7 +25,9 @@ import {
 	addClientService,
 	deleteAllClientService,
 	deleteAllClient,
+	createReentryChecklistItem,
 } from "@/tableInteractions/adminActions";
+import { revalidatAllCaches } from "@/tableInteractions/cache";
 import Papa from "papaparse";
 import { queryUserById } from "@/userInteractions/actions";
 
@@ -99,6 +101,8 @@ body.light {
 	const process = () => createNewTheme(iamsajidThemeInputText);
 
 	const loadDataTypeValues = async () => await loadClients();
+	const loadOther = async () => await loadNonClientPageData();
+	const revalidate = async () => await revalidateAllPages();
 
 	return (
 		<main className="container py-6">
@@ -154,9 +158,49 @@ body.light {
 				<h2 className="text-2xl font-semibold mb-2">Parse CSV</h2>
 				<Button onClick={loadDataTypeValues}>Load in Clients and Client Data Types</Button>
 			</section>
+			<section>
+				<h2 className="text-2xl font-semibold mb-2">Load Non-Client Page Data</h2>
+				<Button onClick={loadOther}>Load in Non-Client Page Data</Button>
+			</section>
+			<section>
+				<h2 className="text-2xl font-semibold mb-2">Revalidate</h2>
+				<Button onClick={revalidate}>Revalidate All Pages</Button>
+			</section>
 		</main>
 	);
 }
+
+const revalidateAllPages = async () => {
+	revalidatAllCaches();
+};
+
+const loadNonClientPageData = async () => {
+	const [reentry, volunteer] = await Promise.all([
+		fetch(`/temp-load-in/reentryCheckListItem.csv`),
+		fetch(`/temp-load-in/volunteeringType.csv`),
+	]);
+
+	const reentryText = await reentry.text();
+	const volunteerText = await volunteer.text();
+
+	const reentryItems = reentryText
+		.split(",")
+		.map((item) => item.trim())
+		.sort();
+	const volunteerItems = volunteerText
+		.split(",")
+		.map((item) => item.trim())
+		.sort();
+
+	await deleteAllFromDb("reentryCheckListItem");
+	await deleteAllFromDb("volunteeringType");
+	for (const item of reentryItems) {
+		await addToDb("reentryCheckListItem", item);
+	}
+	for (const item of volunteerItems) {
+		await addToDb("volunteeringType", item);
+	}
+};
 
 const deleteAllFromDb = async (type: string) => {
 	let deleteAction;
@@ -252,6 +296,14 @@ const addToDb = async (type: string, name: string) => {
 			action = createVolunteerType;
 			return await action({ name, description: "" });
 			break;
+		case "volunteeringType":
+			action = createVolunteerType;
+			return await action({ name, description: "" });
+			break;
+		case "reentryCheckListItem":
+			action = createReentryChecklistItem;
+			return await action({ name, description: "" });
+			break;
 		default:
 			console.warn(`No action defined for type: ${name}`);
 			return;
@@ -343,7 +395,7 @@ const addUserData = async (data) => {
 	}
 
 	// pull out the existing coach and admin user IDs to save and push back later
-	const saveUserIds = ["8b9667f1-e7f3-405a-b58d-12964558aa36", "b90b0c5d-3f69-4e7d-b86c-fab5be7d7a38"];
+	const saveUserIds = ["e2240b07-2d12-4cb6-af1a-1c936a1d8e2e"];
 
 	const getUserAction = queryUserById.bind(null);
 	const savedUsers = await Promise.all(saveUserIds.map((id) => getUserAction(id)));

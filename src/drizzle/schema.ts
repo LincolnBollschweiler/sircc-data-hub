@@ -21,7 +21,23 @@ const deletedAt = timestamp("deleted_at", { withTimezone: true });
 
 // In your generated migration .sql, add these two CREATE TYPE lines to .sql migration (before any CREATE TABLE statements):
 // -- Enums
-// CREATE TYPE "user_role" AS ENUM ('developer', 'admin', 'admin-coach', 'admin-coach-volunteer', 'staff', 'staff-volunteer', 'coach', 'coach-staff', 'coach-volunteer', 'coach-staff-volunteer', 'client', 'volunteer', 'client-volunteer', 'client-staff-volunteer');
+// CREATE TYPE "user_role" AS ENUM ('developer',
+// 	'admin',
+// 	'admin-coach',
+// 	'admin-volunteer',
+// 	'admin-coach-volunteer',
+// 	'staff',
+// 	'staff-volunteer',
+// 	'coach',
+// 	'coach-staff',
+// 	'coach-volunteer',
+// 	'coach-staff-volunteer',
+// 	'client',
+// 	'volunteer',
+// 	'client-volunteer',
+// 	'client-staff',
+// 	'client-staff-volunteer');
+
 // CREATE TYPE "theme_preference" AS ENUM ('light', 'dark', 'system');
 
 // ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'admin-volunteer';
@@ -56,7 +72,7 @@ const userRoles = [
 	"volunteer",
 	"client-volunteer",
 	"client-staff",
-	"client-volunteer-staff",
+	"client-staff-volunteer",
 ] as const;
 export type UserRole = (typeof userRoles)[number];
 const userRoleEnum = pgEnum("user_role", userRoles);

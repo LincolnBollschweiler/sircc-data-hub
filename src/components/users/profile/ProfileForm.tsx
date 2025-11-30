@@ -93,7 +93,7 @@ export default function ProfileForm({
 	if (!mounted) return null; // prevents hydration mismatch
 
 	if (!profile) {
-		setTimeout(() => window.location.reload(), 2000);
+		setTimeout(() => window.location.reload(), 4000);
 		return (
 			<div className="flex justify-center items-center p-7 flex-col gap-4">
 				<div className="text-center text-sm opacity-80">Syncing your profile…</div>

@@ -1,24 +1,21 @@
-CREATE TYPE "user_role" AS ENUM (
-  'developer',
-  'admin',
-  'admin-coach',
-  'admin-volunteer',
-  'admin-coach-volunteer',
-  'staff',
-  'staff-volunteer',
-  'coach',
-  'coach-staff',
-  'coach-volunteer',
-  'coach-staff-volunteer',
-  'client',
-  'volunteer',
-  'client-volunteer',
-  'client-staff',
-  'client-volunteer-staff'
-);
+CREATE TYPE "user_role" AS ENUM ('developer',
+	'admin',
+	'admin-coach',
+	'admin-volunteer',
+	'admin-coach-volunteer',
+	'staff',
+	'staff-volunteer',
+	'coach',
+	'coach-staff',
+	'coach-volunteer',
+	'coach-staff-volunteer',
+	'client',
+	'volunteer',
+	'client-volunteer',
+	'client-staff',
+	'client-staff-volunteer');
 
 CREATE TYPE "theme_preference" AS ENUM ('light', 'dark', 'system');
-
 
 CREATE TABLE "city" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

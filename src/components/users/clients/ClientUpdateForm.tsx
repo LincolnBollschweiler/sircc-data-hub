@@ -7,8 +7,6 @@ import { userSchema } from "@/userInteractions/schema";
 import { createUser, updateUser } from "@/userInteractions/actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { cn } from "@/lib/utils";
 import RequiredLabelIcon from "@/components/RequiredLabelIcon";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -117,7 +115,7 @@ export default function ClientUpdateForm({
 		if (!newUser.birthDay && duplicateUser.birthDay) newUser.birthDay = duplicateUser.birthDay;
 
 		//disallow removal of an existing role
-		newUser.role = mergeRoles(duplicateUser.role, newUser.role) as z.infer<typeof userSchema>["role"];
+		newUser.role = mergeRoles(duplicateUser.role, newUser.role!) as z.infer<typeof userSchema>["role"];
 
 		// special merge for notes (append)
 		newUser.notes = [newUserValues.notes, duplicateUser.notes].filter(Boolean).join("\n");
@@ -144,7 +142,10 @@ export default function ClientUpdateForm({
 			city: values.city?.trim(),
 			state: values.state?.trim(),
 			zip: values.zip?.trim(),
+			notes: values.notes?.trim(),
+			role: "client",
 		};
+
 		if (!user) {
 			const isDuplicateUserAction = findDuplicates.bind(null, values as User);
 			const duplicateUsers: User[] = await isDuplicateUserAction();
@@ -157,11 +158,6 @@ export default function ClientUpdateForm({
 
 		await runCreateOrUpdate(values);
 	};
-
-	const roles = [
-		{ id: "client", name: "Client" },
-		{ id: "client-volunteer", name: "Client & Volunteer" },
-	];
 
 	const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(user ? !!user.followUpDate : false);
 
@@ -416,56 +412,6 @@ export default function ClientUpdateForm({
 											</FormItem>
 										)}
 									/>
-								</div>
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="role"
-						render={({ field }) => (
-							<FormItem>
-								<div className="flex flex-col gap-3">
-									<div className="flex items-center gap-0.5">
-										<RequiredLabelIcon />
-										<FormLabel tabIndex={-1}>Assign Roles</FormLabel>
-									</div>
-									<FormControl>
-										<RadioGroup
-											tabIndex={-1}
-											onValueChange={(value) => field.onChange(value)}
-											value={field.value}
-											className={cn(
-												"grid grid-cols-1 sm:grid-cols-2 gap-2",
-												roles.length % 2 === 1 &&
-													"sm:[&>*:last-child]:col-span-2 sm:[&>*:last-child]:justify-self-center"
-											)}
-										>
-											{roles.map((role) => (
-												<label
-													tabIndex={0}
-													key={role.id}
-													className={cn(
-														"cursor-pointer select-none rounded-md border py-1 px-3 text-center text-sm font-medium shadow-sm transition-colors",
-														field.value === role.id
-															? "bg-primary text-primary-foreground border-primary"
-															: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-													)}
-													onKeyDown={(e) => {
-														if (e.key === " " || e.key === "Enter") {
-															e.preventDefault();
-															const value = role.id;
-															field.onChange(value);
-														}
-													}}
-												>
-													<RadioGroupItem value={role.id} className="hidden" />
-													{role.name}
-												</label>
-											))}
-										</RadioGroup>
-									</FormControl>
-									<FormMessage />
 								</div>
 							</FormItem>
 						)}

@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { User } from "@/types";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatPhoneNumber } from "react-phone-number-input";
+import { mergeRoles } from "./mergeRoles";
 
 export function DuplicateReviewDialog({
 	open,
@@ -53,7 +55,7 @@ export function DuplicateReviewDialog({
 						{duplicates.map((dup) => (
 							<CarouselItem key={dup.id} className="basis-full">
 								<Card
-									className={`cursor-pointer border-2 transition-all ${
+									className={`border-2 transition-all ${
 										chosenDuplicate?.id === dup.id
 											? "border-blue-500 shadow-lg"
 											: "border-transparent opacity-80"
@@ -80,6 +82,11 @@ export function DuplicateReviewDialog({
 										/>
 										<FieldRow label="Email" existing={dup.email} pending={pendingValues.email} />
 										<FieldRow label="Phone" existing={dup.phone} pending={pendingValues.phone} />
+										<FieldRow
+											label="Address 1"
+											existing={dup.address1}
+											pending={pendingValues.address1}
+										/>
 										<FieldRow label="City" existing={dup.city} pending={pendingValues.city} />
 										<FieldRow label="State" existing={dup.state} pending={pendingValues.state} />
 										<FieldRow label="Zip" existing={dup.zip} pending={pendingValues.zip} />
@@ -97,13 +104,19 @@ export function DuplicateReviewDialog({
 						Cancel
 					</Button>
 
-					<Button onClick={() => onCreateNew(pendingValues)}>Create New User</Button>
+					<Button
+						className="text-foreground/90 bg-warning hover:bg-warning/80"
+						onClick={() => onCreateNew(pendingValues)}
+					>
+						Create a New User
+					</Button>
 
 					<Button
 						disabled={!chosenDuplicate}
+						className="text-foreground/90 bg-green-600 hover:bg-green-600/80"
 						onClick={() => chosenDuplicate && onMerge(chosenDuplicate, pendingValues)}
 					>
-						Merge Selected
+						Merge with Selected
 					</Button>
 				</div>
 			</DialogContent>
@@ -114,17 +127,42 @@ export function DuplicateReviewDialog({
 function FieldRow({ label, existing, pending }: { label: string; existing?: string | null; pending?: string | null }) {
 	const different = (existing ?? "") !== (pending ?? "");
 
+	const redClass = "text-red-600 font-semibold truncate";
+	const greenClass = "text-green-600 font-semibold truncate";
+	const neutralClass = "truncate";
+
+	let existingClass = neutralClass;
+	let pendingClass = neutralClass;
+
+	if (!existing && pending) {
+		pendingClass = greenClass;
+		existingClass = redClass;
+	} else if (existing && !pending) {
+		existingClass = greenClass;
+		pendingClass = redClass;
+	} else if (different) {
+		existingClass = redClass;
+		pendingClass = greenClass;
+	}
+
+	let existingText = existing;
+	let pendingText = pending;
+
+	if (label === "Phone") {
+		existingText = existing && formatPhoneNumber(existing);
+		pendingText = pending && formatPhoneNumber(pending);
+	} else if (label === "Role") {
+		pendingText = mergeRoles(existing || "", pending || "");
+		existingClass = existingClass.replace("truncate", "whitespace-pre-wrap");
+		pendingClass = pendingClass.replace("truncate", "whitespace-pre-wrap");
+	}
 	return (
-		<div className="grid grid-cols-[1fr_2fr_2fr] gap-2 py-1 text-sm ">
+		<div className="grid grid-cols-[1fr_2fr_2fr] gap-2 py-0.5 text-sm ">
 			<div className="font-medium text-muted-foreground">{label}</div>
 
-			<div className={different ? "text-red-600 font-semibold truncate" : "truncate"}>
-				{existing || <span className="opacity-50">—</span>}
-			</div>
+			<div className={existingClass}>{existingText || <span className="opacity-50">—</span>}</div>
 
-			<div className={different ? "text-green-600 font-semibold truncate" : "truncate"}>
-				{pending || <span className="opacity-50">—</span>}
-			</div>
+			<div className={pendingClass}>{pendingText || <span className="opacity-50">—</span>}</div>
 		</div>
 	);
 }

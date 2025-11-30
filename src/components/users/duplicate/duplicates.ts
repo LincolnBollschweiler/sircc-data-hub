@@ -1,16 +1,22 @@
 "use server";
 
 import { User } from "@/types";
-import { user } from "@/drizzle/schema";
 import { db } from "@/drizzle/db";
 import { and, eq, isNull, sql } from "drizzle-orm";
+import { user } from "@/drizzle/schema";
+// import { clientRoles, user, volunteerRoles } from "@/drizzle/schema";
+// import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 
 export const findDuplicates = async (potentialUser: User) => {
 	const { phone, firstName, lastName, birthDay, birthMonth } = potentialUser;
 
 	const duplicateByPhone = phone
 		? await db.query.user.findMany({
-				where: and(eq(user.phone, phone), isNull(user.deletedAt)),
+				where: and(
+					eq(user.phone, phone),
+					isNull(user.deletedAt)
+					// or(inArray(user.role, clientRoles), inArray(user.role, volunteerRoles))
+				),
 		  })
 		: [];
 
@@ -24,6 +30,7 @@ export const findDuplicates = async (potentialUser: User) => {
 						eq(user.birthDay, birthDay),
 						eq(user.birthMonth, birthMonth),
 						isNull(user.deletedAt)
+						// or(inArray(user.role, clientRoles), inArray(user.role, volunteerRoles))
 					),
 			  })
 			: [];

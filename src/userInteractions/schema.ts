@@ -84,15 +84,17 @@ export const userSchema = z
 	.object({
 		firstName: z.string().min(2, "Required").max(30),
 		lastName: z.string().min(1, "Required").max(30),
-		role: z.enum([
-			"staff",
-			"staff-volunteer",
-			"client",
-			"volunteer",
-			"client-volunteer",
-			"client-staff",
-			"client-staff-volunteer",
-		]),
+		role: z
+			.enum([
+				"staff",
+				"staff-volunteer",
+				"client",
+				"volunteer",
+				"client-volunteer",
+				"client-staff",
+				"client-staff-volunteer",
+			])
+			.optional(),
 		email: z
 			.string()
 			.email()
@@ -172,15 +174,18 @@ export const coachSchema = z.object({
 export const volunteerSchema = z
 	.object({
 		...userSchemaBase,
-		role: z.enum([
-			"volunteer",
-			"client-volunteer",
-			"client-staff-volunteer",
-			"staff-volunteer",
-			"coach-volunteer",
-			"coach-staff-volunteer",
-			"admin-coach-volunteer",
-		]),
+		role: z
+			.enum([
+				"admin-volunteer",
+				"admin-coach-volunteer",
+				"staff-volunteer",
+				"coach-volunteer",
+				"coach-staff-volunteer",
+				"volunteer",
+				"client-volunteer",
+				"client-staff-volunteer",
+			])
+			.optional(),
 		birthMonth: z.preprocess(
 			(val) => (val === "" || val == null ? null : Number(val)),
 			z.number().min(1).max(12).nullable().optional()
