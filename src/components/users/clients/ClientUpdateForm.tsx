@@ -22,6 +22,7 @@ import { ChevronDownIcon } from "lucide-react";
 import { findDuplicates } from "../duplicate/duplicates";
 import { User } from "@/types";
 import { DuplicateReviewDialog } from "../duplicate/DuplicateReviewDialog";
+import { mergeRoles } from "../duplicate/mergeRoles";
 
 export default function ClientUpdateForm({
 	user,
@@ -115,13 +116,14 @@ export default function ClientUpdateForm({
 		if (!newUser.birthMonth && duplicateUser.birthMonth) newUser.birthMonth = duplicateUser.birthMonth;
 		if (!newUser.birthDay && duplicateUser.birthDay) newUser.birthDay = duplicateUser.birthDay;
 
+		//disallow removal of an existing role
+		newUser.role = mergeRoles(duplicateUser.role, newUser.role) as z.infer<typeof userSchema>["role"];
+
 		// special merge for notes (append)
 		newUser.notes = [newUserValues.notes, duplicateUser.notes].filter(Boolean).join("\n");
 		delete newUser.followUpDate; // handled server-side
 		delete newUser.followUpNeeded; // handled server-side
 		delete newUser.followUpNotes; // handled server-side
-
-		debugger;
 
 		const action = updateUser.bind(null, duplicateUser.id);
 		const actionData = await action({ ...newUser, previousRole: duplicateUser.role });
@@ -159,7 +161,6 @@ export default function ClientUpdateForm({
 	const roles = [
 		{ id: "client", name: "Client" },
 		{ id: "client-volunteer", name: "Client & Volunteer" },
-		{ id: "client-volunteer-staff", name: "Client & Volunteer & Staff" },
 	];
 
 	const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(user ? !!user.followUpDate : false);

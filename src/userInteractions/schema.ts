@@ -84,7 +84,15 @@ export const userSchema = z
 	.object({
 		firstName: z.string().min(2, "Required").max(30),
 		lastName: z.string().min(1, "Required").max(30),
-		role: z.enum(["client", "client-volunteer", "client-volunteer-staff"]),
+		role: z.enum([
+			"staff",
+			"staff-volunteer",
+			"client",
+			"volunteer",
+			"client-volunteer",
+			"client-staff",
+			"client-staff-volunteer",
+		]),
 		email: z
 			.string()
 			.email()
@@ -167,7 +175,7 @@ export const volunteerSchema = z
 		role: z.enum([
 			"volunteer",
 			"client-volunteer",
-			"client-volunteer-staff",
+			"client-staff-volunteer",
 			"staff-volunteer",
 			"coach-volunteer",
 			"coach-staff-volunteer",
@@ -202,11 +210,3 @@ export const volunteerSchema = z
 			});
 		}
 	});
-
-// export const volunteerRoleSchema = z.object({
-// 	role: z.enum(["volunteer", "client-volunteer", "staff-volunteer", "client-volunteer-staff"]),
-// });
-// export const staffRoleSchema = z.object({
-// 	role: z.enum(["staff", "staff-volunteer", "coach-staff", "coach-staff-volunteer", "client-volunteer-staff"]),
-// });
-// export const adminRolesSchema = z.object({ role: z.enum(["admin", "admin-coach", "admin-coach-volunteer"]) });

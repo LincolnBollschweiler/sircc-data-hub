@@ -343,11 +343,7 @@ const addUserData = async (data) => {
 	}
 
 	// pull out the existing coach and admin user IDs to save and push back later
-	const saveUserIds = [
-		"71b7ebe9-9497-4a8f-91b4-f3b930ebeec5",
-		"bb01ccbe-2a86-4401-b70e-7464520cda40",
-		"cbc7caf3-776c-4bd9-99aa-22a983fb4f3e",
-	];
+	const saveUserIds = ["8b9667f1-e7f3-405a-b58d-12964558aa36", "b90b0c5d-3f69-4e7d-b86c-fab5be7d7a38"];
 
 	const getUserAction = queryUserById.bind(null);
 	const savedUsers = await Promise.all(saveUserIds.map((id) => getUserAction(id)));

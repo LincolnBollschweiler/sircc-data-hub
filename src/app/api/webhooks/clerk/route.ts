@@ -16,7 +16,6 @@ export async function POST(req: Request) {
 			status: 400,
 		});
 	}
-
 	const payload = await req.json();
 	const body = JSON.stringify(payload);
 
@@ -34,7 +33,6 @@ export async function POST(req: Request) {
 			status: 400,
 		});
 	}
-
 	switch (event.type) {
 		case "user.created":
 		case "user.updated": {
