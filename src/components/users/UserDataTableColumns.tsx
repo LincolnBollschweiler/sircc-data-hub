@@ -13,7 +13,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteCoachMiles, deleteCoachHours, updateClerkUser } from "@/userInteractions/actions";
+import { deleteCoachMiles, deleteCoachHours, updateClerkUser, updateUserRole } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
@@ -32,6 +32,9 @@ import {
 } from "@/userInteractions/db";
 import Image from "next/image";
 import VolunteerHoursDialog from "./volunteers/VolunteerHoursDialog";
+import { removeRole } from "./duplicate/mergeRoles";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
+import { createRoot } from "react-dom/client";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -55,16 +58,73 @@ const processAcceptance = async (user: Partial<User>, accepted: boolean | null) 
 const removeCoachHours = async (id: string) => {
 	const action = deleteCoachHours.bind(null, id);
 	const actionData = await action();
-	if (actionData) {
-		actionToast({ actionData });
-	}
+	if (actionData) actionToast({ actionData });
 };
 
 const removeCoachMiles = async (id: string) => {
 	const action = deleteCoachMiles.bind(null, id);
 	const actionData = await action();
-	if (actionData) {
-		actionToast({ actionData });
+	if (actionData) actionToast({ actionData });
+};
+
+const removeUserRole = async (user: User, role: string) => {
+	const updatedRole = removeRole(user.role, role) as User["role"];
+	const action = user.clerkUserId ? updateClerkUser.bind(null, user.id) : updateUserRole.bind(null, user.id);
+	const actionData = await action({ ...user, role: updatedRole });
+	if (actionData) actionToast({ actionData });
+};
+
+const confirmRemoveRole = async (user: User, role: string) => {
+	let confirmed = false;
+
+	await new Promise<void>((resolve) => {
+		const handleConfirm = () => {
+			root.render(null);
+			document.body.removeChild(container);
+			confirmed = true;
+			resolve();
+		};
+		const handleCancel = () => {
+			root.render(null);
+			document.body.removeChild(container);
+			resolve();
+		};
+
+		const DialogComponent = () => (
+			<Dialog open={true} onOpenChange={handleCancel}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Remove Role</DialogTitle>
+					</DialogHeader>
+					<div className="py-2">
+						Are you sure you want to remove the <strong>{role}</strong> role from{" "}
+						<strong>
+							{user.firstName} {user.lastName}
+						</strong>
+						?
+					</div>
+					<DialogFooter className="flex justify-end gap-2">
+						<Button variant="outline" onClick={handleCancel}>
+							Cancel
+						</Button>
+						<Button variant="destructive" onClick={handleConfirm}>
+							Remove Role
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		);
+
+		// render the dialog temporarily
+		const container = document.createElement("div");
+		document.body.appendChild(container);
+
+		const root = createRoot(container);
+		root.render(<DialogComponent />);
+	});
+
+	if (confirmed) {
+		await removeUserRole(user, role);
 	}
 };
 
@@ -510,6 +570,14 @@ export const userDataTableColumns = (
 										>
 											View or Edit Client
 										</a>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => confirmRemoveRole(user, "client")}
+									>
+										Remove Client Role
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
@@ -1013,6 +1081,14 @@ export const userDataTableColumns = (
 											View or Edit Volunteer
 										</a>
 									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => confirmRemoveRole(user, "volunteer")}
+									>
+										Remove Volunteer Role
+									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</div>
@@ -1479,9 +1555,7 @@ export const userDataTableColumns = (
 											Send Email
 										</a>
 									</DropdownMenuItem>
-
 									<DropdownMenuSeparator />
-
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -1489,6 +1563,14 @@ export const userDataTableColumns = (
 										>
 											View or Edit Coach
 										</a>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => confirmRemoveRole(user, "coach")}
+									>
+										Remove Coach Role
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>

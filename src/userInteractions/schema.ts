@@ -38,6 +38,26 @@ export const clerkUserSchema = z
 			return val;
 		}, z.string().max(1000, "Maximum 1000 characters").optional()),
 		desiredRole: z.enum(["admin", "coach", "client", "volunteer", "staff"]).nullable(),
+		role: z
+			.enum([
+				"developer",
+				"admin",
+				"admin-coach",
+				"admin-volunteer",
+				"admin-coach-volunteer",
+				"staff",
+				"staff-volunteer",
+				"coach",
+				"coach-staff",
+				"coach-volunteer",
+				"coach-staff-volunteer",
+				"client",
+				"volunteer",
+				"client-volunteer",
+				"client-staff",
+				"client-staff-volunteer",
+			])
+			.optional(),
 		themePreference: z.enum(["light", "dark", "system"]).default("system"),
 		accepted: z.boolean().nullable(),
 	})
@@ -165,9 +185,15 @@ export const userSchema = z
 
 export const coachSchema = z.object({
 	...userSchemaBase,
-	website: z.string().max(255).nullable().optional(),
-	llc: z.string().max(100).nullable().optional(),
-	therapyNotesUrl: z.string().max(500).nullable().optional(),
+	website: z.preprocess(
+		(v) => (v === "" ? undefined : v),
+		z.string().url().max(255, "Maximum 255 characters").optional().nullable()
+	),
+	llc: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+	therapyNotesUrl: z.preprocess(
+		(v) => (v === "" ? undefined : v),
+		z.string().url().max(500, "Maximum 500 characters").optional().nullable()
+	),
 	role: z.enum(["coach", "coach-staff", "coach-volunteer", "coach-staff-volunteer"]),
 });
 

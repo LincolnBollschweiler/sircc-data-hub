@@ -138,53 +138,96 @@ export async function getUserById(id: string) {
 	return userRow;
 }
 
+export async function updateUserRoleById(id: string, role: User["role"]) {
+	const prevRole = (await getUserById(id))?.role;
+	if (prevRole?.includes("client") && role && !role.includes("client")) {
+		// If removing "client" role, soft delete client row
+		await db.update(client).set({ deletedAt: new Date() }).where(eq(client.id, id));
+	}
+
+	// if role = "", soft delete user
+	const [updatedUser] = role
+		? await db.update(user).set({ role }).where(eq(user.id, id)).returning()
+		: await db.update(user).set({ deletedAt: new Date() }).where(eq(user.id, id)).returning();
+	if (updatedUser == null) throw new Error("Failed to update user role");
+	revalidateUserCache(updatedUser.id);
+	return updatedUser;
+}
+
 export async function updateClerkUserById(
 	id: string,
 	data: Partial<typeof user.$inferInsert> & { isReentryClient?: boolean }
 ) {
 	try {
 		const updatedUser = await db.transaction(async (tx) => {
-			const [userUpdated] = await tx.update(user).set(data).where(eq(user.id, id)).returning();
+			// 1. Get current role BEFORE update
+			const existing = await tx.query.user.findFirst({
+				where: eq(user.id, id),
+				columns: { role: true },
+			});
+			if (!existing) throw new Error("User not found");
+
+			const prevRole = existing.role ?? "";
+			const nextRole = data.role ?? prevRole;
+			const prevWasCoach = prevRole.includes("coach");
+			const nextIsCoach = nextRole.includes("coach");
+			const prevWasClient = prevRole.includes("client");
+			const nextIsClient = nextRole.includes("client");
+
+			// 2. Update user and handle soft delete if role is empty
+			const [userUpdated] = data.role
+				? await tx.update(user).set(data).where(eq(user.id, id)).returning()
+				: await tx.update(user).set({ deletedAt: new Date() }).where(eq(user.id, id)).returning();
 
 			if (!userUpdated) throw new Error("Failed to update user");
 
-			if ("role" in data) {
-				if (data.role?.includes("client")) {
-					const [newClient] = await tx
-						.insert(client)
-						.values({
-							id: userUpdated.id,
-							isReentryClient: data.isReentryClient ?? false,
-						})
-						.onConflictDoUpdate({
-							target: [client.id],
-							set: { isReentryClient: data.isReentryClient ?? false },
-						})
-						.returning();
-					if (!newClient) throw new Error("Failed to create client for user");
-				}
-				if (data.role?.includes("coach")) {
-					const [newCoach] = await tx
-						.insert(coach)
-						.values({
-							id: userUpdated.id,
-						})
-						.onConflictDoNothing()
-						.returning();
+			// 3. If role includes "client", ensure client row exists/updates
+			if (prevWasClient && !nextIsClient)
+				// A) If was client → now not client → soft delete client row
+				await tx.update(client).set({ deletedAt: new Date() }).where(eq(client.id, id));
 
-					if (!newCoach) throw new Error("Failed to create coach for user");
-				}
-				if (userUpdated.clerkUserId) {
-					await syncClerkUserMetadata(userUpdated);
-				}
+			if (nextIsClient) {
+				await tx
+					.insert(client)
+					.values({
+						id: userUpdated.id,
+						isReentryClient: data.isReentryClient ?? false,
+					})
+					.onConflictDoUpdate({
+						target: [client.id],
+						set: { isReentryClient: data.isReentryClient ?? false },
+					})
+					.returning();
 			}
-			return userUpdated; // returned if successfull
+
+			// 4. COACH HANDLING
+			//   A) If was coach → now not coach → soft delete coach row
+			if (prevWasCoach && !nextIsCoach)
+				await tx.update(coach).set({ deletedAt: new Date() }).where(eq(coach.id, id));
+
+			//   B) If now a coach → ensure coach row exists & undelete
+			if (nextIsCoach) {
+				await tx
+					.insert(coach)
+					.values({ id: userUpdated.id })
+					.onConflictDoUpdate({
+						target: [coach.id],
+						set: { deletedAt: null },
+					});
+			}
+
+			// 5. Sync clerk metadata
+			await syncClerkUserMetadata(userUpdated);
+
+			return userUpdated;
 		});
 
+		// Revalidate caches
 		revalidatePath("/admin/applicants");
 		revalidateUserCache(updatedUser.id);
 		revalidateClientCache(updatedUser.id);
 		revalidateCoachCache(updatedUser.id);
+
 		return { error: false, message: "User updated successfully" };
 	} catch (error) {
 		console.error(error);
@@ -832,10 +875,20 @@ export const updateCoachById = async (
 	previousRole?: string
 ) => {
 	const updatedCoach = await db.transaction(async (tx) => {
-		const [coachUpdated] = await tx.update(coach).set(data.coach).where(eq(coach.id, coachId)).returning();
+		// INSERT or UPDATE seamlessly
+		const [coachUpdated] = await tx
+			.insert(coach)
+			.values({ id: coachId, ...data.coach })
+			.onConflictDoUpdate({
+				target: [coach.id],
+				set: { ...data.coach, deletedAt: null },
+			})
+			.returning();
+
 		if (!coachUpdated) throw new Error("Failed to update coach");
 
 		const [userUpdated] = await tx.update(user).set(data.user).where(eq(user.id, coachId)).returning();
+
 		if (!userUpdated) throw new Error("Failed to update user");
 
 		if (previousRole && userUpdated.role !== previousRole) {
@@ -850,6 +903,7 @@ export const updateCoachById = async (
 
 	revalidateUserCache(coachId);
 	revalidateCoachCache(coachId);
+
 	return updatedCoach;
 };
 

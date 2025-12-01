@@ -1,6 +1,7 @@
 "use server";
 
 import { coach, user } from "@/drizzle/schema";
+import { User } from "@/types";
 import {
 	addClientReentryCheckListItemForClient,
 	addCoachHoursById,
@@ -29,6 +30,7 @@ import {
 	updateVolunteerHoursById,
 	addVolunteer,
 	updateVolunteerById,
+	updateUserRoleById,
 } from "@/userInteractions/db";
 import { assignRoleSchema, clerkUserSchema, userSchema, volunteerSchema } from "@/userInteractions/schema";
 
@@ -55,6 +57,11 @@ export const queryUserById = async (id: string) => {
 	return rv;
 };
 
+export const updateUserRole = async (id: string, user: User) => {
+	const rv = await updateUserRoleById(id, user.role);
+	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
+};
+
 export const updateClerkUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
 	const { success, data } = clerkUserSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Invalid data" };
@@ -71,7 +78,7 @@ export const updateUserRoleAndAccept = async (id: string, unsafeData: Partial<ty
 export const updateClientsCoach = async (userId: string | null, coachId: string | null) => {
 	if (!userId) return { error: true, message: "Invalid user ID" };
 	const rv = await updateClientById(userId, { coachId });
-	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
+	return { error: !rv, message: rv ? "Client updated successfully" : "Failed to update client" };
 };
 
 export const updateClientIsReentryStatus = async (
