@@ -21,6 +21,7 @@ import { findDuplicates } from "../duplicate/duplicates";
 import { User } from "@/types";
 import { DuplicateReviewDialog } from "../duplicate/DuplicateReviewDialog";
 import { mergeRoles } from "../duplicate/mergeRoles";
+import { trimStrings } from "@/utils/trim";
 
 export default function ClientUpdateForm({
 	user,
@@ -132,19 +133,7 @@ export default function ClientUpdateForm({
 	};
 
 	const onSubmit = async (values: z.infer<typeof userSchema> & { previousRole?: string }) => {
-		values = {
-			...values,
-			firstName: values.firstName?.trim(),
-			lastName: values.lastName?.trim(),
-			email: values.email?.trim(),
-			address1: values.address1?.trim(),
-			address2: values.address2?.trim(),
-			city: values.city?.trim(),
-			state: values.state?.trim(),
-			zip: values.zip?.trim(),
-			notes: values.notes?.trim(),
-		};
-
+		values = trimStrings(values);
 		if (!user) {
 			const isDuplicateUserAction = findDuplicates.bind(null, values as User);
 			const duplicateUsers: User[] = await isDuplicateUserAction();
@@ -198,6 +187,7 @@ export default function ClientUpdateForm({
 										/>
 									</FormControl>
 								</div>
+								<FormMessage />
 								{focusedField === "firstName" && (
 									<FormDescription>
 										User has a site login and must update their name through their profile settings.
@@ -226,6 +216,7 @@ export default function ClientUpdateForm({
 										/>
 									</FormControl>
 								</div>
+								<FormMessage />
 								{focusedField === "lastName" && (
 									<FormDescription>
 										User has a site login and must update their name through their profile settings.
@@ -253,6 +244,7 @@ export default function ClientUpdateForm({
 										/>
 									</FormControl>
 								</div>
+								<FormMessage />
 								{focusedField === "email" && (
 									<FormDescription>
 										User has a site login and must update their email through their profile
@@ -276,6 +268,7 @@ export default function ClientUpdateForm({
 											placeholder="Address Line 1 (optional)"
 										/>
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -291,6 +284,7 @@ export default function ClientUpdateForm({
 											placeholder="Address Line 2 (optional)"
 										/>
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -302,6 +296,7 @@ export default function ClientUpdateForm({
 									<FormControl>
 										<Input {...field} value={field.value ?? ""} placeholder="City" />
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -313,10 +308,12 @@ export default function ClientUpdateForm({
 									<FormControl>
 										<Input
 											{...field}
+											onChange={(e) => field.onChange(e.target.value.toUpperCase())}
 											value={field.value ?? ""}
 											placeholder="State (optional) e.g. ID"
 										/>
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -328,6 +325,7 @@ export default function ClientUpdateForm({
 									<FormControl>
 										<Input {...field} value={field.value ?? ""} placeholder="Zip Code (optional)" />
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -516,6 +514,8 @@ export default function ClientUpdateForm({
 														>
 															<Calendar
 																mode="single"
+																startMonth={new Date(2023, 0)}
+																endMonth={new Date(2040, 11)}
 																selected={selectedDate || undefined}
 																captionLayout="dropdown"
 																onSelect={(newDate) => {
@@ -529,6 +529,7 @@ export default function ClientUpdateForm({
 															/>
 														</PopoverContent>
 													</Popover>
+													<FormMessage />
 												</FormItem>
 											);
 										}}

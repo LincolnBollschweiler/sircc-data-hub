@@ -108,6 +108,8 @@ export default function VolunteerHoursDialog({
 							<PopoverContent className="w-auto overflow-hidden p-0" align="start">
 								<Calendar
 									mode="single"
+									startMonth={new Date(2023, 0)}
+									endMonth={new Date(2040, 11)}
 									selected={date}
 									captionLayout="dropdown"
 									onSelect={(newDate) => {

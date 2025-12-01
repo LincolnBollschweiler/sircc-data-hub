@@ -17,6 +17,7 @@ import { DuplicateReviewDialog } from "../duplicate/DuplicateReviewDialog";
 import { User } from "@/types";
 import { findDuplicates } from "../duplicate/duplicates";
 import { mergeRoles } from "../duplicate/mergeRoles";
+import { trimStrings } from "@/utils/trim";
 
 export default function VolunteerUpdateForm({
 	user,
@@ -107,18 +108,7 @@ export default function VolunteerUpdateForm({
 	};
 
 	const onSubmit = async (values: z.infer<typeof volunteerSchema> & { previousRole?: string }) => {
-		values = {
-			...values,
-			firstName: values.firstName?.trim(),
-			lastName: values.lastName?.trim(),
-			email: values.email?.trim(),
-			address1: values.address1?.trim(),
-			address2: values.address2?.trim(),
-			city: values.city?.trim(),
-			state: values.state?.trim(),
-			zip: values.zip?.trim(),
-			notes: values.notes?.trim(),
-		};
+		values = trimStrings(values);
 		if (!user?.firstName) {
 			const isDuplicateUserAction = findDuplicates.bind(null, values as User);
 			const duplicateUsers: User[] = await isDuplicateUserAction();
@@ -169,6 +159,7 @@ export default function VolunteerUpdateForm({
 										/>
 									</FormControl>
 								</div>
+								<FormMessage />
 								{focusedField === "firstName" && (
 									<FormDescription>
 										User has a site login and must update their name through their profile settings.
@@ -197,6 +188,7 @@ export default function VolunteerUpdateForm({
 										/>
 									</FormControl>
 								</div>
+								<FormMessage />
 								{focusedField === "lastName" && (
 									<FormDescription>
 										User has a site login and must update their name through their profile settings.
@@ -224,6 +216,7 @@ export default function VolunteerUpdateForm({
 										/>
 									</FormControl>
 								</div>
+								<FormMessage />
 								{focusedField === "email" && (
 									<FormDescription>
 										User has a site login and must update their email through their profile
@@ -247,6 +240,7 @@ export default function VolunteerUpdateForm({
 											placeholder="Address Line 1 (optional)"
 										/>
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -262,6 +256,7 @@ export default function VolunteerUpdateForm({
 											placeholder="Address Line 2 (optional)"
 										/>
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -273,6 +268,7 @@ export default function VolunteerUpdateForm({
 									<FormControl>
 										<Input {...field} value={field.value ?? ""} placeholder="City" />
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -284,10 +280,12 @@ export default function VolunteerUpdateForm({
 									<FormControl>
 										<Input
 											{...field}
+											onChange={(e) => field.onChange(e.target.value.toUpperCase())}
 											value={field.value ?? ""}
 											placeholder="State (optional) e.g. ID"
 										/>
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -299,6 +297,7 @@ export default function VolunteerUpdateForm({
 									<FormControl>
 										<Input {...field} value={field.value ?? ""} placeholder="Zip Code (optional)" />
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
