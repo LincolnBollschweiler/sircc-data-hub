@@ -25,6 +25,7 @@ import ClientUpdateDialog from "./clients/ClientUpdateDialog";
 import { DialogTrigger } from "../ui/dialog";
 import VolunteerHoursDialog from "./volunteers/VolunteerHoursDialog";
 import VolunteerUpdateDialog from "./volunteers/VolunteerUpdateDialog";
+import CoachUpdateDialog from "./coaches/CoachUpdateDialog";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -55,7 +56,7 @@ export default function DataTable<TData>({
 	trainingsCount?: number;
 	checkListCount?: number;
 }) {
-	const typesWithNoName = [
+	const typesWithNoNameColumn = [
 		"single-client",
 		"single-client-view",
 		"volunteer-hours",
@@ -177,6 +178,13 @@ export default function DataTable<TData>({
 									</DialogTrigger>
 								</VolunteerUpdateDialog>
 							)}
+							{userType === "coach" && (
+								<CoachUpdateDialog>
+									<DialogTrigger asChild>
+										<Button className="btn-primary">Add Coach Role to Existing User</Button>
+									</DialogTrigger>
+								</CoachUpdateDialog>
+							)}
 						</>
 					)}
 				</div>
@@ -185,7 +193,7 @@ export default function DataTable<TData>({
 				<>
 					<div className="flex flex-wrap gap-1 items-center justify-between mb-2">
 						<div className="flex flex-wrap sm:flex-nowrap gap-1 items-center">
-							{!typesWithNoName.includes(userType) && (
+							{!typesWithNoNameColumn.includes(userType) && (
 								<Input
 									className="max-w-sm text-primary-foreground bg-primary"
 									placeholder={`Search by Name...`}
@@ -226,6 +234,13 @@ export default function DataTable<TData>({
 									<Button className="btn-primary">Add Volunteer</Button>
 								</DialogTrigger>
 							</VolunteerUpdateDialog>
+						)}
+						{userType === "coach" && (
+							<CoachUpdateDialog>
+								<DialogTrigger asChild>
+									<Button className="btn-primary">Add Coach Role to Existing User</Button>
+								</DialogTrigger>
+							</CoachUpdateDialog>
 						)}
 					</div>
 

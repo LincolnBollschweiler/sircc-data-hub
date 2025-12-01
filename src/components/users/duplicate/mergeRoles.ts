@@ -12,3 +12,9 @@ export const mergeRoles = (existing: string, incoming: string): string => {
 
 	return order.filter((r) => existingSet.has(r)).join("-");
 };
+
+export const removeRole = (existing: string, roleToRemove: string): string => {
+	const parts = existing.split("-").filter(Boolean);
+	const filtered = parts.filter((part) => part !== roleToRemove);
+	return filtered.join("-");
+};

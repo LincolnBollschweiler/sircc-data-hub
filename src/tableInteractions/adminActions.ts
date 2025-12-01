@@ -3,7 +3,6 @@
 import { db } from "@/drizzle/db";
 import * as table from "@/drizzle/schema";
 import { client, user } from "@/drizzle/schema";
-import { revalidateClientCache, revalidateUserCache } from "@/userInteractions/cache";
 
 export const insertClerkUserDev = async (data: typeof table.user.$inferInsert) => {
 	const [newUser] = await db.insert(table.user).values(data).returning();
@@ -100,9 +99,6 @@ async function addUser(userData: typeof user.$inferInsert, clientData: typeof cl
 		}
 		return newUser;
 	});
-
-	revalidateUserCache(userInsert.id);
-	revalidateClientCache(userInsert.id);
 	return userInsert.id;
 }
 

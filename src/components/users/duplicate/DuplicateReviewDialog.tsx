@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { User } from "@/types";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatPhoneNumber } from "react-phone-number-input";
 import { mergeRoles } from "./mergeRoles";
+import { User as UserIcon, UserCheck } from "lucide-react";
+import { User } from "@/types";
 
 export function DuplicateReviewDialog({
 	open,
@@ -16,6 +17,7 @@ export function DuplicateReviewDialog({
 	onMerge,
 	onCreateNew,
 	onCancel,
+	cannotAddNew,
 }: {
 	open: boolean;
 	duplicates: User[];
@@ -23,6 +25,7 @@ export function DuplicateReviewDialog({
 	onMerge: (dup: User, newUser: User) => void;
 	onCreateNew: (user: User) => void;
 	onCancel: () => void;
+	cannotAddNew?: boolean;
 }) {
 	const [chosenDuplicate, setChosenDuplicate] = useState<User | null>(null);
 
@@ -66,7 +69,20 @@ export function DuplicateReviewDialog({
 
 										<div className="grid grid-cols-[1fr_2fr_2fr] text-xs font-medium mb-2 gap-2">
 											<div></div>
-											<div className="text-center pb-2 border-b">Existing</div>
+											<div className="flex justify-center items-center gap-1 pb-2 border-b">
+												{dup.clerkUserId ? (
+													<>
+														<UserCheck className="w-4 h-4 text-green-600" />
+														<span>Existing</span>
+													</>
+												) : (
+													<>
+														<UserIcon className="w-4 h-4 text-muted-foreground" />
+														<span>Existing</span>
+													</>
+												)}
+											</div>
+
 											<div className="text-center pb-2 border-b">New</div>
 										</div>
 
@@ -104,12 +120,14 @@ export function DuplicateReviewDialog({
 						Cancel
 					</Button>
 
-					<Button
-						className="text-foreground/90 bg-warning hover:bg-warning/80"
-						onClick={() => onCreateNew(pendingValues)}
-					>
-						Create a New User
-					</Button>
+					{!cannotAddNew && (
+						<Button
+							className="text-foreground/90 bg-warning hover:bg-warning/80"
+							onClick={() => onCreateNew(pendingValues)}
+						>
+							Create a New User
+						</Button>
+					)}
 
 					<Button
 						disabled={!chosenDuplicate}
@@ -155,6 +173,14 @@ function FieldRow({ label, existing, pending }: { label: string; existing?: stri
 		pendingText = mergeRoles(existing || "", pending || "");
 		existingClass = existingClass.replace("truncate", "whitespace-pre-wrap");
 		pendingClass = pendingClass.replace("truncate", "whitespace-pre-wrap");
+	} else if (label === "First Name" && pending && pending === "..") {
+		pendingText = "(no change)";
+		pendingClass = neutralClass;
+		existingClass = greenClass;
+	} else if (label === "Last Name" && pending && pending === "..") {
+		pendingText = "(no change)";
+		pendingClass = neutralClass;
+		existingClass = greenClass;
 	}
 	return (
 		<div className="grid grid-cols-[1fr_2fr_2fr] gap-2 py-0.5 text-sm ">

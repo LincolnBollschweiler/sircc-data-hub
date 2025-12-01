@@ -13,15 +13,16 @@ export default function CoachUpdateDialog({
 	coach,
 	children,
 }: {
-	user: User;
-	coach: Coach;
+	user?: User;
+	coach?: Coach;
 	children: ReactNode;
 }) {
-	const mergedUser = {
-		...user,
-		...coach,
-		id: user.id,
-	};
+	const mergedUser = user &&
+		coach && {
+			...user,
+			...coach,
+			id: user.id,
+		};
 
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -30,7 +31,7 @@ export default function CoachUpdateDialog({
 			{children}
 			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
-					<DialogTitle>Edit Coach Details</DialogTitle>
+					<DialogTitle>{user ? "Edit Coach Details" : "Add Coach Role to Existing User"}</DialogTitle>
 				</DialogHeader>
 				<div className="mt-4 grid gap-4">
 					<CoachUpdateForm
