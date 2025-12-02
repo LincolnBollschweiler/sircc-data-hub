@@ -2,19 +2,27 @@
 
 import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { z } from "zod";
-import { clerkUserSchema } from "@/userInteractions/schema";
+import { Coach } from "@/userInteractions/db";
 import { User } from "@/types";
-import ProfileForm from "./ProfileForm";
+import GenUserUpdateForm from "./CoachUpdateForm";
+import { z } from "zod";
+import { coachSchema } from "@/userInteractions/schema";
 
-export default function ProfileFormDialog({
-	profile,
+export default function CoachUpdateDialog({
+	user,
+	coach,
 	children,
 }: {
-	// profile: z.infer<typeof userSchema> & { id: string };
-	profile: User;
+	user: User;
+	coach: Coach;
 	children: ReactNode;
 }) {
+	const mergedUser = {
+		...user,
+		...coach,
+		id: user.id,
+	};
+
 	const [isOpen, setIsOpen] = useState(false);
 
 	return (
@@ -22,11 +30,11 @@ export default function ProfileFormDialog({
 			{children}
 			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
-					<DialogTitle>{profile ? "Edit Profile" : "Add New Profile"}</DialogTitle>
+					<DialogTitle>Edit Coach Details</DialogTitle>
 				</DialogHeader>
 				<div className="mt-4 grid gap-4">
-					<ProfileForm
-						profile={profile as z.infer<typeof clerkUserSchema> & { id: string }}
+					<GenUserUpdateForm
+						user={mergedUser as z.infer<typeof coachSchema> & { id: string }}
 						onSuccess={() => setIsOpen(false)}
 					/>
 				</div>

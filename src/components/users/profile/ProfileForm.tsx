@@ -13,8 +13,8 @@ import { Button } from "@/components/ui/button";
 import { actionToast } from "@/hooks/use-toast";
 import PhoneInput from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
-import { userSchema } from "@/userInteractions/schema";
-import { updateUser } from "@/userInteractions/actions";
+import { clerkUserSchema } from "@/userInteractions/schema";
+import { updateClerkUser } from "@/userInteractions/actions";
 import { redirect } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
@@ -24,13 +24,13 @@ export default function ProfileForm({
 	onSuccess,
 	isIntake,
 }: {
-	profile: z.infer<typeof userSchema> & { id: string };
+	profile: z.infer<typeof clerkUserSchema> & { id: string };
 	onSuccess?: () => void;
 	isIntake?: boolean;
 }) {
 	// if (!profile) redirect("/");
-	const form = useForm<z.infer<typeof userSchema>>({
-		resolver: zodResolver(userSchema),
+	const form = useForm<z.infer<typeof clerkUserSchema>>({
+		resolver: zodResolver(clerkUserSchema),
 		defaultValues: {
 			...profile,
 			phone: profile?.phone || "",
@@ -41,8 +41,8 @@ export default function ProfileForm({
 		},
 	});
 
-	const onSubmit = async (values: z.infer<typeof userSchema>) => {
-		const action = updateUser.bind(null, profile.id);
+	const onSubmit = async (values: z.infer<typeof clerkUserSchema>) => {
+		const action = updateClerkUser.bind(null, profile.id);
 
 		const actionData = await action(values);
 
@@ -79,6 +79,14 @@ export default function ProfileForm({
 	];
 
 	const [mounted, setMounted] = useState(false);
+
+	const [localTheme, setLocalTheme] = useState<string | undefined>(undefined);
+
+	useEffect(() => {
+		if (localTheme) {
+			setTheme(localTheme);
+		}
+	}, [localTheme, setTheme]);
 
 	useEffect(() => setMounted(true), []);
 	if (!mounted) return null; // prevents hydration mismatch
@@ -308,7 +316,7 @@ export default function ProfileForm({
 									<Select
 										onValueChange={(value) => {
 											field.onChange(value);
-											setTheme(value);
+											setLocalTheme(value);
 										}}
 										value={mounted ? field.value ?? theme ?? "system" : "system"} // ✅ safe fallback
 									>
@@ -367,10 +375,7 @@ export default function ProfileForm({
 							name="notes"
 							render={({ field }) => (
 								<FormItem>
-									<div className="flex gap-0.5 items-center">
-										<RequiredLabelIcon />
-										<FormLabel>Provide A Few Notes About Yourself</FormLabel>
-									</div>
+									<FormLabel>Provide A Few Notes About Yourself</FormLabel>
 									<FormControl>
 										<Textarea
 											{...field}
@@ -379,7 +384,6 @@ export default function ProfileForm({
 											placeholder="Enter comments here... (1000 character max)"
 										/>
 									</FormControl>
-									<FormMessage />
 								</FormItem>
 							)}
 						/>

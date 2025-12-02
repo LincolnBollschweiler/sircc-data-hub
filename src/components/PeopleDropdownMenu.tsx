@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { redirect } from "next/navigation";
 
-export default function PeopleDropdownMenu({ role }: { role: string }) {
+export default function PeopleDropdownMenu() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50 text-inherit">
@@ -32,11 +32,6 @@ export default function PeopleDropdownMenu({ role }: { role: string }) {
 				<DropdownMenuItem onSelect={() => redirect("/admin/admins")}>
 					<span className="hover-underline-border">Admins</span>
 				</DropdownMenuItem>
-				{role === "developer" ? (
-					<DropdownMenuItem onSelect={() => redirect("/admin/dev")}>
-						<span className="hover-underline-border">Dev</span>
-					</DropdownMenuItem>
-				) : null}
 				<DropdownMenuItem onSelect={() => redirect("/admin/rejected-applicants")}>
 					<span className="hover-underline-border">
 						<div>Rejected</div>

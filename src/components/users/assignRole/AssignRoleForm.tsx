@@ -14,7 +14,7 @@ import { updateUserRoleAndAccept } from "../../../userInteractions/actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 
-export default function ProfileForm({
+export default function AssignRoleForm({
 	profile,
 	onSuccess,
 }: {
@@ -43,9 +43,7 @@ export default function ProfileForm({
 		{ id: "admin", name: "Admin" },
 	];
 
-	const [showReentryClientOption, setShowReentryClientOption] = useState(
-		profile.role === "client" || profile.role === "client-volunteer"
-	);
+	const [showReentryClientOption, setShowReentryClientOption] = useState(profile.role.includes("client"));
 
 	return (
 		<Form {...form}>

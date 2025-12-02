@@ -21,7 +21,8 @@ import { userDataTableColumns } from "./UserDataTableColumns";
 import { CSTables, Service } from "@/tableInteractions/db";
 import { useDeleteClientService } from "../DeleteConfirm";
 import { ClientServices, NewClientService } from "./clients/ClientServices";
-import { cn } from "@/lib/utils";
+import ClientUpdateDialog from "./clients/ClientUpdateDialog";
+import { DialogTrigger } from "../ui/dialog";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -81,19 +82,14 @@ export default function DataTable<TData>({
 	useEffect(() => {
 		if (data.length === 0) {
 			setLoadingOrNone(
-				<div
-					className={cn(
-						"flex justify-center items-center p-20 text-foreground text-xl font-semibold",
-						title && "-translate-y-5"
-					)}
-				>
-					No data to display.
+				<div className={"flex justify-center items-center p-20 text-foreground text-xl font-semibold"}>
+					<span className={title ? "-translate-y-5" : ""}>No data to display.</span>
 				</div>
 			);
 		} else {
 			setLoadingOrNone(null);
 		}
-	}, [data]);
+	}, [data, title]);
 
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
@@ -132,7 +128,33 @@ export default function DataTable<TData>({
 
 	return (
 		<div className="container mx-auto border border-[border-muted/50] p-2.5 rounded-lg shadow-md bg-background-light">
-			{title && <h2 className="text-xl font-semibold mb-1">{title}</h2>}
+			{title && (
+				<div className="flex items-center justify-between">
+					<h2 className="text-xl font-semibold mb-1">{title}</h2>
+
+					{!data?.length && (
+						<>
+							{userType === "single-client" && (
+								<ClientServices
+									clientId={clientId!}
+									csTables={csTables!}
+									coachIsViewing={coachIsViewing}
+								/>
+							)}
+							{userType === "single-client-view" && (
+								<NewClientService clientId={clientId!} services={services!} />
+							)}
+							{userType === "client" && (
+								<ClientUpdateDialog>
+									<DialogTrigger asChild>
+										<button className="btn-primary">Add New Client</button>
+									</DialogTrigger>
+								</ClientUpdateDialog>
+							)}
+						</>
+					)}
+				</div>
+			)}
 			{data.length > 0 ? (
 				<>
 					<div className="flex flex-wrap gap-1 items-center justify-between mb-2">
@@ -157,6 +179,13 @@ export default function DataTable<TData>({
 						)}
 						{userType === "single-client-view" && (
 							<NewClientService clientId={clientId!} services={services!} />
+						)}
+						{userType === "client" && (
+							<ClientUpdateDialog>
+								<DialogTrigger asChild>
+									<Button className="mr-1">Add New Client</Button>
+								</DialogTrigger>
+							</ClientUpdateDialog>
 						)}
 					</div>
 
@@ -207,7 +236,7 @@ export default function DataTable<TData>({
 										<SelectValue placeholder={`Show ${pageSize}`} />
 									</SelectTrigger>
 									<SelectContent position="popper" className="bg-background-light">
-										{[5, 10, 20, 30, 40, 50].map((size) => (
+										{[5, 10, 15, 20, 50, 100].map((size) => (
 											<SelectItem key={size} value={size.toString()}>
 												Show {size}
 											</SelectItem>

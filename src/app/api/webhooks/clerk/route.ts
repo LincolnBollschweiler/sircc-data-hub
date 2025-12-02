@@ -1,5 +1,5 @@
 import { env } from "@/data/env/server";
-import { deleteUser, insertUser, updateUser } from "@/userInteractions/db";
+import { deleteClerkUser, insertclerkUser, updateClerkUser } from "@/userInteractions/db";
 import { syncClerkUserMetadata } from "@/services/clerk";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
 			if (event.type === "user.created") {
 				// console.log("User created webhook received for:", email);
-				const user = await insertUser({
+				const user = await insertclerkUser({
 					clerkUserId: event.data.id,
 					firstName,
 					lastName,
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 				await syncClerkUserMetadata(user);
 			} else {
 				// console.log("User updated webhook received for:", email);
-				await updateUser(
+				await updateClerkUser(
 					{ clerkUserId: event.data.id },
 					{
 						email,
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 		case "user.deleted": {
 			// console.log("User deleted webhook received for:", event.data.id);
 			if (event.data.id != null) {
-				await deleteUser({ clerkUserId: event.data.id });
+				await deleteClerkUser({ clerkUserId: event.data.id });
 			}
 			break;
 		}

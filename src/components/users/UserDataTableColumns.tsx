@@ -13,7 +13,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteCoachMiles, deleteCoachHours, updateUser } from "@/userInteractions/actions";
+import { deleteCoachMiles, deleteCoachHours, updateClerkUser } from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
@@ -37,7 +37,7 @@ const asHours = (row: unknown): CoachHours => row as CoachHours;
 const asMiles = (row: unknown): CoachMiles => row as CoachMiles;
 
 const processAcceptance = async (user: Partial<User>, accepted: boolean | null) => {
-	const action = user.id ? updateUser.bind(null, user.id) : undefined;
+	const action = user.id ? updateClerkUser.bind(null, user.id) : undefined;
 	if (!action) return;
 	const actionData = await action({ ...user, accepted });
 	if (actionData) actionToast({ actionData });
@@ -99,7 +99,7 @@ export const userDataTableColumns = (
 						variant="ghost"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 					>
-						<ArrowUpDown className="ml-2 h-4 w-4" />
+						<ArrowUpDown className="-ml-4 h-4 w-4" />
 						Name
 					</Button>
 				),
@@ -136,7 +136,7 @@ export const userDataTableColumns = (
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 					>
 						Desired Role
-						<ArrowUpDown className="ml-2 h-4 w-4" />
+						<ArrowUpDown className="h-4 w-4" />
 					</Button>
 				),
 				cell: (info) => <div className="text-center text-nowrap">{info.getValue<string>() || "N/A"}</div>,
@@ -178,7 +178,7 @@ export const userDataTableColumns = (
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 					>
 						Added
-						<ArrowUpDown className="ml-2 h-4 w-4" />
+						<ArrowUpDown className="h-4 w-4" />
 					</Button>
 				),
 				cell: (info) => {
@@ -276,7 +276,7 @@ export const userDataTableColumns = (
 						variant="ghost"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 					>
-						<ArrowUpDown className="ml-2 h-4 w-4" />
+						<ArrowUpDown className="-ml-4 h-4 w-4" />
 						Name
 					</Button>
 				),
@@ -294,7 +294,21 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "client.followUpNeeded",
-				header: () => <div className="text-center">Follow-up</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Follow-up
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					return Number(b.client?.followUpNeeded ?? false) - Number(a.client?.followUpNeeded ?? false);
+				},
 				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,
 			},
 			{
@@ -304,7 +318,16 @@ export const userDataTableColumns = (
 					const date = r.client?.followUpDate ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
-				header: () => <div className="text-center">Follow-up Date</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Follow-up Date
+					</Button>
+				),
 				cell: (info) => {
 					const date = info.getValue<Date>();
 					return date ? (
@@ -335,21 +358,47 @@ export const userDataTableColumns = (
 				header: "Coach",
 				cell: (info) => {
 					const r = asClient(info.row.original);
-					return r.coach ? (
-						<div className="text-nowrap">{`${r.coach.firstName} ${r.coach.lastName.charAt(0)}`}</div>
-					) : (
-						"N/A"
-					);
+					let coachName = r.coach ? `${r.coach.firstName} ${r.coach.lastName.charAt(0)}` : "N/A";
+					if (r.coach?.firstName === "deleted user") coachName = "deleted user";
+					return <div className="text-nowrap">{coachName}</div>;
 				},
 			},
 			{
 				accessorKey: "openRequestsCount",
-				header: () => <div className="text-center">Open Requests</div>,
+				header: ({ column }) => (
+					<Button
+						className="text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Open Requests
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					return (b.openRequestsCount ?? 0) - (a.openRequestsCount ?? 0);
+				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
 			},
 			{
 				accessorKey: "serviceCount",
-				header: () => <div className="text-center">Services</div>,
+				header: ({ column }) => (
+					<Button
+						className="text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Services
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					return (b.serviceCount ?? 0) - (a.serviceCount ?? 0);
+				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
 			},
 			{
@@ -382,13 +431,43 @@ export const userDataTableColumns = (
 					const date = r.requestsUpdatedAt ?? r.client?.updatedAt ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
-				header: "Updated",
+				header: ({ column }) => (
+					<Button
+						className="text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Updated
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					return (
+						(b.requestsUpdatedAt ?? b.client?.updatedAt
+							? new Date(b.requestsUpdatedAt ?? b.client!.updatedAt).getTime()
+							: 0) -
+						(a.requestsUpdatedAt ?? a.client?.updatedAt
+							? new Date(a.requestsUpdatedAt ?? a.client!.updatedAt).getTime()
+							: 0)
+					);
+				},
 				cell: (info) => {
 					const r = asClient(info.row.original);
 					if (r.requestsUpdatedAt) {
-						return new Date(r.requestsUpdatedAt).toLocaleDateString("en-US", dateOptions);
+						return (
+							<div className="text-center">
+								{new Date(r.requestsUpdatedAt).toLocaleDateString("en-US", dateOptions)}
+							</div>
+						);
 					}
-					if (r.client) return new Date(r.client?.updatedAt).toLocaleDateString("en-US", dateOptions);
+					if (r.client)
+						return (
+							<div className="text-center">
+								{new Date(r.client?.updatedAt).toLocaleDateString("en-US", dateOptions)}
+							</div>
+						);
 				},
 			},
 			{
@@ -881,7 +960,7 @@ export const userDataTableColumns = (
 						variant="ghost"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 					>
-						<ArrowUpDown className="ml-2 h-4 w-4" />
+						<ArrowUpDown className="-ml-4 h-4 w-4" />
 						Name
 					</Button>
 				),
@@ -921,12 +1000,44 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "clientCount",
-				header: () => <div className="text-center">Clients</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center justify-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Clients
+						</div>
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asCoach(rowA.original);
+					const b = asCoach(rowB.original);
+					return (b.clientCount ?? 0) - (a.clientCount ?? 0);
+				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
 			},
 			{
 				accessorKey: "trainingsCompleted",
-				header: () => <div className="text-center">Trainings</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center justify-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Trainings
+						</div>
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asCoach(rowA.original);
+					const b = asCoach(rowB.original);
+					return (b.trainingsCompleted ?? 0) - (a.trainingsCompleted ?? 0);
+				},
 				cell: (info) => {
 					const completed = info.getValue<number>();
 					const total = trainingsCount;
@@ -936,12 +1047,44 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "volunteerHours",
-				header: () => <div className="text-center">Volunteer Hours</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center justify-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Volunteer Hours
+						</div>
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asCoach(rowA.original);
+					const b = asCoach(rowB.original);
+					return (b.volunteerHours ?? 0) - (a.volunteerHours ?? 0);
+				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
 			},
 			{
 				accessorKey: "paidHours",
-				header: () => <div className="text-center">Paid Hours</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center justify-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Paid Hours
+						</div>
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asCoach(rowA.original);
+					const b = asCoach(rowB.original);
+					return (b.paidHours ?? 0) - (a.paidHours ?? 0);
+				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
 			},
 			{
@@ -951,8 +1094,28 @@ export const userDataTableColumns = (
 					const date = r.coach?.updatedAt ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
-				header: "Updated",
-				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center justify-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Updated
+						</div>
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asCoach(rowA.original);
+					const b = asCoach(rowB.original);
+					return new Date(b.coach?.updatedAt ?? 0).getTime() - new Date(a.coach?.updatedAt ?? 0).getTime();
+				},
+				cell: (info) => (
+					<div className="text-center">
+						{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}
+					</div>
+				),
 			},
 			{
 				id: "actions",
@@ -1027,7 +1190,7 @@ export const userDataTableColumns = (
 						variant="ghost"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 					>
-						<ArrowUpDown className="ml-2 h-4 w-4" />
+						<ArrowUpDown className="-ml-4 h-4 w-4" />
 						Name
 					</Button>
 				),
@@ -1041,7 +1204,21 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "client.followUpNeeded",
-				header: () => <div className="text-center">Needs Follow-up</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Needs Follow-up
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					return (b.client?.followUpNeeded ? 1 : 0) - (a.client?.followUpNeeded ? 1 : 0);
+				},
 				cell: (info) => <div className="text-center">{info.getValue<boolean>() ? "Yes" : "No"}</div>,
 			},
 			{
@@ -1051,7 +1228,23 @@ export const userDataTableColumns = (
 					const date = r.client?.followUpDate ?? null;
 					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
 				},
-				header: () => <div className="text-center">Follow-up Date</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Follow-up Date
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					const dateA = a.client?.followUpDate ? new Date(a.client.followUpDate).getTime() : 0;
+					const dateB = b.client?.followUpDate ? new Date(b.client.followUpDate).getTime() : 0;
+					return dateB - dateA;
+				},
 				cell: (info) => {
 					const date = info.getValue<Date>();
 					return date ? (
@@ -1079,12 +1272,44 @@ export const userDataTableColumns = (
 			},
 			{
 				accessorKey: "openRequestsCount",
-				header: () => <div className="text-center">Open Requests</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Open Requests
+						</div>
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					return (b.openRequestsCount || 0) - (a.openRequestsCount || 0);
+				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
 			},
 			{
 				accessorKey: "serviceCount",
-				header: () => <div className="text-center">Services</div>,
+				header: ({ column }) => (
+					<Button
+						className="px-0 w-full justify-center"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<div className="flex gap-2 items-center">
+							<ArrowUpDown className="h-4 w-4" />
+							Services
+						</div>
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asClientRow(rowA.original);
+					const b = asClientRow(rowB.original);
+					return (b.serviceCount || 0) - (a.serviceCount || 0);
+				},
 				cell: (info) => <div className="text-center">{info.getValue<number>()}</div>,
 			},
 			{
@@ -1126,7 +1351,7 @@ export const userDataTableColumns = (
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
-											href={`/admin/clients/${user.id}/edit?coachId=${coachId}`}
+											href={`/coach/clients/${user.id}/edit?coachId=${coachId}`}
 										>
 											View or Edit Client
 										</a>
@@ -1155,7 +1380,7 @@ export const userDataTableColumns = (
 						variant="ghost"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 					>
-						<ArrowUpDown className="ml-2 h-4 w-4" />
+						<ArrowUpDown className="h-4 w-4" />
 						Date
 					</Button>
 				),
@@ -1309,7 +1534,12 @@ export const userDataTableColumns = (
 						</div>
 					</Button>
 				),
-				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+				sortingFn: (rowA, rowB) => {
+					const a = asMiles(rowA.original);
+					const b = asMiles(rowB.original);
+					return new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime();
+				},
+				cell: (info) => <div>{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}</div>,
 			},
 			{
 				accessorKey: "miles",
@@ -1325,6 +1555,11 @@ export const userDataTableColumns = (
 						</div>
 					</Button>
 				),
+				sortingFn: (rowA, rowB) => {
+					const a = asMiles(rowA.original);
+					const b = asMiles(rowB.original);
+					return (b.miles ? Number(b.miles) : 0) - (a.miles ? Number(a.miles) : 0);
+				},
 				cell: (info) => <div className="text-center">{Number(info.getValue<string>()).toFixed(2)}</div>,
 			},
 			{
@@ -1369,6 +1604,11 @@ export const userDataTableColumns = (
 						</div>
 					</Button>
 				),
+				sortingFn: (rowA, rowB) => {
+					const a = asMiles(rowA.original);
+					const b = asMiles(rowB.original);
+					return new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime();
+				},
 				cell: (info) => (
 					<div className="text-center">
 						{new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions)}

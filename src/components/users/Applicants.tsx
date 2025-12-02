@@ -10,13 +10,16 @@ export default async function Applicants({ userType }: { userType: string }) {
 
 	let applicants;
 	let title = "";
-
 	if (userType === "applicant") {
-		applicants = users.filter((user) => user.accepted == null);
+		applicants = users.filter(
+			(user) => user.accepted == null && (user.phone || (user.birthDay && user.birthMonth))
+		);
 		title = "Applicants";
 	} else {
 		// rejected applicant
-		applicants = users.filter((user) => user.accepted === false);
+		applicants = users.filter(
+			(user) => user.accepted === false && (user.phone || (user.birthDay && user.birthMonth))
+		);
 		title = "Rejected Applicants";
 	}
 

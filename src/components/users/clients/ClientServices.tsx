@@ -18,7 +18,7 @@ export const ClientServices = ({
 	return (
 		<ClientServicesDialog clientId={clientId} csTables={csTables} coachIsViewing={!!coachIsViewing}>
 			<DialogTrigger asChild>
-				<Button className="mr-1">Add Service</Button>
+				<Button className="mr-1 inline">Add Service</Button>
 			</DialogTrigger>
 		</ClientServicesDialog>
 	);
