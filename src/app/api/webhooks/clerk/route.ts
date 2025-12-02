@@ -16,7 +16,6 @@ export async function POST(req: Request) {
 			status: 400,
 		});
 	}
-
 	const payload = await req.json();
 	const body = JSON.stringify(payload);
 
@@ -34,7 +33,6 @@ export async function POST(req: Request) {
 			status: 400,
 		});
 	}
-
 	switch (event.type) {
 		case "user.created":
 		case "user.updated": {
@@ -49,7 +47,6 @@ export async function POST(req: Request) {
 			if (lastName === "") return new Response("No last name", { status: 400 });
 
 			if (event.type === "user.created") {
-				// console.log("User created webhook received for:", email);
 				const user = await insertclerkUser({
 					clerkUserId: event.data.id,
 					firstName,
@@ -61,7 +58,6 @@ export async function POST(req: Request) {
 
 				await syncClerkUserMetadata(user);
 			} else {
-				// console.log("User updated webhook received for:", email);
 				await updateClerkUser(
 					{ clerkUserId: event.data.id },
 					{
@@ -76,7 +72,6 @@ export async function POST(req: Request) {
 			break;
 		}
 		case "user.deleted": {
-			// console.log("User deleted webhook received for:", event.data.id);
 			if (event.data.id != null) {
 				await deleteClerkUser({ clerkUserId: event.data.id });
 			}

@@ -72,3 +72,26 @@ export const revalidateServiceCache = async (id: string) => {
 	revalidatePath("/admin/data-types/client-services");
 	revalidatePath(`/admin/data-types/client-services/${id}/edit`);
 };
+
+export const revalidatAllCaches = async () => {
+	revalidateTag(cacheTags.getVolunteeringTypeGlobalTag(), "max");
+	revalidateTag(cacheTags.getReentryChecklistItemGlobalTag(), "max");
+	revalidateTag(cacheTags.getCoachTrainingGlobalTag(), "max");
+	revalidateTag(cacheTags.getLocationGlobalTag(), "max");
+	revalidateTag(cacheTags.getCitiesGlobalTag(), "max");
+	revalidateTag(cacheTags.getVisitGlobalTag(), "max");
+	revalidateTag(cacheTags.getSiteGlobalTag(), "max");
+	revalidateTag(cacheTags.getReferralSourceGlobalTag(), "max");
+	revalidateTag(cacheTags.getReferredOutGlobalTag(), "max");
+	revalidateTag(cacheTags.getServiceGlobalTag(), "max");
+	revalidatePath("/admin/data-types/volunteer-types");
+	revalidatePath("/admin/data-types/reentry-checklist-items");
+	revalidatePath("/admin/data-types/coach-trainings");
+	revalidatePath("/admin/data-types/locations");
+	revalidatePath("/admin/data-types/cities");
+	revalidatePath("/admin/data-types/visits");
+	revalidatePath("/admin/data-types/sites");
+	revalidatePath("/admin/data-types/referral-sources");
+	revalidatePath("/admin/data-types/referred-out");
+	revalidatePath("/admin/data-types/client-services");
+};

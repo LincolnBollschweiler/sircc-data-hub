@@ -1,2 +1,0 @@
-ALTER TABLE "client_service" ADD COLUMN "city_id" uuid;--> statement-breakpoint
-ALTER TABLE "client_service" ADD CONSTRAINT "client_service_city_id_city_id_fk" FOREIGN KEY ("city_id") REFERENCES "public"."city"("id") ON DELETE set null ON UPDATE no action;

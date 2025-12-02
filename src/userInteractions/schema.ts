@@ -3,8 +3,8 @@ import { z } from "zod";
 export const assignRoleSchema = z.object({
 	firstName: z.string(),
 	lastName: z.string(),
-	desiredRole: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
-	role: z.enum(["admin", "coach", "client", "volunteer", "client-volunteer"]),
+	desiredRole: z.enum(["admin", "coach", "client", "volunteer", "staff"]).nullable(),
+	role: z.enum(["admin", "coach", "client", "volunteer", "staff"]),
 	isReentryClient: z.boolean().optional(),
 });
 
@@ -13,9 +13,9 @@ export const clerkUserSchema = z
 		firstName: z.string().min(2, "Required").max(30),
 		lastName: z.string().min(1, "Required").max(30),
 		email: z.string().email().max(255).nullable(),
-		address1: z.string().max(100).optional(),
-		address2: z.string().max(100).optional(),
-		city: z.string().min(2, "City is required"),
+		address1: z.string().max(100, "Maximum 100 characters").optional(),
+		address2: z.string().max(100, "Maximum 100 characters").optional(),
+		city: z.string().max(50, "Maximum 50 characters").optional(),
 		state: z.string().max(2, "Two letter state abbreviation").optional(),
 		zip: z.string().max(5, "Five digit zip code").optional(),
 		phone: z
@@ -36,14 +36,36 @@ export const clerkUserSchema = z
 			if (val == null) return ""; // convert null/undefined → ""
 			if (typeof val === "string") return val.trim();
 			return val;
-		}, z.string().max(1000).optional()),
-		desiredRole: z.enum(["developer", "admin", "coach", "client", "volunteer", "client-volunteer"]).nullable(),
+		}, z.string().max(1000, "Maximum 1000 characters").optional()),
+		desiredRole: z.enum(["admin", "coach", "client", "volunteer", "staff"]).nullable(),
+		role: z
+			.enum([
+				"developer",
+				"admin",
+				"admin-coach",
+				"admin-volunteer",
+				"admin-coach-volunteer",
+				"staff",
+				"staff-volunteer",
+				"coach",
+				"coach-staff",
+				"coach-volunteer",
+				"coach-staff-volunteer",
+				"client",
+				"volunteer",
+				"client-volunteer",
+				"client-staff",
+				"client-staff-volunteer",
+			])
+			.optional(),
 		themePreference: z.enum(["light", "dark", "system"]).default("system"),
 		accepted: z.boolean().nullable(),
 	})
 	.superRefine((data, ctx) => {
 		const hasPhone = !!data.phone;
 		const hasBirthDate = !!data.birthMonth && !!data.birthDay;
+		const mustProvidePhone =
+			data.desiredRole === "coach" || data.desiredRole === "staff" || data.desiredRole === "admin";
 
 		if (!hasPhone && !hasBirthDate) {
 			ctx.addIssue({
@@ -57,30 +79,52 @@ export const clerkUserSchema = z
 				path: ["birthMonth"],
 			});
 		}
+
+		if (mustProvidePhone && !hasPhone) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number is required for your desired role.",
+				path: ["phone"],
+			});
+		}
 	});
 
-const getUserSchemaBase = {
+const userSchemaBase = {
 	firstName: z.string().min(2, "Required").max(30),
 	lastName: z.string().min(1, "Required").max(30),
-	email: z.string().email().max(255).nullable(),
-	phone: z.string().min(12, "Phone number must be 12 characters (Ex: 208-555-1234)").max(12),
-	address1: z.string().max(100).nullable().optional(),
-	address2: z.string().max(100).nullable().optional(),
-	city: z.string().max(50).nullable().optional(),
+	email: z.string().email().max(255).nullable().optional(),
+	phone: z
+		.string()
+		.nullable()
+		.optional()
+		.transform((v) => (v === "" ? null : v)),
+	address1: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+	address2: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+	city: z.string().max(50, "Maximum 50 characters").nullable().optional(),
 	state: z.string().max(2, "Two letter state abbreviation").nullable().optional(),
 	zip: z.string().max(5, "Five digit zip code").nullable().optional(),
 	notes: z.preprocess((val) => {
 		if (val == null) return ""; // convert null/undefined → ""
 		if (typeof val === "string") return val.trim();
 		return val;
-	}, z.string().max(1000).optional()),
+	}, z.string().max(1000, "Maximum 1000 characters").optional()),
 };
 
 export const userSchema = z
 	.object({
 		firstName: z.string().min(2, "Required").max(30),
 		lastName: z.string().min(1, "Required").max(30),
-		role: z.enum(["client", "client-volunteer", "client-volunteer-staff"]),
+		role: z
+			.enum([
+				"staff",
+				"staff-volunteer",
+				"client",
+				"volunteer",
+				"client-volunteer",
+				"client-staff",
+				"client-staff-volunteer",
+			])
+			.optional(),
 		email: z
 			.string()
 			.email()
@@ -93,9 +137,9 @@ export const userSchema = z
 			.nullable()
 			.optional()
 			.transform((v) => (v === "" ? null : v)),
-		address1: z.string().max(100).nullable().optional(),
-		address2: z.string().max(100).nullable().optional(),
-		city: z.string().max(50).nullable().optional(),
+		address1: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+		address2: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+		city: z.string().max(50, "Maximum 50 characters").nullable().optional(),
 		state: z.string().max(2, "Two letter state abbreviation").nullable().optional(),
 		zip: z.string().max(5, "Five digit zip code").nullable().optional(),
 		birthMonth: z.preprocess(
@@ -110,10 +154,10 @@ export const userSchema = z
 			if (val == null) return ""; // convert null/undefined → ""
 			if (typeof val === "string") return val.trim();
 			return val;
-		}, z.string().max(1000).optional()),
+		}, z.string().max(1000, "Maximum 1000 characters").optional()),
 		isReentryClient: z.boolean().optional(),
 		followUpNeeded: z.boolean().optional(),
-		followUpNotes: z.string().max(1000).optional().nullable(),
+		followUpNotes: z.string().max(1000, "Maximum 1000 characters").optional().nullable(),
 		followUpDate: z.preprocess((val) => {
 			if (val === "" || val == null) return null;
 			return new Date(val as string);
@@ -149,35 +193,61 @@ export const userSchema = z
 		}
 	});
 
-export const genUserSchema = z.object({
-	firstName: z.string().min(2, "Required").max(30),
-	lastName: z.string().min(1, "Required").max(30),
-	email: z.string().email().max(255).nullable(),
-	phone: z.string().min(12, "Phone number must be 12 characters (Ex: 208-555-1234)").max(12),
-	address1: z.string().max(100).nullable().optional(),
-	address2: z.string().max(100).nullable().optional(),
-	city: z.string().max(50).nullable().optional(),
-	state: z.string().max(2, "Two letter state abbreviation").nullable().optional(),
-	zip: z.string().max(5, "Five digit zip code").nullable().optional(),
-	notes: z.preprocess((val) => {
-		if (val == null) return ""; // convert null/undefined → ""
-		if (typeof val === "string") return val.trim();
-		return val;
-	}, z.string().max(1000).optional()),
-});
-
 export const coachSchema = z.object({
-	...getUserSchemaBase,
-	website: z.string().max(255).nullable().optional(),
-	llc: z.string().max(100).nullable().optional(),
-	therapyNotesUrl: z.string().max(500).nullable().optional(),
+	...userSchemaBase,
+	website: z.preprocess(
+		(v) => (v === "" ? undefined : v),
+		z.string().url().max(255, "Maximum 255 characters").optional().nullable()
+	),
+	llc: z.string().max(100, "Maximum 100 characters").nullable().optional(),
+	therapyNotesUrl: z.preprocess(
+		(v) => (v === "" ? undefined : v),
+		z.string().url().max(500, "Maximum 500 characters").optional().nullable()
+	),
 	role: z.enum(["coach", "coach-staff", "coach-volunteer", "coach-staff-volunteer"]),
 });
 
-// export const volunteerRoleSchema = z.object({
-// 	role: z.enum(["volunteer", "client-volunteer", "staff-volunteer", "client-volunteer-staff"]),
-// });
-// export const staffRoleSchema = z.object({
-// 	role: z.enum(["staff", "staff-volunteer", "coach-staff", "coach-staff-volunteer", "client-volunteer-staff"]),
-// });
-// export const adminRolesSchema = z.object({ role: z.enum(["admin", "admin-coach", "admin-coach-volunteer"]) });
+export const volunteerSchema = z
+	.object({
+		...userSchemaBase,
+		role: z
+			.enum([
+				"admin-volunteer",
+				"admin-coach-volunteer",
+				"staff-volunteer",
+				"coach-volunteer",
+				"coach-staff-volunteer",
+				"volunteer",
+				"client-volunteer",
+				"client-staff-volunteer",
+			])
+			.optional(),
+		birthMonth: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(12).nullable().optional()
+		),
+		birthDay: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(31).nullable().optional()
+		),
+	})
+	.superRefine((data, ctx) => {
+		const hasPhone = !!data.phone;
+		const hasBirthDate = !!data.birthMonth && !!data.birthDay;
+
+		if (hasPhone && (data.phone as string).length !== 12) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number must be 12 characters (Ex: 208-555-1234)",
+				path: ["phone"],
+			});
+		}
+
+		if (!hasPhone && !hasBirthDate) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Please provide either a phone number or your birth month and day.",
+				path: ["phone"],
+			});
+		}
+	});

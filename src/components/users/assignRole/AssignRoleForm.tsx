@@ -37,9 +37,9 @@ export default function AssignRoleForm({
 
 	const roles = [
 		{ id: "client", name: "Client" },
-		{ id: "coach", name: "Coach" },
 		{ id: "volunteer", name: "Volunteer" },
-		{ id: "client-volunteer", name: "Client-Volunteer" },
+		{ id: "coach", name: "Coach" },
+		{ id: "staff", name: "Staff" },
 		{ id: "admin", name: "Admin" },
 	];
 
@@ -53,37 +53,55 @@ export default function AssignRoleForm({
 					name="role"
 					render={({ field }) => (
 						<FormItem>
-							<RequiredLabelIcon />
-							<FormLabel className="mb-2">
-								Assign Role for {profile.firstName} {profile.lastName}.{" "}
-								{profile.desiredRole && `Desired role: ${profile.desiredRole}`}
-							</FormLabel>
-							<FormControl>
-								<RadioGroup
-									onValueChange={(value) => {
-										setShowReentryClientOption(value === "client" || value === "client-volunteer");
-										return field.onChange(value);
-									}}
-									value={field.value}
-									className="flex flex-wrap gap-2 justify-between"
-								>
-									{roles.map((role) => (
-										<label
-											key={role.id}
-											className={cn(
-												"cursor-pointer select-none rounded-md border px-3 py-0.5 text-sm font-medium transition-colors",
-												field.value === role.id
-													? "bg-primary text-primary-foreground border-primary"
-													: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-											)}
-										>
-											<RadioGroupItem value={role.id} className="hidden" />
-											{role.name}
-										</label>
-									))}
-								</RadioGroup>
-							</FormControl>
-							<FormMessage />
+							<div className="flex flex-col gap-3">
+								<div className="flex items-center gap-0.5">
+									<RequiredLabelIcon />
+									<FormLabel className="mb-2">
+										Assign Role for {profile.firstName} {profile.lastName}.
+										{profile.desiredRole && ` | Desired role: ${profile.desiredRole}`}
+									</FormLabel>
+								</div>
+								<FormControl>
+									<RadioGroup
+										tabIndex={-1}
+										onValueChange={(value) => {
+											setShowReentryClientOption(
+												value === "client" || value === "client-volunteer"
+											);
+											return field.onChange(value);
+										}}
+										value={field.value}
+										className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+									>
+										{roles.map((role) => (
+											<label
+												tabIndex={0}
+												key={role.id}
+												className={cn(
+													"cursor-pointer select-none rounded-md border p-1 text-center text-sm font-medium shadow-sm transition-colors",
+													field.value === role.id
+														? "bg-primary text-primary-foreground border-primary"
+														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+												)}
+												onKeyDown={(e) => {
+													if (e.key === " " || e.key === "Enter") {
+														e.preventDefault();
+														const value = role.id;
+														setShowReentryClientOption(
+															value === "client" || value === "client-volunteer"
+														);
+														field.onChange(value);
+													}
+												}}
+											>
+												<RadioGroupItem value={role.id} className="hidden" />
+												{role.name}
+											</label>
+										))}
+									</RadioGroup>
+								</FormControl>
+								<FormMessage />
+							</div>
 						</FormItem>
 					)}
 				/>

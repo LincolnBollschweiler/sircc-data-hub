@@ -1,6 +1,7 @@
 "use server";
 
 import { coach, user } from "@/drizzle/schema";
+import { User } from "@/types";
 import {
 	addClientReentryCheckListItemForClient,
 	addCoachHoursById,
@@ -22,10 +23,16 @@ import {
 	updateCoachHoursById,
 	updateCoachMileageById,
 	updateClerkUserById,
-	updateUserById,
+	updateClientUserById,
 	getUserById,
+	VolunteerHours,
+	addVolunteerHoursById,
+	updateVolunteerHoursById,
+	addVolunteer,
+	updateVolunteerById,
+	updateUserRoleById,
 } from "@/userInteractions/db";
-import { assignRoleSchema, clerkUserSchema, userSchema } from "@/userInteractions/schema";
+import { assignRoleSchema, clerkUserSchema, userSchema, volunteerSchema } from "@/userInteractions/schema";
 
 //#region User Actions
 export const createUser = async (unsafeData: Partial<typeof user.$inferInsert>) => {
@@ -41,13 +48,18 @@ export const updateUser = async (
 ) => {
 	const { success, data } = userSchema.safeParse(unsafeData);
 	if (!success) return { error: true, message: "Invalid data" };
-	const rv = await updateUserById(id, data, unsafeData.previousRole);
+	const rv = await updateClientUserById(id, data, unsafeData.previousRole);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
 };
 
 export const queryUserById = async (id: string) => {
 	const rv = await getUserById(id);
 	return rv;
+};
+
+export const updateUserRole = async (id: string, user: User) => {
+	const rv = await updateUserRoleById(id, user.role);
+	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
 };
 
 export const updateClerkUser = async (id: string, unsafeData: Partial<typeof user.$inferInsert>) => {
@@ -66,7 +78,7 @@ export const updateUserRoleAndAccept = async (id: string, unsafeData: Partial<ty
 export const updateClientsCoach = async (userId: string | null, coachId: string | null) => {
 	if (!userId) return { error: true, message: "Invalid user ID" };
 	const rv = await updateClientById(userId, { coachId });
-	return { error: !rv, message: rv ? "Coach updated successfully" : "Failed to update coach" };
+	return { error: !rv, message: rv ? "Client updated successfully" : "Failed to update client" };
 };
 
 export const updateClientIsReentryStatus = async (
@@ -111,6 +123,24 @@ export const deleteClientChecklistItem = async (clientId: string, itemId: string
 	return { error: !rv, message: rv ? "Checklist item deleted successfully" : "Failed to delete checklist item" };
 };
 //#endregion
+
+//#region Volunteer Actions
+export const createVolunteer = async (unsafeData: Partial<typeof user.$inferInsert>) => {
+	const { success, data } = volunteerSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Invalid data" };
+	const rv = await addVolunteer(data);
+	return { error: !rv, message: rv ? "User created successfully" : "Failed to create user" };
+};
+
+export const updateVolunteer = async (
+	id: string,
+	unsafeData: Partial<typeof user.$inferInsert> & { previousRole?: string }
+) => {
+	const { success, data } = volunteerSchema.safeParse(unsafeData);
+	if (!success) return { error: true, message: "Invalid data" };
+	const rv = await updateVolunteerById(id, data, unsafeData.previousRole);
+	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
+};
 
 //#region Coach Actions
 export const updateCoachDetails = async (
@@ -157,6 +187,20 @@ export const updateCoachHours = async (hoursId: string | null, data: Partial<Coa
 	const rv = await updateCoachHoursById(hoursId, data);
 	if (!rv) return { error: true, message: "Failed to update coach hours" };
 	return { error: false, message: "Coach hours updated successfully" };
+};
+
+export const insertVolunteerHours = async (volunteerId: string, data: Partial<VolunteerHours>) => {
+	if (!Number(data.hours)) return { error: true, message: "Hours must be provided" };
+	const rv = await addVolunteerHoursById(volunteerId, data as VolunteerHours);
+	if (!rv) return { error: true, message: "Failed to log volunteer hours" };
+	return { error: false, message: "Volunteer hours logged successfully" };
+};
+export const updateVolunteerHours = async (hoursId: string | null, data: Partial<VolunteerHours>) => {
+	if (!hoursId) return { error: true, message: "Invalid hours ID" };
+	if (!Number(data.hours)) return { error: true, message: "Hours must be provided" };
+	const rv = await updateVolunteerHoursById(hoursId, data);
+	if (!rv) return { error: true, message: "Failed to update volunteer hours" };
+	return { error: false, message: "Volunteer hours updated successfully" };
 };
 
 export const deleteCoachHours = async (hoursId: string) => {

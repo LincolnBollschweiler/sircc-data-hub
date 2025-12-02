@@ -18,11 +18,14 @@ import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "../ui/input";
 import { userDataTableColumns } from "./UserDataTableColumns";
-import { CSTables, Service } from "@/tableInteractions/db";
+import { CSTables, Service, VolunteerType } from "@/tableInteractions/db";
 import { useDeleteClientService } from "../DeleteConfirm";
 import { ClientServices, NewClientService } from "./clients/ClientServices";
 import ClientUpdateDialog from "./clients/ClientUpdateDialog";
 import { DialogTrigger } from "../ui/dialog";
+import VolunteerHoursDialog from "./volunteers/VolunteerHoursDialog";
+import VolunteerUpdateDialog from "./volunteers/VolunteerUpdateDialog";
+import CoachUpdateDialog from "./coaches/CoachUpdateDialog";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -36,22 +39,31 @@ export default function DataTable<TData>({
 	data,
 	userType,
 	coachIsViewing,
-	clientId,
+	userId,
 	csTables,
 	services,
+	volunteerTypes,
 	trainingsCount,
 	checkListCount,
 }: DataTableProps<TData> & {
 	title?: string;
 	userType: string;
 	coachIsViewing?: boolean;
-	clientId?: string;
+	userId?: string;
 	csTables?: CSTables;
 	services?: Service[] | undefined;
+	volunteerTypes?: VolunteerType[] | undefined;
 	trainingsCount?: number;
 	checkListCount?: number;
 }) {
-	const typesWithNoName = ["single-client", "single-client-view", "coach-hours", "coach-miles"];
+	const typesWithNoNameColumn = [
+		"single-client",
+		"single-client-view",
+		"volunteer-hours",
+		"volunteer-hours-view",
+		"coach-hours",
+		"coach-miles",
+	];
 	const { startDelete, dialog } = useDeleteClientService();
 
 	const columns = userDataTableColumns(
@@ -60,6 +72,7 @@ export default function DataTable<TData>({
 		trainingsCount,
 		checkListCount,
 		csTables,
+		volunteerTypes,
 		userType === "single-client" ? startDelete : undefined
 	) as ColumnDef<TData, unknown>[];
 
@@ -136,13 +149,13 @@ export default function DataTable<TData>({
 						<>
 							{userType === "single-client" && (
 								<ClientServices
-									clientId={clientId!}
+									clientId={userId!}
 									csTables={csTables!}
 									coachIsViewing={coachIsViewing}
 								/>
 							)}
 							{userType === "single-client-view" && (
-								<NewClientService clientId={clientId!} services={services!} />
+								<NewClientService clientId={userId!} services={services!} />
 							)}
 							{userType === "client" && (
 								<ClientUpdateDialog>
@@ -150,6 +163,27 @@ export default function DataTable<TData>({
 										<button className="btn-primary">Add New Client</button>
 									</DialogTrigger>
 								</ClientUpdateDialog>
+							)}
+							{userType === "volunteer-hours" && (
+								<VolunteerHoursDialog volunteerId={userId!} volunteerTypes={volunteerTypes}>
+									<DialogTrigger asChild>
+										<Button className="btn-primary">Add Volunteer Hours</Button>
+									</DialogTrigger>
+								</VolunteerHoursDialog>
+							)}
+							{userType === "volunteer" && (
+								<VolunteerUpdateDialog>
+									<DialogTrigger asChild>
+										<Button className="btn-primary">Add Volunteer</Button>
+									</DialogTrigger>
+								</VolunteerUpdateDialog>
+							)}
+							{userType === "coach" && (
+								<CoachUpdateDialog>
+									<DialogTrigger asChild>
+										<Button className="btn-primary">Add Coach Role to Existing User</Button>
+									</DialogTrigger>
+								</CoachUpdateDialog>
 							)}
 						</>
 					)}
@@ -159,7 +193,7 @@ export default function DataTable<TData>({
 				<>
 					<div className="flex flex-wrap gap-1 items-center justify-between mb-2">
 						<div className="flex flex-wrap sm:flex-nowrap gap-1 items-center">
-							{!typesWithNoName.includes(userType) && (
+							{!typesWithNoNameColumn.includes(userType) && (
 								<Input
 									className="max-w-sm text-primary-foreground bg-primary"
 									placeholder={`Search by Name...`}
@@ -175,10 +209,10 @@ export default function DataTable<TData>({
 							/>
 						</div>
 						{userType === "single-client" && (
-							<ClientServices clientId={clientId!} csTables={csTables!} coachIsViewing={coachIsViewing} />
+							<ClientServices clientId={userId!} csTables={csTables!} coachIsViewing={coachIsViewing} />
 						)}
 						{userType === "single-client-view" && (
-							<NewClientService clientId={clientId!} services={services!} />
+							<NewClientService clientId={userId!} services={services!} />
 						)}
 						{userType === "client" && (
 							<ClientUpdateDialog>
@@ -186,6 +220,27 @@ export default function DataTable<TData>({
 									<Button className="mr-1">Add New Client</Button>
 								</DialogTrigger>
 							</ClientUpdateDialog>
+						)}
+						{userType === "volunteer-hours" && (
+							<VolunteerHoursDialog volunteerId={userId!} volunteerTypes={volunteerTypes}>
+								<DialogTrigger asChild>
+									<Button className="btn-primary">Add Volunteer Hours</Button>
+								</DialogTrigger>
+							</VolunteerHoursDialog>
+						)}
+						{userType === "volunteer" && (
+							<VolunteerUpdateDialog>
+								<DialogTrigger asChild>
+									<Button className="btn-primary">Add Volunteer</Button>
+								</DialogTrigger>
+							</VolunteerUpdateDialog>
+						)}
+						{userType === "coach" && (
+							<CoachUpdateDialog>
+								<DialogTrigger asChild>
+									<Button className="btn-primary">Add Coach Role to Existing User</Button>
+								</DialogTrigger>
+							</CoachUpdateDialog>
 						)}
 					</div>
 

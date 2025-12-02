@@ -4,7 +4,7 @@ import { ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Coach } from "@/userInteractions/db";
 import { User } from "@/types";
-import GenUserUpdateForm from "./CoachUpdateForm";
+import CoachUpdateForm from "./CoachUpdateForm";
 import { z } from "zod";
 import { coachSchema } from "@/userInteractions/schema";
 
@@ -13,15 +13,16 @@ export default function CoachUpdateDialog({
 	coach,
 	children,
 }: {
-	user: User;
-	coach: Coach;
+	user?: User;
+	coach?: Coach;
 	children: ReactNode;
 }) {
-	const mergedUser = {
-		...user,
-		...coach,
-		id: user.id,
-	};
+	const mergedUser = user &&
+		coach && {
+			...user,
+			...coach,
+			id: user.id,
+		};
 
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -30,10 +31,10 @@ export default function CoachUpdateDialog({
 			{children}
 			<DialogContent className="dialog-mobile-safe">
 				<DialogHeader>
-					<DialogTitle>Edit Coach Details</DialogTitle>
+					<DialogTitle>{user ? "Edit Coach Details" : "Add Coach Role to Existing User"}</DialogTitle>
 				</DialogHeader>
 				<div className="mt-4 grid gap-4">
-					<GenUserUpdateForm
+					<CoachUpdateForm
 						user={mergedUser as z.infer<typeof coachSchema> & { id: string }}
 						onSuccess={() => setIsOpen(false)}
 					/>

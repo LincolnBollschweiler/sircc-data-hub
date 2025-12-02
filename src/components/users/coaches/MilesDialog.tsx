@@ -47,7 +47,7 @@ export default function MilesDialog({
 		const loggedMiles: Partial<CoachMiles> = {
 			miles,
 			date,
-			notes,
+			notes: notes?.trim() || null,
 		};
 
 		const action = coachId ? insertCoachMiles.bind(null, coachId) : updateCoachMiles.bind(null, values?.id ?? null);
@@ -85,6 +85,8 @@ export default function MilesDialog({
 							<PopoverContent className="w-auto overflow-hidden p-0" align="start">
 								<Calendar
 									mode="single"
+									startMonth={new Date(2023, 0)}
+									endMonth={new Date(2040, 11)}
 									selected={date}
 									captionLayout="dropdown"
 									onSelect={(newDate) => {
@@ -121,7 +123,7 @@ export default function MilesDialog({
 						className="min-h-20 resize-none"
 						placeholder="Optional notes"
 						value={notes}
-						onChange={(e) => setNotes(e.target.value.trim())}
+						onChange={(e) => setNotes(e.target.value)}
 					/>
 				</div>
 				<DialogFooter>

@@ -1,1 +1,0 @@
-ALTER TABLE "coach_mileage" ALTER COLUMN "miles" SET DATA TYPE numeric(5, 2);

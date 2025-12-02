@@ -6,8 +6,8 @@ import { z } from "zod";
 import { coachSchema } from "@/userInteractions/schema";
 import { updateCoachDetails } from "@/userInteractions/actions";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { cn } from "@/lib/utils";
+// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+// import { cn } from "@/lib/utils";
 import RequiredLabelIcon from "@/components/RequiredLabelIcon";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,20 +16,47 @@ import PhoneInput from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { CoachUpdate } from "@/userInteractions/db";
+import { trimStrings } from "@/utils/trim";
+import { User } from "@/types";
+import { mergeRoles } from "../duplicate/mergeRoles";
+import { findDuplicates } from "../duplicate/duplicates";
+import { DuplicateReviewDialog } from "../duplicate/DuplicateReviewDialog";
+import { cn } from "@/lib/utils";
 
 export default function ClientUserForm({
 	user,
 	onSuccess,
 }: {
-	user: z.infer<typeof coachSchema> & { id: string };
+	user?: z.infer<typeof coachSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
 	const form = useForm<z.infer<typeof coachSchema>>({
 		resolver: zodResolver(coachSchema),
-		defaultValues: user,
+		defaultValues: user || {
+			firstName: "..",
+			lastName: "..",
+			phone: "",
+			address1: "",
+			address2: "",
+			city: "",
+			state: "",
+			zip: "",
+			role: "coach",
+			website: "",
+			llc: "",
+			notes: "",
+		},
 	});
 
-	const onSubmit = async (values: z.infer<typeof coachSchema>) => {
+	const [pendingValues, setPendingValues] = useState<
+		(z.infer<typeof coachSchema> & { previousRole?: string }) | null
+	>(null);
+	const [duplicateUsers, setDuplicateUsers] = useState<User[] | null>([]);
+
+	const dialogOpen = duplicateUsers !== null;
+
+	const runUpdate = async (values: z.infer<typeof coachSchema> & { previousRole?: string }) => {
+		if (!user) return;
 		const coachUpdate = {
 			user: {
 				phone: values.phone,
@@ -43,6 +70,7 @@ export default function ClientUserForm({
 			coach: {
 				website: values.website,
 				llc: values.llc,
+				therapyNotesUrl: values.therapyNotesUrl,
 				notes: values.notes,
 			},
 		} as CoachUpdate;
@@ -54,12 +82,103 @@ export default function ClientUserForm({
 		if (!actionData?.error) onSuccess?.();
 	};
 
-	const roles = [
-		{ id: "coach", name: "Coach" },
-		{ id: "coach-staff", name: "Coach & Staff" },
-		{ id: "coach-volunteer", name: "Coach & Volunteer" },
-		{ id: "coach-staff-volunteer", name: "Coach & Staff & Volunteer" },
-	];
+	const cleanup = () => {
+		setDuplicateUsers(null);
+		setPendingValues(null);
+	};
+
+	const mergeUsers = async (
+		duplicateUser: User,
+		newUserValues: z.infer<typeof coachSchema> & { previousRole?: string }
+	) => {
+		if (duplicateUser.role.includes("developer")) {
+			actionToast({
+				actionData: {
+					error: true,
+					message: `Not allowed: trying to merge with an existing developer.`,
+				},
+			});
+			return;
+		}
+
+		if (!duplicateUser.clerkUserId) {
+			actionToast({
+				actionData: {
+					error: true,
+					message: `Not allowed: Selected User does not have an account.`,
+				},
+			});
+			return;
+		}
+
+		const newUser: z.infer<typeof coachSchema> & { previousRole?: string } = { ...newUserValues };
+		newUser.firstName = duplicateUser.firstName;
+		newUser.lastName = duplicateUser.lastName;
+		newUser.email = duplicateUser.email;
+
+		if (!newUser.phone && duplicateUser.phone) newUser.phone = duplicateUser.phone;
+		if (!newUser.address1 && duplicateUser.address1) newUser.address1 = duplicateUser.address1;
+		if (!newUser.address2 && duplicateUser.address2) newUser.address2 = duplicateUser.address2;
+		if (!newUser.city && duplicateUser.city) newUser.city = duplicateUser.city;
+		if (!newUser.state && duplicateUser.state) newUser.state = duplicateUser.state;
+		if (!newUser.zip && duplicateUser.zip) newUser.zip = duplicateUser.zip;
+
+		// special merge for notes (append)
+		newUser.notes = [newUserValues.notes, duplicateUser.notes].filter(Boolean).join("\n");
+		newUser.role = mergeRoles(duplicateUser.role, newUserValues.role!) as z.infer<typeof coachSchema>["role"];
+
+		const coachUpdate = {
+			user: {
+				phone: newUser.phone,
+				address1: newUser.address1,
+				address2: newUser.address2,
+				city: newUser.city,
+				state: newUser.state,
+				zip: newUser.zip,
+				role: newUser.role,
+			},
+			coach: {
+				website: newUser.website,
+				llc: newUser.llc,
+				therapyNotesUrl: newUser.therapyNotesUrl,
+				notes: newUser.notes,
+			},
+		} as CoachUpdate;
+
+		const action = updateCoachDetails.bind(null, duplicateUser.id);
+		const actionData = await action(coachUpdate, duplicateUser.role);
+		if (actionData) actionToast({ actionData });
+
+		if (!actionData?.error) onSuccess?.();
+	};
+
+	const onSubmit = async (values: z.infer<typeof coachSchema> & { previousRole?: string }) => {
+		values = trimStrings(values);
+		if (!user?.firstName) {
+			const isDuplicateUserAction = findDuplicates.bind(null, values as User);
+			const duplicateUsers: User[] = await isDuplicateUserAction();
+			if (duplicateUsers.length) {
+				values.role = "coach";
+				setPendingValues(values);
+				setDuplicateUsers(duplicateUsers);
+			}
+			//No duplicates found, Show Alert Dialog to let user know
+			// they can only add Coach Role to Existing User
+			else {
+				actionToast({
+					actionData: {
+						error: true,
+						message: `No duplicates found. You can only add Coach Role to Existing User.`,
+					},
+				});
+
+				onSuccess?.();
+			}
+			return; // stop original submit
+		}
+
+		await runUpdate(values);
+	};
 
 	const [phone, setPhone] = useState(user?.phone || "");
 	const updatePhone = (value: string) => {
@@ -74,302 +193,331 @@ export default function ClientUserForm({
 	if (!mounted) return null; // prevents hydration mismatch
 
 	return (
-		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2 flex-col">
-				<FormField
-					name="firstName"
-					render={({ field }) => (
-						<FormItem className="flex flex-col">
-							<div className="flex items-center gap-2">
-								<div className="flex items-center">
-									<RequiredLabelIcon />
-									<FormLabel className="w-[70px] text-nowrap">First Name</FormLabel>
-								</div>
-								<FormControl>
-									<Input
-										{...field}
-										value={field.value ?? ""}
-										readOnly={true}
-										tabIndex={-1}
-										onFocus={() => setFocusedField("firstName")}
-										onBlur={() => setFocusedField(null)}
-									/>
-								</FormControl>
-							</div>
-							{focusedField === "firstName" && (
-								<FormDescription>
-									User has a site login and must update their name through their profile settings.
-								</FormDescription>
+		<>
+			<Form {...form}>
+				<form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2 flex-col">
+					{!user && (
+						<FormField
+							control={form.control}
+							name="phone"
+							render={() => (
+								<FormItem className="flex flex-col">
+									<div className="flex items-center gap-2">
+										<FormLabel className="flex gap-0.5">
+											<RequiredLabelIcon />
+											Phone
+										</FormLabel>
+										<FormControl>
+											<PhoneInput
+												country="US"
+												value={phone}
+												onChange={(value) => updatePhone(value ?? "")}
+												className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+											/>
+										</FormControl>
+									</div>
+									<FormMessage />
+								</FormItem>
 							)}
-						</FormItem>
+						/>
 					)}
-				/>
-				<FormField
-					name="lastName"
-					render={({ field }) => (
-						<FormItem className="flex flex-col">
-							<div className="flex items-center gap-2">
-								<div className="flex items-center">
-									<RequiredLabelIcon />
-									<FormLabel className="w-[70px] text-nowrap">Last Name</FormLabel>
-								</div>
-								<FormControl>
-									<Input
-										{...field}
-										value={field.value ?? ""}
-										readOnly={true}
-										tabIndex={-1}
-										onFocus={() => setFocusedField("lastName")}
-										onBlur={() => setFocusedField(null)}
-									/>
-								</FormControl>
-							</div>
-							{focusedField === "lastName" && (
-								<FormDescription>
-									User has a site login and must update their name through their profile settings.
-								</FormDescription>
+					<div className={cn(!user && "hidden")}>
+						<FormField
+							name="firstName"
+							render={({ field }) => (
+								<FormItem className="flex flex-col">
+									<div className="flex items-center gap-2">
+										<div className="flex items-center">
+											<RequiredLabelIcon />
+											<FormLabel className="w-[70px] text-nowrap">First Name</FormLabel>
+										</div>
+										<FormControl>
+											<Input
+												{...field}
+												value={field.value ?? ""}
+												readOnly={true}
+												tabIndex={-1}
+												onFocus={() => setFocusedField("firstName")}
+												onBlur={() => setFocusedField(null)}
+											/>
+										</FormControl>
+									</div>
+									<FormMessage />
+									{focusedField === "firstName" && (
+										<FormDescription>
+											User has a site login and must update their name through their profile
+											settings.
+										</FormDescription>
+									)}
+								</FormItem>
 							)}
-						</FormItem>
-					)}
-				/>
-				<FormField
-					control={form.control}
-					name="email"
-					render={({ field }) => (
-						<FormItem className="flex flex-col">
-							<div className="flex items-center gap-2">
-								<FormLabel>Email</FormLabel>
-								<FormControl>
-									<Input
-										{...field}
-										value={field.value ?? ""}
-										readOnly={true}
-										tabIndex={-1}
-										onFocus={() => setFocusedField("email")}
-										onBlur={() => setFocusedField(null)}
-									/>
-								</FormControl>
-							</div>
-							{focusedField === "email" && (
-								<FormDescription>
-									User has a site login and must update their email through their profile settings.
-								</FormDescription>
+						/>
+						<FormField
+							name="lastName"
+							render={({ field }) => (
+								<FormItem className="flex flex-col">
+									<div className="flex items-center gap-2">
+										<div className="flex items-center">
+											<RequiredLabelIcon />
+											<FormLabel className="w-[70px] text-nowrap">Last Name</FormLabel>
+										</div>
+										<FormControl>
+											<Input
+												{...field}
+												value={field.value ?? ""}
+												readOnly={true}
+												tabIndex={-1}
+												onFocus={() => setFocusedField("lastName")}
+												onBlur={() => setFocusedField(null)}
+											/>
+										</FormControl>
+									</div>
+									<FormMessage />
+									{focusedField === "lastName" && (
+										<FormDescription>
+											User has a site login and must update their name through their profile
+											settings.
+										</FormDescription>
+									)}
+								</FormItem>
 							)}
-						</FormItem>
-					)}
-				/>
-				<div className="flex flex-col gap-1.5">
+						/>
+
+						<FormField
+							control={form.control}
+							name="email"
+							render={({ field }) => (
+								<FormItem className="flex flex-col">
+									<div className="flex items-center gap-2">
+										<FormLabel>Email</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												value={field.value ?? ""}
+												readOnly={true}
+												tabIndex={-1}
+												onFocus={() => setFocusedField("email")}
+												onBlur={() => setFocusedField(null)}
+											/>
+										</FormControl>
+									</div>
+									<FormMessage />
+									{focusedField === "email" && (
+										<FormDescription>
+											User has a site login and must update their email through their profile
+											settings.
+										</FormDescription>
+									)}
+								</FormItem>
+							)}
+						/>
+					</div>
+
 					<FormField
 						control={form.control}
-						name="address1"
+						name="website"
 						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Address</FormLabel>
-								<FormControl>
-									<Input
-										{...field}
-										value={field.value ?? ""}
-										placeholder="Address Line 1 (optional)"
-									/>
-								</FormControl>
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="address2"
-						render={({ field }) => (
-							<FormItem>
-								<FormControl>
-									<Input
-										{...field}
-										value={field.value ?? ""}
-										placeholder="Address Line 2 (optional)"
-									/>
-								</FormControl>
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="city"
-						render={({ field }) => (
-							<FormItem>
-								<FormControl>
-									<Input {...field} value={field.value ?? ""} placeholder="City" />
-								</FormControl>
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="state"
-						render={({ field }) => (
-							<FormItem>
-								<FormControl>
-									<Input
-										{...field}
-										value={field.value ?? ""}
-										placeholder="State (optional) e.g. ID"
-									/>
-								</FormControl>
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="zip"
-						render={({ field }) => (
-							<FormItem>
-								<FormControl>
-									<Input {...field} value={field.value ?? ""} placeholder="Zip Code (optional)" />
-								</FormControl>
-							</FormItem>
-						)}
-					/>
-				</div>
-				<FormField
-					control={form.control}
-					name="phone"
-					render={() => (
-						<FormItem className="flex flex-col">
-							<div className="flex items-center gap-2">
-								<FormLabel className="flex gap-0.5">
-									<RequiredLabelIcon />
-									Phone
-								</FormLabel>
-								<FormControl>
-									<PhoneInput
-										country="US"
-										value={phone}
-										onChange={(value) => updatePhone(value ?? "")}
-										className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-									/>
-								</FormControl>
-							</div>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-				{/* <FormField
-					control={form.control}
-					name="role"
-					render={({ field }) => (
-						<FormItem>
-							<div className="flex items-center gap-2">
-								<div className="flex items-center gap-0.5">
-									<RequiredLabelIcon />
-									<FormLabel tabIndex={-1}>Assign Roles</FormLabel>
+							<FormItem className="flex flex-col">
+								<div className="flex items-center gap-2">
+									<FormLabel>Website</FormLabel>
+									<FormControl>
+										<Input {...field} value={field.value ?? ""} placeholder="Website (optional)" />
+									</FormControl>
 								</div>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="llc"
+						render={({ field }) => (
+							<FormItem className="flex flex-col">
+								<div className="flex items-center gap-2">
+									<FormLabel>LLC</FormLabel>
+									<FormControl>
+										<Input {...field} value={field.value ?? ""} placeholder="LLC (optional)" />
+									</FormControl>
+								</div>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="therapyNotesUrl"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Therapy Notes URL</FormLabel>
 								<FormControl>
-									<RadioGroup
-										tabIndex={-1}
-										onValueChange={(value) => field.onChange(value)}
-										value={field.value}
-										className="flex gap-2 justify-center"
-									>
-										{roles.map((role) => (
-											<label
-												tabIndex={0}
-												key={role.id}
-												className={cn(
-													"cursor-pointer select-none rounded-md border px-3 py-0.5 text-sm font-medium transition-colors",
-													field.value === role.id
-														? "bg-primary text-primary-foreground border-primary"
-														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-												)}
-												onKeyDown={(e) => {
-													if (e.key === " " || e.key === "Enter") {
-														e.preventDefault();
-														const value = role.id;
-														field.onChange(value);
-													}
-												}}
-											>
-												<RadioGroupItem value={role.id} className="hidden" />
-												{role.name}
-											</label>
-										))}
-									</RadioGroup>
+									<Input
+										{...field}
+										value={field.value ?? ""}
+										placeholder="Therapy Notes URL (optional)"
+									/>
 								</FormControl>
 								<FormMessage />
-							</div>
-						</FormItem>
-					)}
-				/> */}
-				<FormField
-					control={form.control}
-					name="role"
-					render={({ field }) => (
-						<FormItem>
-							<div className="flex flex-col gap-3">
-								<div className="flex items-center gap-0.5">
-									<RequiredLabelIcon />
-									<FormLabel tabIndex={-1}>Assign Roles</FormLabel>
-								</div>
-								<FormControl>
-									<RadioGroup
-										tabIndex={-1}
-										onValueChange={(value) => field.onChange(value)}
-										value={field.value}
-										className="grid grid-cols-1 sm:grid-cols-2 gap-2"
-									>
-										{roles.map((role) => (
-											<label
-												tabIndex={0}
-												key={role.id}
-												className={cn(
-													"cursor-pointer select-none rounded-md border p-1 text-center text-sm font-medium shadow-sm transition-colors",
-													field.value === role.id
-														? "bg-primary text-primary-foreground border-primary"
-														: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-												)}
-												onKeyDown={(e) => {
-													if (e.key === " " || e.key === "Enter") {
-														e.preventDefault();
-														const value = role.id;
-														field.onChange(value);
-													}
-												}}
-											>
-												<RadioGroupItem value={role.id} className="hidden" />
-												{role.name}
-											</label>
-										))}
-									</RadioGroup>
-								</FormControl>
-								<FormMessage />
-							</div>
-						</FormItem>
-					)}
-				/>
-				<FormField
-					control={form.control}
-					name="notes"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Notes</FormLabel>
-							<FormControl>
-								<Textarea
-									{...field}
-									value={field.value ?? ""}
-									onChange={(e) => field.onChange(e.target.value)}
-									placeholder="Follow up notes... (1000 character max)"
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-				<div className="self-end gap-2 flex mt-1">
-					<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
-						Cancel
-					</Button>
-					<Button type="submit" disabled={form.formState.isSubmitting}>
-						Save
-					</Button>
-				</div>
-			</form>
-		</Form>
+							</FormItem>
+						)}
+					/>
+					<div className={cn(!user && "hidden")}>
+						<div className="flex flex-col gap-1.5">
+							<FormField
+								control={form.control}
+								name="address1"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Address</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												value={field.value ?? ""}
+												placeholder="Address Line 1 (optional)"
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="address2"
+								render={({ field }) => (
+									<FormItem>
+										<FormControl>
+											<Input
+												{...field}
+												value={field.value ?? ""}
+												placeholder="Address Line 2 (optional)"
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="city"
+								render={({ field }) => (
+									<FormItem>
+										<FormControl>
+											<Input {...field} value={field.value ?? ""} placeholder="City" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="state"
+								render={({ field }) => (
+									<FormItem>
+										<FormControl>
+											<Input
+												{...field}
+												value={field.value ?? ""}
+												onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+												placeholder="State (optional) e.g. ID"
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="zip"
+								render={({ field }) => (
+									<FormItem>
+										<FormControl>
+											<Input
+												{...field}
+												value={field.value ?? ""}
+												placeholder="Zip Code (optional)"
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						{user && (
+							<FormField
+								control={form.control}
+								name="phone"
+								render={() => (
+									<FormItem className="flex flex-col">
+										<div className="flex items-center gap-2">
+											<FormLabel className="flex gap-0.5">
+												<RequiredLabelIcon />
+												Phone
+											</FormLabel>
+											<FormControl>
+												<PhoneInput
+													country="US"
+													value={phone}
+													onChange={(value) => updatePhone(value ?? "")}
+													className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+												/>
+											</FormControl>
+										</div>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						)}
+						<FormField
+							control={form.control}
+							name="notes"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Notes</FormLabel>
+									<FormControl>
+										<Textarea
+											{...field}
+											value={field.value ?? ""}
+											onChange={(e) => field.onChange(e.target.value)}
+											placeholder="Follow up notes... (1000 character max)"
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					</div>
+					<div className="self-end gap-2 flex mt-1">
+						<Button type="button" variant="destructiveOutline" onClick={() => onSuccess?.()}>
+							Cancel
+						</Button>
+						<Button type="submit" disabled={form.formState.isSubmitting}>
+							Save
+						</Button>
+					</div>
+				</form>
+			</Form>
+			<DuplicateReviewDialog
+				open={dialogOpen}
+				duplicates={duplicateUsers as User[]}
+				pendingValues={pendingValues as User}
+				onCancel={() => {
+					setDuplicateUsers(null);
+					setPendingValues(null);
+				}}
+				onMerge={async (dup, newUser) => {
+					await mergeUsers(
+						dup,
+						newUser as z.infer<typeof coachSchema> & { id: string } & { isClerkUser?: boolean }
+					);
+					cleanup();
+				}}
+				onCreateNew={async (newUser) => {
+					await runUpdate(
+						newUser as z.infer<typeof coachSchema> & { id: string } & { isClerkUser?: boolean }
+					);
+					cleanup();
+				}}
+				cannotAddNew={true}
+			/>
+		</>
 	);
 }

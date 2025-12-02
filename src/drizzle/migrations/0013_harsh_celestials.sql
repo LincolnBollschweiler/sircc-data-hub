@@ -1,1 +1,0 @@
-ALTER TABLE "client_service" ALTER COLUMN "provided_service_id" DROP NOT NULL;
