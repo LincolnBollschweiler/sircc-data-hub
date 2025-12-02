@@ -38,6 +38,7 @@ export default function ProfileForm({
 			phone: profile?.phone || "",
 			address1: profile?.address1 || "",
 			address2: profile?.address2 || "",
+			city: profile?.city || "",
 			state: profile?.state || "",
 			zip: profile?.zip || "",
 		},
@@ -198,7 +199,7 @@ export default function ProfileForm({
 						render={({ field }) => (
 							<FormItem>
 								<FormControl>
-									<Input {...field} value={field.value ?? ""} placeholder="City (required)" />
+									<Input {...field} value={field.value ?? ""} placeholder="City (optional)" />
 								</FormControl>
 								<FormMessage />
 							</FormItem>

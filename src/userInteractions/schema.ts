@@ -64,6 +64,8 @@ export const clerkUserSchema = z
 	.superRefine((data, ctx) => {
 		const hasPhone = !!data.phone;
 		const hasBirthDate = !!data.birthMonth && !!data.birthDay;
+		const mustProvidePhone =
+			data.desiredRole === "coach" || data.desiredRole === "staff" || data.desiredRole === "admin";
 
 		if (!hasPhone && !hasBirthDate) {
 			ctx.addIssue({
@@ -75,6 +77,14 @@ export const clerkUserSchema = z
 				code: z.ZodIssueCode.custom,
 				message: "Please provide either a phone number or your birth month and day.",
 				path: ["birthMonth"],
+			});
+		}
+
+		if (mustProvidePhone && !hasPhone) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number is required for your desired role.",
+				path: ["phone"],
 			});
 		}
 	});
