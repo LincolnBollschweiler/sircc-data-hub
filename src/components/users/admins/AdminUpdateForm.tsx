@@ -3,11 +3,9 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { coachSchema } from "@/userInteractions/schema";
-import { updateCoachDetails } from "@/userInteractions/actions";
+import { adminSchema } from "@/userInteractions/schema";
+import { updateStaffDetails } from "@/userInteractions/actions";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-// import { cn } from "@/lib/utils";
 import RequiredLabelIcon from "@/components/RequiredLabelIcon";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,7 +13,6 @@ import { actionToast } from "@/hooks/use-toast";
 import PhoneInput from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { CoachUpdate } from "@/userInteractions/db";
 import { trimStrings } from "@/utils/trim";
 import { User } from "@/types";
 import { mergeRoles } from "../duplicate/mergeRoles";
@@ -23,15 +20,15 @@ import { findDuplicates } from "../duplicate/duplicates";
 import { DuplicateReviewDialog } from "../duplicate/DuplicateReviewDialog";
 import { cn } from "@/lib/utils";
 
-export default function ClientUserForm({
+export default function AdminForm({
 	user,
 	onSuccess,
 }: {
-	user?: z.infer<typeof coachSchema> & { id: string };
+	user?: z.infer<typeof adminSchema> & { id: string };
 	onSuccess?: () => void;
 }) {
-	const form = useForm<z.infer<typeof coachSchema>>({
-		resolver: zodResolver(coachSchema),
+	const form = useForm<z.infer<typeof adminSchema>>({
+		resolver: zodResolver(adminSchema),
 		defaultValues: user || {
 			firstName: "..",
 			lastName: "..",
@@ -41,44 +38,22 @@ export default function ClientUserForm({
 			city: "",
 			state: "",
 			zip: "",
-			role: "coach",
-			website: "",
-			llc: "",
+			role: "admin",
 			notes: "",
 		},
 	});
 
-	const [pendingValues, setPendingValues] = useState<
-		(z.infer<typeof coachSchema> & { previousRole?: string }) | null
-	>(null);
+	const [pendingValues, setPendingValues] = useState<z.infer<typeof adminSchema> | null>(null);
 	const [duplicateUsers, setDuplicateUsers] = useState<User[] | null>([]);
 
 	const dialogOpen = duplicateUsers !== null;
 
-	const runUpdate = async (values: z.infer<typeof coachSchema> & { previousRole?: string }) => {
+	const runUpdate = async (values: z.infer<typeof adminSchema>) => {
 		if (!user) return;
-		const coachUpdate = {
-			user: {
-				phone: values.phone,
-				address1: values.address1,
-				address2: values.address2,
-				city: values.city,
-				state: values.state,
-				zip: values.zip,
-				role: values.role,
-			},
-			coach: {
-				website: values.website,
-				llc: values.llc,
-				therapyNotesUrl: values.therapyNotesUrl,
-				notes: values.notes,
-			},
-		} as CoachUpdate;
 
-		const action = updateCoachDetails.bind(null, user.id);
-		const actionData = await action(coachUpdate, user.role);
+		const action = updateStaffDetails.bind(null, user.id);
+		const actionData = await action(values);
 		if (actionData) actionToast({ actionData });
-
 		if (!actionData?.error) onSuccess?.();
 	};
 
@@ -87,15 +62,14 @@ export default function ClientUserForm({
 		setPendingValues(null);
 	};
 
-	const mergeUsers = async (
-		duplicateUser: User,
-		newUserValues: z.infer<typeof coachSchema> & { previousRole?: string }
-	) => {
-		if (duplicateUser.role.includes("developer")) {
+	const mergeUsers = async (duplicateUser: User, newUserValues: z.infer<typeof adminSchema>) => {
+		if (duplicateUser.role.includes("developer") || duplicateUser.role.includes("staff")) {
+			let role = "Developer";
+			if (duplicateUser.role.includes("staff")) role = "Staff";
 			actionToast({
 				actionData: {
 					error: true,
-					message: `Not allowed: trying to merge with an existing developer.`,
+					message: `Not allowed: Trying to merge with an existing ${role}.`,
 				},
 			});
 			return;
@@ -111,7 +85,7 @@ export default function ClientUserForm({
 			return;
 		}
 
-		const newUser: z.infer<typeof coachSchema> & { previousRole?: string } = { ...newUserValues };
+		const newUser: z.infer<typeof adminSchema> = { ...newUserValues };
 		newUser.firstName = duplicateUser.firstName;
 		newUser.lastName = duplicateUser.lastName;
 		newUser.email = duplicateUser.email;
@@ -125,53 +99,30 @@ export default function ClientUserForm({
 
 		// special merge for notes (append)
 		newUser.notes = [newUserValues.notes, duplicateUser.notes].filter(Boolean).join("\n");
-		newUser.role = mergeRoles(duplicateUser.role, newUserValues.role!) as z.infer<typeof coachSchema>["role"];
+		newUser.role = mergeRoles(duplicateUser.role, newUserValues.role!) as z.infer<typeof adminSchema>["role"];
 
-		const coachUpdate = {
-			user: {
-				phone: newUser.phone,
-				address1: newUser.address1,
-				address2: newUser.address2,
-				city: newUser.city,
-				state: newUser.state,
-				zip: newUser.zip,
-				role: newUser.role,
-			},
-			coach: {
-				website: newUser.website,
-				llc: newUser.llc,
-				therapyNotesUrl: newUser.therapyNotesUrl,
-				notes: newUser.notes,
-			},
-		} as CoachUpdate;
-
-		const action = updateCoachDetails.bind(null, duplicateUser.id);
-		const actionData = await action(coachUpdate, duplicateUser.role);
+		const action = updateStaffDetails.bind(null, duplicateUser.id);
+		const actionData = await action(newUser as z.infer<typeof adminSchema> & { id: string });
 		if (actionData) actionToast({ actionData });
-
 		if (!actionData?.error) onSuccess?.();
 	};
 
-	const onSubmit = async (values: z.infer<typeof coachSchema> & { previousRole?: string }) => {
+	const onSubmit = async (values: z.infer<typeof adminSchema>) => {
 		values = trimStrings(values);
 		if (!user?.firstName) {
 			const isDuplicateUserAction = findDuplicates.bind(null, values as User);
 			const duplicateUsers: User[] = await isDuplicateUserAction();
 			if (duplicateUsers.length) {
-				values.role = "coach";
+				values.role = "admin";
 				setPendingValues(values);
 				setDuplicateUsers(duplicateUsers);
-			}
-			//No duplicates found, Show Alert Dialog to let user know
-			// they can only add Coach Role to Existing User
-			else {
+			} else {
 				actionToast({
 					actionData: {
 						error: true,
-						message: `No duplicates found. You can only add Coach Role to a user with a login account.`,
+						message: `No duplicates found. You can only add Admin Role to a user with a login account.`,
 					},
 				});
-
 				onSuccess?.();
 			}
 			return; // stop original submit
@@ -312,54 +263,6 @@ export default function ClientUserForm({
 							)}
 						/>
 					</div>
-
-					<FormField
-						control={form.control}
-						name="website"
-						render={({ field }) => (
-							<FormItem className="flex flex-col">
-								<div className="flex items-center gap-2">
-									<FormLabel>Website</FormLabel>
-									<FormControl>
-										<Input {...field} value={field.value ?? ""} placeholder="Website (optional)" />
-									</FormControl>
-								</div>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="llc"
-						render={({ field }) => (
-							<FormItem className="flex flex-col">
-								<div className="flex items-center gap-2">
-									<FormLabel>LLC</FormLabel>
-									<FormControl>
-										<Input {...field} value={field.value ?? ""} placeholder="LLC (optional)" />
-									</FormControl>
-								</div>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="therapyNotesUrl"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Therapy Notes URL</FormLabel>
-								<FormControl>
-									<Input
-										{...field}
-										value={field.value ?? ""}
-										placeholder="Therapy Notes URL (optional)"
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
 					<div className={cn(!user && "hidden")}>
 						<div className="flex flex-col gap-1.5">
 							<FormField
@@ -506,13 +409,13 @@ export default function ClientUserForm({
 				onMerge={async (dup, newUser) => {
 					await mergeUsers(
 						dup,
-						newUser as z.infer<typeof coachSchema> & { id: string } & { isClerkUser?: boolean }
+						newUser as z.infer<typeof adminSchema> & { id: string } & { isClerkUser?: boolean }
 					);
 					cleanup();
 				}}
 				onCreateNew={async (newUser) => {
 					await runUpdate(
-						newUser as z.infer<typeof coachSchema> & { id: string } & { isClerkUser?: boolean }
+						newUser as z.infer<typeof adminSchema> & { id: string } & { isClerkUser?: boolean }
 					);
 					cleanup();
 				}}

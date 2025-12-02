@@ -56,6 +56,7 @@ export const clerkUserSchema = z
 				"client-volunteer",
 				"client-staff",
 				"client-staff-volunteer",
+				"",
 			])
 			.optional(),
 		themePreference: z.enum(["light", "dark", "system"]).default("system"),
@@ -247,6 +248,77 @@ export const volunteerSchema = z
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
 				message: "Please provide either a phone number or your birth month and day.",
+				path: ["phone"],
+			});
+		}
+	});
+
+export const staffSchema = z
+	.object({
+		...userSchemaBase,
+		role: z
+			.enum([
+				"staff",
+				"staff-volunteer",
+				"coach-staff",
+				"coach-staff-volunteer",
+				"client-staff",
+				"client-staff-volunteer",
+			])
+			.optional(),
+		birthMonth: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(12).nullable().optional()
+		),
+		birthDay: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(31).nullable().optional()
+		),
+	})
+	.superRefine((data, ctx) => {
+		const hasPhone = !!data.phone;
+
+		if (hasPhone && (data.phone as string).length !== 12) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number must be 12 characters (Ex: 208-555-1234)",
+				path: ["phone"],
+			});
+		} else if (!hasPhone) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number required for staff members.",
+				path: ["phone"],
+			});
+		}
+	});
+
+export const adminSchema = z
+	.object({
+		...userSchemaBase,
+		role: z.enum(["admin", "admin-coach", "admin-volunteer", "admin-coach-volunteer"]).optional(),
+		birthMonth: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(12).nullable().optional()
+		),
+		birthDay: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(31).nullable().optional()
+		),
+	})
+	.superRefine((data, ctx) => {
+		const hasPhone = !!data.phone;
+
+		if (hasPhone && (data.phone as string).length !== 12) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number must be 12 characters (Ex: 208-555-1234)",
+				path: ["phone"],
+			});
+		} else if (!hasPhone) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number required for staff members.",
 				path: ["phone"],
 			});
 		}

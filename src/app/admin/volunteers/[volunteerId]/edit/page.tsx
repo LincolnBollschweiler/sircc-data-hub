@@ -6,7 +6,7 @@ import { getVolunteerTypes, VolunteerType } from "@/tableInteractions/db";
 import { getVolunteerById, VolunteerHours } from "@/userInteractions/db";
 import Link from "next/link";
 
-export default async function ViewClientPage({ params }: { params: Promise<{ volunteerId: string }> }) {
+export default async function ViewVolunteersPage({ params }: { params: Promise<{ volunteerId: string }> }) {
 	const { volunteerId } = await params;
 
 	const [fullVolunteer, volunteerTypes] = await Promise.all([getVolunteerById(volunteerId), getVolunteerTypes()]);

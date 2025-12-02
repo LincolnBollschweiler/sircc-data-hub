@@ -73,6 +73,7 @@ const userRoles = [
 	"client-volunteer",
 	"client-staff",
 	"client-staff-volunteer",
+	"",
 ] as const;
 export type UserRole = (typeof userRoles)[number];
 const userRoleEnum = pgEnum("user_role", userRoles);

@@ -20,6 +20,8 @@ import {
 	volunteerRoles,
 	volunteerHours,
 	volunteeringType,
+	staffRoles,
+	adminRoles,
 } from "@/drizzle/schema";
 import { eq, and, sql, inArray } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
@@ -703,6 +705,74 @@ export const updateVolunteerHoursById = async (hoursId: string, data: Partial<ty
 	revalidateClientCache(updatedItem.volunteerId);
 	return updatedItem;
 };
+//#endregion
+
+//#region Staff
+const cachedStaff = unstable_cache(
+	async () => {
+		return await db
+			.select()
+			.from(user)
+			.where(and(inArray(user.role, staffRoles), isNull(user.deletedAt)))
+			.orderBy(desc(user.updatedAt));
+	},
+	["getAllStaff"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
+export const getAllStaff = async () => cachedStaff();
+export type Staff = typeof user.$inferSelect;
+
+const cachedStaffById = (id: string) => {
+	const cachedFn = unstable_cache(
+		async (): Promise<Staff | null> => {
+			const [userRow] = await db
+				.select()
+				.from(user)
+				.where(and(eq(user.id, id), inArray(user.role, staffRoles), isNull(user.deletedAt)))
+				.limit(1);
+
+			return userRow || null;
+		},
+		["getStaffById", id],
+		{ tags: [getUserIdTag(id)] }
+	);
+	return cachedFn;
+};
+export const getStaffById = async (id: string) => cachedStaffById(id);
+//#endregion
+
+//#region Admins
+const cachedAdmins = unstable_cache(
+	async () => {
+		return await db
+			.select()
+			.from(user)
+			.where(and(inArray(user.role, adminRoles), isNull(user.deletedAt)))
+			.orderBy(desc(user.updatedAt));
+	},
+	["getAllAdmins"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
+export const getAllAdmins = async () => cachedAdmins();
+export type Admins = typeof user.$inferSelect;
+
+const cachedAdminsById = (id: string) => {
+	const cachedFn = unstable_cache(
+		async (): Promise<Admins | null> => {
+			const [userRow] = await db
+				.select()
+				.from(user)
+				.where(and(eq(user.id, id), inArray(user.role, adminRoles), isNull(user.deletedAt)))
+				.limit(1);
+
+			return userRow || null;
+		},
+		["getAdminsById", id],
+		{ tags: [getUserIdTag(id)] }
+	);
+	return cachedFn;
+};
+export const getAdminsById = async (id: string) => cachedAdminsById(id);
 //#endregion
 
 //#region CRUD Coaches
