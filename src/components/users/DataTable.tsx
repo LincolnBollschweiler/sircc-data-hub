@@ -26,6 +26,8 @@ import { DialogTrigger } from "../ui/dialog";
 import VolunteerHoursDialog from "./volunteers/VolunteerHoursDialog";
 import VolunteerUpdateDialog from "./volunteers/VolunteerUpdateDialog";
 import CoachUpdateDialog from "./coaches/CoachUpdateDialog";
+import StaffUpdateDialog from "./staff/StaffUpdateDialog";
+import AdminUpdateDialog from "./admins/AdminUpdateDialog";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -96,7 +98,7 @@ export default function DataTable<TData>({
 		if (data.length === 0) {
 			setLoadingOrNone(
 				<div className={"flex justify-center items-center p-20 text-foreground text-xl font-semibold"}>
-					<span className={title ? "-translate-y-5" : ""}>No data to display.</span>
+					<span className="-translate-y-5">No data to display.</span>
 				</div>
 			);
 		} else {
@@ -141,54 +143,59 @@ export default function DataTable<TData>({
 
 	return (
 		<div className="container mx-auto border border-[border-muted/50] p-2.5 rounded-lg shadow-md bg-background-light">
-			{title && (
+			{!data?.length && (
 				<div className="flex items-center justify-between">
-					<h2 className="text-xl font-semibold mb-1">{title}</h2>
+					<h2 className="text-xl font-semibold mb-1">{title ?? ""}</h2>
 
-					{!data?.length && (
-						<>
-							{userType === "single-client" && (
-								<ClientServices
-									clientId={userId!}
-									csTables={csTables!}
-									coachIsViewing={coachIsViewing}
-								/>
-							)}
-							{userType === "single-client-view" && (
-								<NewClientService clientId={userId!} services={services!} />
-							)}
-							{userType === "client" && (
-								<ClientUpdateDialog>
-									<DialogTrigger asChild>
-										<button className="btn-primary">Add New Client</button>
-									</DialogTrigger>
-								</ClientUpdateDialog>
-							)}
-							{userType === "volunteer-hours" && (
-								<VolunteerHoursDialog volunteerId={userId!} volunteerTypes={volunteerTypes}>
-									<DialogTrigger asChild>
-										<Button className="btn-primary">Add Volunteer Hours</Button>
-									</DialogTrigger>
-								</VolunteerHoursDialog>
-							)}
-							{userType === "volunteer" && (
-								<VolunteerUpdateDialog>
-									<DialogTrigger asChild>
-										<Button className="btn-primary">Add Volunteer</Button>
-									</DialogTrigger>
-								</VolunteerUpdateDialog>
-							)}
-							{userType === "coach" && (
-								<CoachUpdateDialog>
-									<DialogTrigger asChild>
-										<Button className="btn-primary">Add Coach Role to Existing User</Button>
-									</DialogTrigger>
-								</CoachUpdateDialog>
-							)}
-						</>
+					{userType === "single-client" && (
+						<ClientServices clientId={userId!} csTables={csTables!} coachIsViewing={coachIsViewing} />
+					)}
+					{userType === "single-client-view" && <NewClientService clientId={userId!} services={services!} />}
+					{userType === "client" && (
+						<ClientUpdateDialog>
+							<DialogTrigger asChild>
+								<button className="btn-primary">Add New Client</button>
+							</DialogTrigger>
+						</ClientUpdateDialog>
+					)}
+					{userType === "volunteer-hours" && (
+						<VolunteerHoursDialog volunteerId={userId!} volunteerTypes={volunteerTypes}>
+							<DialogTrigger asChild>
+								<Button className="btn-primary">Add Volunteer Hours</Button>
+							</DialogTrigger>
+						</VolunteerHoursDialog>
+					)}
+					{userType === "volunteer" && (
+						<VolunteerUpdateDialog>
+							<DialogTrigger asChild>
+								<Button className="btn-primary">Add Volunteer</Button>
+							</DialogTrigger>
+						</VolunteerUpdateDialog>
+					)}
+					{userType === "coach" && (
+						<CoachUpdateDialog>
+							<DialogTrigger asChild>
+								<Button className="btn-primary">Add Coach Role to Existing User</Button>
+							</DialogTrigger>
+						</CoachUpdateDialog>
+					)}
+					{userType === "staff" && (
+						<StaffUpdateDialog>
+							<DialogTrigger asChild>
+								<Button className="btn-primary">Add Staff Role to Existing User</Button>
+							</DialogTrigger>
+						</StaffUpdateDialog>
+					)}
+					{userType === "admin" && (
+						<AdminUpdateDialog>
+							<DialogTrigger asChild>
+								<Button className="btn-primary">Add Admin Role to Existing User</Button>
+							</DialogTrigger>
+						</AdminUpdateDialog>
 					)}
 				</div>
 			)}
+
 			{data.length > 0 ? (
 				<>
 					<div className="flex flex-wrap gap-1 items-center justify-between mb-2">
@@ -241,6 +248,20 @@ export default function DataTable<TData>({
 									<Button className="btn-primary">Add Coach Role to Existing User</Button>
 								</DialogTrigger>
 							</CoachUpdateDialog>
+						)}
+						{userType === "staff" && (
+							<StaffUpdateDialog>
+								<DialogTrigger asChild>
+									<Button className="btn-primary">Add Staff Role to Existing User</Button>
+								</DialogTrigger>
+							</StaffUpdateDialog>
+						)}
+						{userType === "admin" && (
+							<AdminUpdateDialog>
+								<DialogTrigger asChild>
+									<Button className="btn-primary">Add Admin Role to Existing User</Button>
+								</DialogTrigger>
+							</AdminUpdateDialog>
 						)}
 					</div>
 

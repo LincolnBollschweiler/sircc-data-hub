@@ -35,6 +35,8 @@ import VolunteerHoursDialog from "./volunteers/VolunteerHoursDialog";
 import { removeRole } from "./duplicate/mergeRoles";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
 import { createRoot } from "react-dom/client";
+import StaffUpdateDialog from "./staff/StaffUpdateDialog";
+import AdminUpdateDialog from "./admins/AdminUpdateDialog";
 
 const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
 
@@ -927,6 +929,216 @@ export const userDataTableColumns = (
 				},
 				header: "Updated",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+		];
+	}
+
+	if (userType === "staff") {
+		return [
+			{
+				id: "userPhoto",
+				header: "",
+				accessorKey: "photoUrl",
+				cell: (info) => {
+					const r = asUserRow(info.row.original);
+					return (
+						<Image
+							src={r.photoUrl ?? "/default-avatar.png"}
+							alt={`${r.firstName} ${r.lastName}`}
+							width={30}
+							height={30}
+							className="rounded-full object-cover mx-auto"
+						/>
+					);
+				},
+			},
+			{
+				id: "name",
+				accessorFn: (row) => {
+					const r = asUserRow(row);
+					return `${r.firstName} ${r.lastName}`;
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="-ml-4 h-4 w-4" />
+						Name
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asUserRow(rowA.original);
+					const b = asUserRow(rowB.original);
+					const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+					const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+					return nameA.localeCompare(nameB);
+				},
+				cell: (info) => {
+					const r = asUserRow(info.row.original);
+					return `${r.firstName} ${r.lastName}`;
+				},
+			},
+			{
+				accessorKey: "phone",
+				header: () => <div className="text-center">Phone</div>,
+				cell: (info) => {
+					const r = asUserRow(info.row.original);
+					const phone = formatPhoneNumber(r.phone || "");
+					return <div className="text-center">{phone || "N/A"}</div>;
+				},
+			},
+			{
+				accessorKey: "email",
+				header: "Email",
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const user = asUserRow(row.original);
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
+											Send Email
+										</a>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild>
+										<StaffUpdateDialog user={user}>
+											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
+												Edit Staff Details
+											</DialogTrigger>
+										</StaffUpdateDialog>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => confirmRemoveRole(user, "staff")}
+									>
+										Remove Staff Role
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
+			},
+		];
+	}
+
+	if (userType === "admin") {
+		return [
+			{
+				id: "userPhoto",
+				header: "",
+				accessorKey: "photoUrl",
+				cell: (info) => {
+					const r = asUserRow(info.row.original);
+					return (
+						<Image
+							src={r.photoUrl ?? "/default-avatar.png"}
+							alt={`${r.firstName} ${r.lastName}`}
+							width={30}
+							height={30}
+							className="rounded-full object-cover mx-auto"
+						/>
+					);
+				},
+			},
+			{
+				id: "name",
+				accessorFn: (row) => {
+					const r = asUserRow(row);
+					return `${r.firstName} ${r.lastName}`;
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="-ml-4 h-4 w-4" />
+						Name
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asUserRow(rowA.original);
+					const b = asUserRow(rowB.original);
+					const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+					const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+					return nameA.localeCompare(nameB);
+				},
+				cell: (info) => {
+					const r = asUserRow(info.row.original);
+					return `${r.firstName} ${r.lastName}`;
+				},
+			},
+			{
+				accessorKey: "phone",
+				header: () => <div className="text-center">Phone</div>,
+				cell: (info) => {
+					const r = asUserRow(info.row.original);
+					const phone = formatPhoneNumber(r.phone || "");
+					return <div className="text-center">{phone || "N/A"}</div>;
+				},
+			},
+			{
+				accessorKey: "email",
+				header: "Email",
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const user = asUserRow(row.original);
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
+											Send Email
+										</a>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild>
+										<AdminUpdateDialog user={user}>
+											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
+												Edit Admin Details
+											</DialogTrigger>
+										</AdminUpdateDialog>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => confirmRemoveRole(user, "admin")}
+									>
+										Remove Admin Role
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
 			},
 		];
 	}

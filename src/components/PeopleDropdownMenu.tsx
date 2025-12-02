@@ -32,6 +32,9 @@ export default function PeopleDropdownMenu() {
 				<DropdownMenuItem onSelect={() => redirect("/admin/admins")}>
 					<span className="hover-underline-border">Admins</span>
 				</DropdownMenuItem>
+				<DropdownMenuItem onSelect={() => redirect("/admin/staff")}>
+					<span className="hover-underline-border">Staff</span>
+				</DropdownMenuItem>
 				<DropdownMenuItem onSelect={() => redirect("/admin/rejected-applicants")}>
 					<span className="hover-underline-border">
 						<div>Rejected</div>

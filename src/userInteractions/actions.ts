@@ -141,6 +141,13 @@ export const updateVolunteer = async (
 	const rv = await updateVolunteerById(id, data, unsafeData.previousRole);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
 };
+//#endregion
+
+//#region Staff Actions
+export const updateStaffDetails = async (staffId: string, data: Partial<typeof user.$inferInsert>) => {
+	const rv = await updateClerkUserById(staffId, data);
+	return { error: !rv, message: rv ? "Staff updated successfully" : "Failed to update staff" };
+};
 
 //#region Coach Actions
 export const updateCoachDetails = async (

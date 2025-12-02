@@ -1,5 +1,5 @@
-import Applicants from "@/components/users/Applicants";
+import Admins from "@/components/users/admins/Admins";
 
 export default function AdminsPage() {
-	return <Applicants userType="admin" />;
+	return <Admins />;
 }
