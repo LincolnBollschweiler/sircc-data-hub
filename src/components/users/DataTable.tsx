@@ -28,6 +28,8 @@ import VolunteerUpdateDialog from "./volunteers/VolunteerUpdateDialog";
 import CoachUpdateDialog from "./coaches/CoachUpdateDialog";
 import StaffUpdateDialog from "./staff/StaffUpdateDialog";
 import AdminUpdateDialog from "./admins/AdminUpdateDialog";
+import { User } from "@/types";
+import MergeUsersDialog from "./duplicate/MergeUsersDialog";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -68,8 +70,13 @@ export default function DataTable<TData>({
 	];
 	const { startDelete, dialog } = useDeleteClientService();
 
+	const [duplicatesDialogOpen, setDuplicatesDialogOpen] = useState(false);
+	const [currentDuplicateUser, setCurrentDuplicateUser] = useState<User | null>(null);
+
 	const columns = userDataTableColumns(
 		userType,
+		setDuplicatesDialogOpen,
+		setCurrentDuplicateUser,
 		coachIsViewing,
 		trainingsCount,
 		checkListCount,
@@ -386,6 +393,13 @@ export default function DataTable<TData>({
 				loadingOrNone
 			)}
 			{dialog}
+			{currentDuplicateUser && (
+				<MergeUsersDialog
+					user={currentDuplicateUser}
+					open={duplicatesDialogOpen}
+					onClose={() => setDuplicatesDialogOpen(false)}
+				/>
+			)}
 		</div>
 	);
 }

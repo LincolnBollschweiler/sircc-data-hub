@@ -8,7 +8,7 @@ import { user } from "@/drizzle/schema";
 // import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 
 export const findDuplicates = async (potentialUser: User) => {
-	const { phone, firstName, lastName, birthDay, birthMonth } = potentialUser;
+	const { id, phone, firstName, lastName, birthDay, birthMonth } = potentialUser;
 
 	const duplicateByPhone = phone
 		? await db.query.user.findMany({
@@ -35,5 +35,8 @@ export const findDuplicates = async (potentialUser: User) => {
 			  })
 			: [];
 
-	return Array.from(new Map([...duplicateByPhone, ...duplicateByNameAndDob].map((u) => [u.id, u])).values());
+	const duplicateArray = Array.from(
+		new Map([...duplicateByPhone, ...duplicateByNameAndDob].map((u) => [u.id, u])).values()
+	);
+	return duplicateArray.filter((u) => u.id !== id);
 };

@@ -45,7 +45,7 @@ export function DuplicateReviewDialog({
 					<DialogTitle>Possible Duplicate User(s) Found</DialogTitle>
 				</DialogHeader>
 				<Carousel
-					className="relative w-[90%] mt-4 mx-auto"
+					className="relative max-w-2xl mt-4 mx-auto"
 					setApi={(api) => {
 						if (!api) return;
 						api.on("select", () => {
@@ -65,25 +65,36 @@ export function DuplicateReviewDialog({
 									}`}
 								>
 									<CardContent className="p-4">
-										<h3 className="font-semibold mb-3">Existing User vs Your New User</h3>
-
 										<div className="grid grid-cols-[1fr_2fr_2fr] text-xs font-medium mb-2 gap-2">
 											<div></div>
 											<div className="flex justify-center items-center gap-1 pb-2 border-b">
 												{dup.clerkUserId ? (
 													<>
 														<UserCheck className="w-4 h-4 text-green-600" />
-														<span>Existing</span>
+														<span className="text-sm font-semibold">Existing</span>
 													</>
 												) : (
 													<>
 														<UserIcon className="w-4 h-4 text-muted-foreground" />
-														<span>Existing</span>
+														<span className="text-sm font-semibold">Existing</span>
 													</>
 												)}
 											</div>
-
-											<div className="text-center pb-2 border-b">New</div>
+											<div className="flex justify-center items-center gap-1 pb-2 border-b">
+												{pendingValues.clerkUserId ? (
+													<>
+														<UserCheck className="w-4 h-4 text-green-600" />
+														<span className="text-sm font-semibold">New</span>
+													</>
+												) : pendingValues.id ? (
+													<>
+														<UserIcon className="w-4 h-4 text-muted-foreground" />
+														<span className="text-sm font-semibold">New</span>
+													</>
+												) : (
+													<div className="text-sm font-semibold">New</div>
+												)}
+											</div>
 										</div>
 
 										<FieldRow
@@ -112,8 +123,8 @@ export function DuplicateReviewDialog({
 							</CarouselItem>
 						))}
 					</CarouselContent>
-					<CarouselPrevious />
-					<CarouselNext />
+					<CarouselPrevious className="ml-2" />
+					<CarouselNext className="mr-2" />
 				</Carousel>
 				<div className="flex gap-3 mt-6 justify-end">
 					<Button variant="outline" onClick={onCancel}>

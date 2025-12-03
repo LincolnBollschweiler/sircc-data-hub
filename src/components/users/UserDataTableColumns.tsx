@@ -132,6 +132,8 @@ const confirmRemoveRole = async (user: User, role: string) => {
 
 export const userDataTableColumns = (
 	userType: string,
+	setDuplicatesDialogOpen: (open: boolean) => void,
+	setCurrentDuplicateUser: (user: User | null) => void,
 	coachIsViewing?: boolean,
 	trainingsCount?: number,
 	checkListCount?: number,
@@ -572,6 +574,17 @@ export const userDataTableColumns = (
 										>
 											View or Edit Client
 										</a>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild>
+										<button
+											className="hover:!bg-success hover:!text-success-foreground"
+											onClick={() => {
+												setCurrentDuplicateUser(user);
+												setDuplicatesDialogOpen(true);
+											}}
+										>
+											Find Duplicate Records
+										</button>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuSeparator />
@@ -1292,6 +1305,17 @@ export const userDataTableColumns = (
 										>
 											View or Edit Volunteer
 										</a>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild>
+										<button
+											className="hover:!bg-success hover:!text-success-foreground"
+											onClick={() => {
+												setCurrentDuplicateUser(user);
+												setDuplicatesDialogOpen(true);
+											}}
+										>
+											Find Duplicate Records
+										</button>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuSeparator />

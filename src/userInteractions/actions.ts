@@ -31,6 +31,7 @@ import {
 	addVolunteer,
 	updateVolunteerById,
 	updateUserRoleById,
+	mergeUsersInDB,
 } from "@/userInteractions/db";
 import { assignRoleSchema, clerkUserSchema, userSchema, volunteerSchema } from "@/userInteractions/schema";
 
@@ -121,6 +122,16 @@ export const addClientChecklistItem = async (clientId: string, itemId: string, c
 export const deleteClientChecklistItem = async (clientId: string, itemId: string, coachIsViewing?: boolean) => {
 	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId, !!coachIsViewing);
 	return { error: !rv, message: rv ? "Checklist item deleted successfully" : "Failed to delete checklist item" };
+};
+//#endregion
+
+//#region Merge Users Action
+export const mergeUsersAction = async (duplicateUser: User, pendingUser: User) => {
+	const rv = await mergeUsersInDB(duplicateUser, pendingUser);
+	if (rv === null) {
+		return { error: true, message: "Failed to merge users" };
+	}
+	return { error: false, message: "Users merged successfully" };
 };
 //#endregion
 
