@@ -534,6 +534,155 @@ const cachedClients = unstable_cache(
 export const getAllClients = async () => cachedClients();
 //#endregion
 
+//region merge users in DB
+export const mergeUsersInDB = async (duplicateUser: User, pendingUser: User) => {
+	return await db.transaction(async (tx) => {
+		// --- Coach Trainings ---
+		const duplicateUserTrainings = await tx.query.coachTraining.findMany({
+			where: eq(coachTraining.coachId, duplicateUser.id),
+		});
+
+		for (const dt of duplicateUserTrainings) {
+			const exists = await tx.query.coachTraining.findFirst({
+				where: and(eq(coachTraining.coachId, pendingUser.id), eq(coachTraining.trainingId, dt.trainingId)),
+			});
+			if (!exists) {
+				await tx
+					.update(coachTraining)
+					.set({ coachId: pendingUser.id })
+					.where(
+						and(eq(coachTraining.coachId, duplicateUser.id), eq(coachTraining.trainingId, dt.trainingId))
+					);
+			} else {
+				await tx
+					.delete(coachTraining)
+					.where(
+						and(eq(coachTraining.coachId, duplicateUser.id), eq(coachTraining.trainingId, dt.trainingId))
+					);
+			}
+		}
+
+		// --- Coach Hours ---
+		await tx.update(coachHours).set({ coachId: pendingUser.id }).where(eq(coachHours.coachId, duplicateUser.id));
+
+		// --- Coach Mileage ---
+		await tx
+			.update(coachMileage)
+			.set({ coachId: pendingUser.id })
+			.where(eq(coachMileage.coachId, duplicateUser.id));
+
+		// --- Coach ---
+		const duplicateCoach = await tx.query.coach.findFirst({ where: eq(coach.id, duplicateUser.id) });
+		const pendingCoach = await tx.query.coach.findFirst({ where: eq(coach.id, pendingUser.id) });
+
+		if (duplicateCoach && pendingCoach) {
+			await tx
+				.update(coach)
+				.set({
+					llc: pendingCoach.llc || duplicateCoach.llc,
+					website: pendingCoach.website || duplicateCoach.website,
+					therapyNotesUrl: pendingCoach.therapyNotesUrl || duplicateCoach.therapyNotesUrl,
+					notes: [pendingCoach.notes, duplicateCoach.notes].filter(Boolean).join("\n"),
+				})
+				.where(eq(coach.id, pendingUser.id));
+
+			await tx.delete(coach).where(eq(coach.id, duplicateUser.id));
+		} else if (duplicateCoach && !pendingCoach) {
+			await tx.update(coach).set({ id: pendingUser.id }).where(eq(coach.id, duplicateUser.id));
+		}
+
+		// --- Client Services ---
+		const duplicateUsersServices = await tx.query.clientService.findMany({
+			where: eq(clientService.clientId, duplicateUser.id),
+		});
+
+		for (const dus of duplicateUsersServices) {
+			// we're not concerned with duplicates here, just reassigning. Duplicates are not actually possible.
+			await tx.update(clientService).set({ clientId: pendingUser.id }).where(eq(clientService.id, dus.id));
+		}
+
+		// --- Client Reentry Check List Items ---
+		const duplicateChecklistItems = await tx.query.clientReentryCheckListItem.findMany({
+			where: eq(clientReentryCheckListItem.clientId, duplicateUser.id),
+		});
+
+		for (const dcli of duplicateChecklistItems) {
+			const exists = await tx.query.clientReentryCheckListItem.findFirst({
+				where: and(
+					eq(clientReentryCheckListItem.clientId, pendingUser.id),
+					eq(clientReentryCheckListItem.reentryCheckListItemId, dcli.reentryCheckListItemId)
+				),
+			});
+			if (!exists) {
+				await tx.insert(clientReentryCheckListItem).values({
+					clientId: pendingUser.id,
+					reentryCheckListItemId: dcli.reentryCheckListItemId,
+				});
+
+				await tx
+					.delete(clientReentryCheckListItem)
+					.where(
+						and(
+							eq(clientReentryCheckListItem.reentryCheckListItemId, dcli.reentryCheckListItemId),
+							eq(clientReentryCheckListItem.clientId, duplicateUser.id)
+						)
+					);
+			}
+		}
+
+		// --- Client ---
+		const duplicateClient = await tx.query.client.findFirst({ where: eq(client.id, duplicateUser.id) });
+		const pendingClient = await tx.query.client.findFirst({ where: eq(client.id, pendingUser.id) });
+
+		if (duplicateClient && pendingClient) {
+			await tx
+				.update(client)
+				.set({
+					coachId: pendingClient.coachId || duplicateClient.coachId,
+					isReentryClient: pendingClient.isReentryClient || duplicateClient.isReentryClient,
+					followUpNeeded: pendingClient.followUpNeeded || duplicateClient.followUpNeeded,
+					followUpDate: pendingClient.followUpDate || duplicateClient.followUpDate,
+					followUpNotes: [pendingClient.followUpNotes, duplicateClient.followUpNotes]
+						.filter(Boolean)
+						.join("\n"),
+				})
+				.where(eq(client.id, pendingUser.id));
+
+			await tx.delete(client).where(eq(client.id, duplicateUser.id));
+		} else if (duplicateClient && !pendingClient) {
+			await tx.update(client).set({ id: pendingUser.id }).where(eq(client.id, duplicateUser.id));
+		}
+
+		// --- Volunteer Hours ---
+		const duplicateHours = await tx.query.volunteerHours.findMany({
+			where: eq(volunteerHours.volunteerId, duplicateUser.id),
+		});
+
+		for (const dh of duplicateHours) {
+			// we're not concerned with duplicates here, just reassigning. Duplicates are not actually possible.
+			await tx.update(volunteerHours).set({ volunteerId: pendingUser.id }).where(eq(volunteerHours.id, dh.id));
+		}
+
+		// --- User ---
+		if (duplicateUser.clerkUserId) {
+			// Keep the row, just soft-delete
+			await tx.update(user).set({ deletedAt: new Date() }).where(eq(user.id, duplicateUser.id));
+		} else {
+			// Safe to hard-delete
+			await tx.delete(user).where(eq(user.id, duplicateUser.id));
+		}
+
+		revalidateClientCache(pendingUser.id);
+		revalidateClientCache(duplicateUser.id);
+		revalidateCoachCache(pendingUser.id);
+		revalidateCoachCache(duplicateUser.id);
+		revalidateUserCache(pendingUser.id);
+		revalidateUserCache(duplicateUser.id);
+		return true;
+	});
+};
+//#endregion
+
 //#region Volunteers
 export type VolunteerHours = typeof volunteerHours.$inferSelect;
 export type VolunteerFull = {

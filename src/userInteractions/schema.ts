@@ -208,6 +208,33 @@ export const coachSchema = z.object({
 	role: z.enum(["coach", "coach-staff", "coach-volunteer", "coach-staff-volunteer"]),
 });
 
+export const mergeUserSchema = z.object({
+	firstName: z.string().max(30).optional(),
+	lastName: z.string().max(30).optional(),
+	birthMonth: z.number().min(1).max(12).nullable(),
+	birthDay: z.number().min(1).max(31).nullable(),
+	phone: z
+		.string()
+		.nullable()
+		.transform((val) => (val === "" ? null : val))
+		.refine((val) => val === null || val.length === 12, "Phone number must be 12 characters (Ex: 208-555-1234)"),
+	role: z
+		.enum([
+			"admin-volunteer",
+			"admin-coach-volunteer",
+			"staff-volunteer",
+			"coach-volunteer",
+			"coach-staff-volunteer",
+			"volunteer",
+			"client-volunteer",
+			"client-staff-volunteer",
+			"staff",
+			"client",
+			"client-staff",
+		])
+		.optional(),
+});
+
 export const volunteerSchema = z
 	.object({
 		...userSchemaBase,
