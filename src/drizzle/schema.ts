@@ -139,24 +139,6 @@ export const user = pgTable(
 	]
 );
 
-export const coach = pgTable(
-	"coach",
-	{
-		id: uuid("id")
-			.references(() => user.id, { onDelete: "cascade" })
-			.primaryKey(),
-		isActive: boolean("is_active").default(true),
-		llc: varchar("llc", { length: 100 }),
-		website: varchar("website", { length: 255 }),
-		therapyNotesUrl: varchar("therapy_notes_url", { length: 500 }),
-		notes: varchar("notes", { length: 1000 }),
-		createdAt,
-		updatedAt,
-		deletedAt,
-	},
-	(table) => [index("coach_deleted_at_idx").on(table.deletedAt)]
-);
-
 export const client = pgTable(
 	"client",
 	{
@@ -173,6 +155,24 @@ export const client = pgTable(
 		deletedAt,
 	},
 	(table) => [index("client_coach_id_idx").on(table.coachId)]
+);
+
+export const coach = pgTable(
+	"coach",
+	{
+		id: uuid("id")
+			.references(() => user.id, { onDelete: "cascade" })
+			.primaryKey(),
+		isActive: boolean("is_active").default(true),
+		llc: varchar("llc", { length: 100 }),
+		website: varchar("website", { length: 255 }),
+		therapyNotesUrl: varchar("therapy_notes_url", { length: 500 }),
+		notes: varchar("notes", { length: 1000 }),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("coach_deleted_at_idx").on(table.deletedAt)]
 );
 
 export const coachMileage = pgTable(
