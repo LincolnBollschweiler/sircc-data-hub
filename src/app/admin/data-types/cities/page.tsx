@@ -4,6 +4,7 @@ import { getCities } from "@/tableInteractions/db";
 import { DialogTrigger } from "@/components/ui/dialog";
 import Cities from "@/components/data-types/cities/Cities";
 import CitiesFormDialog from "@/components/data-types/cities/CitiesFormDialog";
+import Link from "next/link";
 
 export default async function CitiesPage() {
 	const cities = await getCities();
@@ -13,9 +14,12 @@ export default async function CitiesPage() {
 			<PageHeader title="Cities">
 				<CitiesFormDialog>
 					<DialogTrigger asChild>
-						<Button>Add New City</Button>
+						<Button className="mr-2">Add New City</Button>
 					</DialogTrigger>
 				</CitiesFormDialog>
+				<Button asChild>
+					<Link href="/admin">Admin Dashboard</Link>
+				</Button>
 			</PageHeader>
 			<Cities items={cities} />
 		</div>

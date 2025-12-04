@@ -4,6 +4,7 @@ import { getReferredOut } from "@/tableInteractions/db";
 import { DialogTrigger } from "@/components/ui/dialog";
 import ReferredOutFormDialog from "@/components/data-types/referredOut/ReferredOutFormDialog";
 import ReferredOut from "@/components/data-types/referredOut/ReferredOut";
+import Link from "next/link";
 
 export default async function ReferredOutPage() {
 	const referredOut = await getReferredOut();
@@ -13,9 +14,12 @@ export default async function ReferredOutPage() {
 			<PageHeader title="Referred Out">
 				<ReferredOutFormDialog>
 					<DialogTrigger asChild>
-						<Button>Add New Referred Out</Button>
+						<Button className="mr-2">Add New Referred Out</Button>
 					</DialogTrigger>
 				</ReferredOutFormDialog>
+				<Button asChild>
+					<Link href="/admin">Admin Dashboard</Link>
+				</Button>
 			</PageHeader>
 			<ReferredOut items={referredOut} />
 		</div>
