@@ -211,6 +211,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "desiredRole",
@@ -290,13 +299,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									{userType !== "rejected" && (
-										<DropdownMenuItem asChild>
-											<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-												Send Email
-											</a>
-										</DropdownMenuItem>
-									)}
 									{userType === "rejected" && (
 										<DropdownMenuItem onClick={() => processAcceptance(user, null)}>
 											Undecided Applicant
@@ -388,6 +390,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "role",
@@ -636,6 +647,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "user.email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "user.phone",
@@ -719,12 +739,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -1162,6 +1176,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				id: "actions",
@@ -1178,12 +1201,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<StaffUpdateDialog user={user}>
 											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
@@ -1267,6 +1284,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				id: "actions",
@@ -1283,12 +1309,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<AdminUpdateDialog user={user}>
 											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
@@ -1372,6 +1392,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "hours",
@@ -1449,12 +1478,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -1806,6 +1829,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "user.email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "clientCount",
@@ -1943,12 +1975,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -2138,6 +2164,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "user.email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				id: "actions",
@@ -2157,12 +2192,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -2490,6 +2519,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "notes",
