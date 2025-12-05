@@ -18,6 +18,8 @@ import { updateClerkUser } from "@/userInteractions/actions";
 import { redirect } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
+import { Loader2 } from "lucide-react";
+import { trimStrings } from "@/utils/trim";
 
 export default function ProfileForm({
 	profile,
@@ -36,12 +38,14 @@ export default function ProfileForm({
 			phone: profile?.phone || "",
 			address1: profile?.address1 || "",
 			address2: profile?.address2 || "",
+			city: profile?.city || "",
 			state: profile?.state || "",
 			zip: profile?.zip || "",
 		},
 	});
 
 	const onSubmit = async (values: z.infer<typeof clerkUserSchema>) => {
+		values = trimStrings(values);
 		const action = updateClerkUser.bind(null, profile.id);
 
 		const actionData = await action(values);
@@ -67,9 +71,10 @@ export default function ProfileForm({
 	const [focusedField, setFocusedField] = useState<string | null>(null);
 	const roles = [
 		{ id: "client", name: "Client" },
-		{ id: "coach", name: "Coach" },
 		{ id: "volunteer", name: "Volunteer" },
-		{ id: "client-volunteer", name: "Client-Volunteer" },
+		{ id: "coach", name: "Coach" },
+		{ id: "staff", name: "Staff" },
+		{ id: "admin", name: "Admin" },
 	];
 
 	const themePreferences = [
@@ -92,8 +97,13 @@ export default function ProfileForm({
 	if (!mounted) return null; // prevents hydration mismatch
 
 	if (!profile) {
-		setTimeout(() => window.location.reload(), 1);
-		return <></>;
+		setTimeout(() => window.location.reload(), 4000);
+		return (
+			<div className="flex justify-center items-center p-7 flex-col gap-4">
+				<div className="text-center text-sm opacity-80">Syncing your profile…</div>
+				<Loader2 className="w-8 h-8 text-foreground/80 animate-spin" />
+			</div>
+		);
 	}
 
 	return (
@@ -163,6 +173,7 @@ export default function ProfileForm({
 										placeholder="Address Line 1 (optional)"
 									/>
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -178,6 +189,7 @@ export default function ProfileForm({
 										placeholder="Address Line 2 (optional)"
 									/>
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -187,7 +199,7 @@ export default function ProfileForm({
 						render={({ field }) => (
 							<FormItem>
 								<FormControl>
-									<Input {...field} value={field.value ?? ""} placeholder="City (required)" />
+									<Input {...field} value={field.value ?? ""} placeholder="City (optional)" />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -203,8 +215,10 @@ export default function ProfileForm({
 										{...field}
 										value={field.value ?? ""}
 										placeholder="State (optional) e.g. ID"
+										onChange={(e) => field.onChange(e.target.value.toUpperCase())}
 									/>
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -216,6 +230,7 @@ export default function ProfileForm({
 								<FormControl>
 									<Input {...field} value={field.value ?? ""} placeholder="Zip Code (optional)" />
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -301,7 +316,6 @@ export default function ProfileForm({
 									)}
 								/>
 							</div>
-							<FormMessage />
 						</FormItem>
 					)}
 				/>
@@ -343,30 +357,44 @@ export default function ProfileForm({
 							name="desiredRole"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel className="mb-2">Select Your Desired Role at SIRCC</FormLabel>
-									<FormControl>
-										<RadioGroup
-											onValueChange={field.onChange}
-											value={field.value}
-											className="flex flex-wrap gap-2"
-										>
-											{roles.map((role) => (
-												<label
-													key={role.id}
-													className={cn(
-														"cursor-pointer select-none rounded-md border px-4 py-0.5 text-sm font-medium transition-colors",
-														field.value === role.id
-															? "bg-primary text-primary-foreground border-primary"
-															: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-													)}
-												>
-													<RadioGroupItem value={role.id} className="hidden" />
-													{role.name}
-												</label>
-											))}
-										</RadioGroup>
-									</FormControl>
-									<FormMessage />
+									<div className="flex flex-col gap-3">
+										<div className="flex items-center gap-0.5">
+											<RequiredLabelIcon />
+											<FormLabel tabIndex={-1}>Select Your Desired Role at SIRCC</FormLabel>
+										</div>
+										<FormControl>
+											<RadioGroup
+												tabIndex={-1}
+												onValueChange={(value) => field.onChange(value)}
+												value={field.value}
+												className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+											>
+												{roles.map((role) => (
+													<label
+														tabIndex={0}
+														key={role.id}
+														className={cn(
+															"cursor-pointer select-none rounded-md border p-1 text-center text-sm font-medium shadow-sm transition-colors",
+															field.value === role.id
+																? "bg-primary text-primary-foreground border-primary"
+																: "bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+														)}
+														onKeyDown={(e) => {
+															if (e.key === " " || e.key === "Enter") {
+																e.preventDefault();
+																const value = role.id;
+																field.onChange(value);
+															}
+														}}
+													>
+														<RadioGroupItem value={role.id} className="hidden" />
+														{role.name}
+													</label>
+												))}
+											</RadioGroup>
+										</FormControl>
+										<FormMessage />
+									</div>
 								</FormItem>
 							)}
 						/>
@@ -384,6 +412,7 @@ export default function ProfileForm({
 											placeholder="Enter comments here... (1000 character max)"
 										/>
 									</FormControl>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>

@@ -1,1 +1,0 @@
-ALTER TABLE "client_service" ADD COLUMN "funds" numeric(6, 2);

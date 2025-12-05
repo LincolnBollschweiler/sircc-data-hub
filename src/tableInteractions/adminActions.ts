@@ -3,7 +3,6 @@
 import { db } from "@/drizzle/db";
 import * as table from "@/drizzle/schema";
 import { client, user } from "@/drizzle/schema";
-import { revalidateClientCache, revalidateUserCache } from "@/userInteractions/cache";
 
 export const insertClerkUserDev = async (data: typeof table.user.$inferInsert) => {
 	const [newUser] = await db.insert(table.user).values(data).returning();
@@ -59,6 +58,10 @@ export const createVolunteerType = async (data: typeof table.volunteeringType.$i
 	const [newVolunteeringType] = await db.insert(table.volunteeringType).values(data).returning();
 	return newVolunteeringType?.id;
 };
+export const createReentryChecklistItem = async (data: typeof table.reentryCheckListItem.$inferInsert) => {
+	const [newReentryChecklistItem] = await db.insert(table.reentryCheckListItem).values(data).returning();
+	return newReentryChecklistItem?.id;
+};
 export const createVisit = async (data: typeof table.visit.$inferInsert) => {
 	const [newVisit] = await db.insert(table.visit).values(data).returning();
 	return newVisit?.id;
@@ -77,7 +80,6 @@ export const createCity = async (data: typeof table.city.$inferInsert) => {
 };
 
 async function addUser(userData: typeof user.$inferInsert, clientData: typeof client.$inferInsert) {
-	// console.log("Adding user with data:", userData, clientData);
 	const userInsert = await db.transaction(async (tx) => {
 		const [newUser] = await tx
 			.insert(user)
@@ -97,18 +99,13 @@ async function addUser(userData: typeof user.$inferInsert, clientData: typeof cl
 		}
 		return newUser;
 	});
-
-	revalidateUserCache(userInsert.id);
-	revalidateClientCache(userInsert.id);
 	return userInsert.id;
 }
 
-export const createUser = async (userData: typeof user.$inferInsert, clientData: typeof client.$inferInsert) => {
-	// console.log("Creating user in action with data:", userData, clientData);
-	return await addUser(userData, clientData);
-};
+export const createUser = async (userData: typeof user.$inferInsert, clientData: typeof client.$inferInsert) =>
+	await addUser(userData, clientData);
+
 export const addClientService = async (data: typeof table.clientService.$inferInsert) => {
-	// console.log("Adding client service with data:", data);
 	const [newClientService] = await db.insert(table.clientService).values(data).returning();
 	return newClientService?.id;
 };

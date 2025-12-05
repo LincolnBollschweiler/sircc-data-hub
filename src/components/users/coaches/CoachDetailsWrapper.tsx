@@ -19,7 +19,7 @@ export default async function CoachDetailsWrapper({ coachId }: { coachId: string
 
 	return (
 		<div className="container py-4 mx-auto">
-			<PageHeader title="Your Account Details">
+			<PageHeader title="Coach Details">
 				<HoursDialog coachId={coachId}>
 					<DialogTrigger asChild>
 						<Button>Log Hours</Button>

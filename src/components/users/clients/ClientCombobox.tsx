@@ -71,7 +71,16 @@ export function ClientCombobox<T extends { id: string; name: string; description
 					</Button>
 				</PopoverTrigger>
 
-				<PopoverContent className="w-[200px] p-0 relative">
+				<PopoverContent
+					className="p-0 relative overflow-y-auto"
+					style={
+						{
+							width: "var(--radix-popper-anchor-width)",
+							"--popover-max-height": "calc(var(--radix-popper-available-height) - 5px)",
+							maxHeight: "var(--popover-max-height)",
+						} as React.CSSProperties
+					}
+				>
 					<Command onKeyDown={handleKeyDown}>
 						<CommandInput
 							placeholder={`Search ${props.label.toLowerCase()}...`}

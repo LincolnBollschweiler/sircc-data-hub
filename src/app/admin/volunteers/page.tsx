@@ -1,5 +1,5 @@
-import Applicants from "@/components/users/Applicants";
+import Volunteers from "@/components/users/volunteers/Volunteers";
 
 export default function VolunteersPage() {
-	return <Applicants userType="volunteer" />;
+	return <Volunteers />;
 }
