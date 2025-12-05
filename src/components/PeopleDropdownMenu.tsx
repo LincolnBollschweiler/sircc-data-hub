@@ -6,13 +6,15 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { User } from "lucide-react";
 import { redirect } from "next/navigation";
 
 export default function PeopleDropdownMenu() {
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50 text-inherit">
-				<span className="hover-underline-border">People</span>
+			<DropdownMenuTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
+				<User className="size-5 sm:hidden" />
+				<span className="hidden sm:inline hover-underline-border">People</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="bg-background-dark border-transparent -translate-y-3 min-w-fit">
 				{/* <DropdownMenuLabel>My Account</DropdownMenuLabel>

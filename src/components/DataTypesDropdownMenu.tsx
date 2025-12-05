@@ -4,21 +4,19 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	// DropdownMenuLabel,
-	// DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { redirect } from "next/navigation";
+import { Table2 } from "lucide-react";
 
 export default function DataTypesDropdownMenu() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger className="flex items-center px-1 sm:px-2 hover:bg-accent/50">
-				<span className="hover-underline-border">Data Types</span>
+				<Table2 className="size-5 sm:hidden mr-1" />
+				<span className="hidden sm:inline hover-underline-border">Data Types</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="bg-background-dark border-transparent -translate-y-3">
-				{/* <DropdownMenuLabel>My Account</DropdownMenuLabel>
-				<DropdownMenuSeparator /> */}
 				<DropdownMenuItem onSelect={() => redirect("/admin/data-types/cities")}>
 					<span className="hover-underline-border">Cities</span>
 				</DropdownMenuItem>

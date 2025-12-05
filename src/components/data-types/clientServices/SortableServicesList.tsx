@@ -10,14 +10,13 @@ import { DialogTrigger } from "@radix-ui/react-dialog";
 import ServiceFormDialog from "./ServiceFormDialog";
 import { z } from "zod";
 import { servicesSchema, updateSchema } from "../../../tableInteractions/schemas";
+import { dateOptions } from "@/utils/constants";
 
 export function SortableServicesList({
 	items,
 }: {
 	items: (z.infer<typeof servicesSchema> & z.infer<typeof updateSchema>)[];
 }) {
-	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
-
 	return (
 		<SortableList items={items} onOrderChange={updateServicesOrders}>
 			{(sorted) =>

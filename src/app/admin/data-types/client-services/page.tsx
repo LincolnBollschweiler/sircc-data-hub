@@ -4,6 +4,7 @@ import Services from "@/components/data-types/clientServices/Services";
 import { getServices } from "@/tableInteractions/db";
 import ServiceFormDialog from "@/components/data-types/clientServices/ServiceFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
+import Link from "next/link";
 
 export default async function ServicesPage() {
 	const services = await getServices();
@@ -13,9 +14,12 @@ export default async function ServicesPage() {
 			<PageHeader title="Client Services">
 				<ServiceFormDialog>
 					<DialogTrigger asChild>
-						<Button>Add New Client Service</Button>
+						<Button className="mr-2">Add New Client Service</Button>
 					</DialogTrigger>
 				</ServiceFormDialog>
+				<Button asChild>
+					<Link href="/admin">Admin Dashboard</Link>
+				</Button>
 			</PageHeader>
 			<Services items={services} />
 		</div>
