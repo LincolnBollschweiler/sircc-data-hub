@@ -43,6 +43,9 @@ export default function PeopleDropdownMenu() {
 						<div>Applicants</div>
 					</span>
 				</DropdownMenuItem>
+				<DropdownMenuItem onSelect={() => redirect("/admin/deleted-users")}>
+					<span className="hover-underline-border">Deleted Users</span>
+				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

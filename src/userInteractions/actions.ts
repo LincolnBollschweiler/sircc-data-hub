@@ -58,6 +58,11 @@ export const queryUserById = async (id: string) => {
 	return rv;
 };
 
+export const undeleteUserById = async (id: string) => {
+	const rv = await updateClientUserById(id, { deletedAt: null });
+	return { error: !rv, message: rv ? "User undeleted successfully" : "Failed to undelete user" };
+};
+
 export const updateUserRole = async (id: string, user: User) => {
 	const rv = await updateUserRoleById(id, user.role);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };

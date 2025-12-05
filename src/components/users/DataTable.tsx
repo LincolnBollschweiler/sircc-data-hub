@@ -201,6 +201,7 @@ export default function DataTable<TData>({
 			{data.length > 0 ? (
 				<>
 					<div className="flex flex-wrap gap-1 items-center justify-between mb-2">
+						{title && <h2 className="text-xl font-semibold mb-1">{title}</h2>}
 						<div className="flex flex-wrap sm:flex-nowrap gap-1 items-center">
 							{!typesWithNoNameColumn.includes(userType) && (
 								<Input

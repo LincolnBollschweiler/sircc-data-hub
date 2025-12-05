@@ -8,6 +8,8 @@ const staffRoutes = createRouteMatcher([
 	"/admin/data-type/cities/(.*)",
 	"/admin/clients",
 	"/admin/clients/(.*)",
+	"/admin/volunteers",
+	"/admin/volunteers/(.*)",
 ]);
 const coachRoutes = createRouteMatcher(["/coach", "/coach/(.*)"]);
 const developerRoutes = createRouteMatcher(["/admin/dev/(.*)"]);

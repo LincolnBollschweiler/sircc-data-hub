@@ -22,7 +22,7 @@ export default async function ViewClientPage({
 	]);
 
 	const coachIsViewing = currentUser?.role?.includes("coach");
-
+	// the following schenario is when a coach shares a link to another coach and it's not their client
 	if (!currentUser || (coachIsViewing && currentUser.data?.id !== coachId)) {
 		return (
 			<div className="text-center py-10 text-xl font-semibold flex flex-col items-center">

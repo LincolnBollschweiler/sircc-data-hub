@@ -18,17 +18,17 @@ export default async function HeaderLinks() {
 	const accepted = user?.data?.accepted ?? false;
 
 	const admin = user && accepted && canAccessAdminPages(user);
-	const adminActive = admin && pathName?.includes("/admin");
+	const adminActive = admin && pathName?.includes("/admin") && !pathName?.includes("/admins");
 	console.log("Admin: ", admin, " Active: ", adminActive);
 
 	const coach = user && accepted && canAccessCoachPages(user);
-	const coachActive = coach && pathName?.includes("/coach");
+	const coachActive = coach && pathName?.includes("/coach") && !pathName?.includes("/coaches");
 
 	const client = user && accepted && user.data?.role.includes("client");
-	const clientActive = client && pathName?.includes("/client");
+	const clientActive = client && pathName?.includes("/client") && pathName?.includes("/clients");
 
 	const volunteer = user && accepted && user.data?.role.includes("volunteer");
-	const volunteerActive = volunteer && pathName?.includes("/volunteer");
+	const volunteerActive = volunteer && pathName?.includes("/volunteer") && !pathName?.includes("/volunteers");
 
 	const RoleLink = ({ label, href, active }: { label: string; href: string; active: boolean }) => (
 		<Link className={cn("flex items-center hover:bg-accent/50", !active && "px-1 sm:px-2")} href={href}>

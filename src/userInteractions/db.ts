@@ -23,7 +23,7 @@ import {
 	staffRoles,
 	adminRoles,
 } from "@/drizzle/schema";
-import { eq, and, sql, inArray } from "drizzle-orm";
+import { eq, and, sql, inArray, isNotNull } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
 import { revalidatePath, unstable_cache } from "next/cache";
 import {
@@ -272,11 +272,25 @@ const cachedUsers = unstable_cache(
 		return await db.select().from(user).where(isNull(user.deletedAt)).orderBy(desc(user.updatedAt));
 	},
 	["getAllUsers"],
-	// { tags: [getAllUsersGlobalTag()] }
-	{ tags: [getAllUsersGlobalTag()], revalidate: 5 }
+	{ tags: [getAllUsersGlobalTag()] }
+	// { tags: [getAllUsersGlobalTag()], revalidate: 5 }
 );
 
 export const getAllUsers = async () => cachedUsers();
+
+const cachedDeletedUsers = unstable_cache(
+	async () => {
+		return await db
+			.select()
+			.from(user)
+			.where(and(isNull(user.clerkUserId), isNotNull(user.deletedAt)))
+			.orderBy(desc(user.deletedAt));
+	},
+	["getAllDeletedUsers"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
+
+export const getAllDeletedUsers = async () => cachedDeletedUsers();
 //#endregion
 
 //#region User Sites
