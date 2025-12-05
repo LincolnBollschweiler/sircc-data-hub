@@ -25,7 +25,7 @@ export default async function Home() {
 					</div>
 				)}
 				{intakeComplete && !accepted && <ApplicantReview />}
-				{intakeComplete && accepted && <ApplicantAccepted />}
+				{intakeComplete && accepted && <ApplicantAccepted role={profile.role! as string} />}
 			</SignedIn>
 			<SignedOut>
 				<LandingPage />

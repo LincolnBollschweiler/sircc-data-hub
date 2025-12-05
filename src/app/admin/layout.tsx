@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 export default function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
 	return (
 		<>
-			<Navbar userType="Admin" />
+			<Navbar />
 			{children}
 		</>
 	);

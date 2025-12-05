@@ -10,14 +10,16 @@ export default async function ClientPage() {
 	if (!currentUser || !currentUser.role!.includes("client")) {
 		return (
 			<div className="container py-4 mx-auto">
-				<span>
-					You are not listed as a client. If you should be, please contact an SIRCC Admin. Or, if you are an
-					Admin, find yourself on the
-				</span>
-				<a href="/admin/admins" className="ml-1 mr-1 text-blue-600 hover:underline">
-					admins
+				<span>You are not listed as a client. If you believe you should be, please </span>
+				<a
+					href="https://www.sircc-tencsinc.com/contact-us/"
+					rel="noopener noreferrer"
+					target="_blank"
+					className="ml-1 mr-1 text-blue-600 hover:underline"
+				>
+					contact
 				</a>
-				<span> page and update your role to include &quot;client&quot;.</span>
+				<span> an SIRCC Admin.</span>
 			</div>
 		);
 	}
