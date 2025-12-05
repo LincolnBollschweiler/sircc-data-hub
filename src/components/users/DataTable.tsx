@@ -13,7 +13,7 @@ import {
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "../ui/button";
-import { ChevronsLeft, ChevronsRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "../ui/input";
@@ -305,16 +305,20 @@ export default function DataTable<TData>({
 							</TableBody>
 						</Table>
 
-						<div className="flex flex-col items-start gap-2 sm:items-center sm:flex-row justify-between p-2 bg-background-dark rounded-b-md">
+						<div className="flex items-start gap-2 sm:items-center sm:flex-row justify-between p-2 bg-background-dark rounded-b-md">
 							{/* LEFT — Rows per page */}
 							<div>
 								<Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-									<SelectTrigger className="w-[120px] bg-background-light text-sm">
+									<SelectTrigger className="w-[100px] sm:w-[120px] bg-background-light text-xs sm:text-sm">
 										<SelectValue placeholder={`Show ${pageSize}`} />
 									</SelectTrigger>
 									<SelectContent position="popper" className="bg-background-light">
 										{[5, 10, 15, 20, 50, 100].map((size) => (
-											<SelectItem key={size} value={size.toString()}>
+											<SelectItem
+												key={size}
+												value={size.toString()}
+												className="text-xs sm:text-sm"
+											>
 												Show {size}
 											</SelectItem>
 										))}
@@ -323,7 +327,7 @@ export default function DataTable<TData>({
 							</div>
 
 							{/* CENTER — Page info + Go to page */}
-							<div className="flex items-center gap-2 text-sm">
+							<div className="hidden sm:flex items-center gap-2 text-sm">
 								<span>
 									Page <strong>{pageIndex + 1}</strong> of {pageCount.toLocaleString()}
 								</span>
@@ -359,7 +363,8 @@ export default function DataTable<TData>({
 									disabled={!table.getCanPreviousPage()}
 									className="border rounded py-1 px-2 bg-background-light text-sm"
 								>
-									Prev
+									<ChevronLeft className="size-4 sm:hidden" />
+									<span className="hidden sm:inline">Prev</span>
 								</Button>
 								<Button
 									size="sm"
@@ -368,7 +373,8 @@ export default function DataTable<TData>({
 									disabled={!table.getCanNextPage()}
 									className="border rounded py-1 px-2 bg-background-light text-sm"
 								>
-									Next
+									<ChevronRight className="size-4 sm:hidden" />
+									<span className="hidden sm:inline">Next</span>
 								</Button>
 								<Button
 									size="sm"
