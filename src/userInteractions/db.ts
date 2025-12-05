@@ -20,8 +20,10 @@ import {
 	volunteerRoles,
 	volunteerHours,
 	volunteeringType,
+	staffRoles,
+	adminRoles,
 } from "@/drizzle/schema";
-import { eq, and, sql, inArray } from "drizzle-orm";
+import { eq, and, sql, inArray, isNotNull } from "drizzle-orm";
 import { desc, isNull } from "drizzle-orm";
 import { revalidatePath, unstable_cache } from "next/cache";
 import {
@@ -270,11 +272,25 @@ const cachedUsers = unstable_cache(
 		return await db.select().from(user).where(isNull(user.deletedAt)).orderBy(desc(user.updatedAt));
 	},
 	["getAllUsers"],
-	// { tags: [getAllUsersGlobalTag()] }
-	{ tags: [getAllUsersGlobalTag()], revalidate: 5 }
+	{ tags: [getAllUsersGlobalTag()] }
+	// { tags: [getAllUsersGlobalTag()], revalidate: 5 }
 );
 
 export const getAllUsers = async () => cachedUsers();
+
+const cachedDeletedUsers = unstable_cache(
+	async () => {
+		return await db
+			.select()
+			.from(user)
+			.where(and(isNull(user.clerkUserId), isNotNull(user.deletedAt)))
+			.orderBy(desc(user.deletedAt));
+	},
+	["getAllDeletedUsers"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
+
+export const getAllDeletedUsers = async () => cachedDeletedUsers();
 //#endregion
 
 //#region User Sites
@@ -473,13 +489,9 @@ const getCachedClient = (id: string) => {
 };
 export const getClientById = async (id: string) => getCachedClient(id);
 
-export const updateClientById = async (
-	clientId: string,
-	data: Partial<typeof client.$inferInsert>,
-	coachIsViewing?: boolean
-) => {
+export const updateClientById = async (clientId: string, data: Partial<typeof client.$inferInsert>) => {
 	const [updatedClient] = await db.update(client).set(data).where(eq(client.id, clientId)).returning();
-	revalidateClientCache(clientId, !!coachIsViewing);
+	revalidateClientCache(clientId);
 	return updatedClient;
 };
 
@@ -530,6 +542,155 @@ const cachedClients = unstable_cache(
 	{ tags: [getAllUsersGlobalTag()] }
 );
 export const getAllClients = async () => cachedClients();
+//#endregion
+
+//region merge users in DB
+export const mergeUsersInDB = async (duplicateUser: User, pendingUser: User) => {
+	return await db.transaction(async (tx) => {
+		// --- Coach Trainings ---
+		const duplicateUserTrainings = await tx.query.coachTraining.findMany({
+			where: eq(coachTraining.coachId, duplicateUser.id),
+		});
+
+		for (const dt of duplicateUserTrainings) {
+			const exists = await tx.query.coachTraining.findFirst({
+				where: and(eq(coachTraining.coachId, pendingUser.id), eq(coachTraining.trainingId, dt.trainingId)),
+			});
+			if (!exists) {
+				await tx
+					.update(coachTraining)
+					.set({ coachId: pendingUser.id })
+					.where(
+						and(eq(coachTraining.coachId, duplicateUser.id), eq(coachTraining.trainingId, dt.trainingId))
+					);
+			} else {
+				await tx
+					.delete(coachTraining)
+					.where(
+						and(eq(coachTraining.coachId, duplicateUser.id), eq(coachTraining.trainingId, dt.trainingId))
+					);
+			}
+		}
+
+		// --- Coach Hours ---
+		await tx.update(coachHours).set({ coachId: pendingUser.id }).where(eq(coachHours.coachId, duplicateUser.id));
+
+		// --- Coach Mileage ---
+		await tx
+			.update(coachMileage)
+			.set({ coachId: pendingUser.id })
+			.where(eq(coachMileage.coachId, duplicateUser.id));
+
+		// --- Coach ---
+		const duplicateCoach = await tx.query.coach.findFirst({ where: eq(coach.id, duplicateUser.id) });
+		const pendingCoach = await tx.query.coach.findFirst({ where: eq(coach.id, pendingUser.id) });
+
+		if (duplicateCoach && pendingCoach) {
+			await tx
+				.update(coach)
+				.set({
+					llc: pendingCoach.llc || duplicateCoach.llc,
+					website: pendingCoach.website || duplicateCoach.website,
+					therapyNotesUrl: pendingCoach.therapyNotesUrl || duplicateCoach.therapyNotesUrl,
+					notes: [pendingCoach.notes, duplicateCoach.notes].filter(Boolean).join("\n"),
+				})
+				.where(eq(coach.id, pendingUser.id));
+
+			await tx.delete(coach).where(eq(coach.id, duplicateUser.id));
+		} else if (duplicateCoach && !pendingCoach) {
+			await tx.update(coach).set({ id: pendingUser.id }).where(eq(coach.id, duplicateUser.id));
+		}
+
+		// --- Client Services ---
+		const duplicateUsersServices = await tx.query.clientService.findMany({
+			where: eq(clientService.clientId, duplicateUser.id),
+		});
+
+		for (const dus of duplicateUsersServices) {
+			// we're not concerned with duplicates here, just reassigning. Duplicates are not actually possible.
+			await tx.update(clientService).set({ clientId: pendingUser.id }).where(eq(clientService.id, dus.id));
+		}
+
+		// --- Client Reentry Check List Items ---
+		const duplicateChecklistItems = await tx.query.clientReentryCheckListItem.findMany({
+			where: eq(clientReentryCheckListItem.clientId, duplicateUser.id),
+		});
+
+		for (const dcli of duplicateChecklistItems) {
+			const exists = await tx.query.clientReentryCheckListItem.findFirst({
+				where: and(
+					eq(clientReentryCheckListItem.clientId, pendingUser.id),
+					eq(clientReentryCheckListItem.reentryCheckListItemId, dcli.reentryCheckListItemId)
+				),
+			});
+			if (!exists) {
+				await tx.insert(clientReentryCheckListItem).values({
+					clientId: pendingUser.id,
+					reentryCheckListItemId: dcli.reentryCheckListItemId,
+				});
+
+				await tx
+					.delete(clientReentryCheckListItem)
+					.where(
+						and(
+							eq(clientReentryCheckListItem.reentryCheckListItemId, dcli.reentryCheckListItemId),
+							eq(clientReentryCheckListItem.clientId, duplicateUser.id)
+						)
+					);
+			}
+		}
+
+		// --- Client ---
+		const duplicateClient = await tx.query.client.findFirst({ where: eq(client.id, duplicateUser.id) });
+		const pendingClient = await tx.query.client.findFirst({ where: eq(client.id, pendingUser.id) });
+
+		if (duplicateClient && pendingClient) {
+			await tx
+				.update(client)
+				.set({
+					coachId: pendingClient.coachId || duplicateClient.coachId,
+					isReentryClient: pendingClient.isReentryClient || duplicateClient.isReentryClient,
+					followUpNeeded: pendingClient.followUpNeeded || duplicateClient.followUpNeeded,
+					followUpDate: pendingClient.followUpDate || duplicateClient.followUpDate,
+					followUpNotes: [pendingClient.followUpNotes, duplicateClient.followUpNotes]
+						.filter(Boolean)
+						.join("\n"),
+				})
+				.where(eq(client.id, pendingUser.id));
+
+			await tx.delete(client).where(eq(client.id, duplicateUser.id));
+		} else if (duplicateClient && !pendingClient) {
+			await tx.update(client).set({ id: pendingUser.id }).where(eq(client.id, duplicateUser.id));
+		}
+
+		// --- Volunteer Hours ---
+		const duplicateHours = await tx.query.volunteerHours.findMany({
+			where: eq(volunteerHours.volunteerId, duplicateUser.id),
+		});
+
+		for (const dh of duplicateHours) {
+			// we're not concerned with duplicates here, just reassigning. Duplicates are not actually possible.
+			await tx.update(volunteerHours).set({ volunteerId: pendingUser.id }).where(eq(volunteerHours.id, dh.id));
+		}
+
+		// --- User ---
+		if (duplicateUser.clerkUserId) {
+			// Keep the row, just soft-delete
+			await tx.update(user).set({ deletedAt: new Date() }).where(eq(user.id, duplicateUser.id));
+		} else {
+			// Safe to hard-delete
+			await tx.delete(user).where(eq(user.id, duplicateUser.id));
+		}
+
+		revalidateClientCache(pendingUser.id);
+		revalidateClientCache(duplicateUser.id);
+		revalidateCoachCache(pendingUser.id);
+		revalidateCoachCache(duplicateUser.id);
+		revalidateUserCache(pendingUser.id);
+		revalidateUserCache(duplicateUser.id);
+		return true;
+	});
+};
 //#endregion
 
 //#region Volunteers
@@ -703,6 +864,74 @@ export const updateVolunteerHoursById = async (hoursId: string, data: Partial<ty
 	revalidateClientCache(updatedItem.volunteerId);
 	return updatedItem;
 };
+//#endregion
+
+//#region Staff
+const cachedStaff = unstable_cache(
+	async () => {
+		return await db
+			.select()
+			.from(user)
+			.where(and(inArray(user.role, staffRoles), isNull(user.deletedAt)))
+			.orderBy(desc(user.updatedAt));
+	},
+	["getAllStaff"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
+export const getAllStaff = async () => cachedStaff();
+export type Staff = typeof user.$inferSelect;
+
+const cachedStaffById = (id: string) => {
+	const cachedFn = unstable_cache(
+		async (): Promise<Staff | null> => {
+			const [userRow] = await db
+				.select()
+				.from(user)
+				.where(and(eq(user.id, id), inArray(user.role, staffRoles), isNull(user.deletedAt)))
+				.limit(1);
+
+			return userRow || null;
+		},
+		["getStaffById", id],
+		{ tags: [getUserIdTag(id)] }
+	);
+	return cachedFn;
+};
+export const getStaffById = async (id: string) => cachedStaffById(id);
+//#endregion
+
+//#region Admins
+const cachedAdmins = unstable_cache(
+	async () => {
+		return await db
+			.select()
+			.from(user)
+			.where(and(inArray(user.role, adminRoles), isNull(user.deletedAt)))
+			.orderBy(desc(user.updatedAt));
+	},
+	["getAllAdmins"],
+	{ tags: [getAllUsersGlobalTag()] }
+);
+export const getAllAdmins = async () => cachedAdmins();
+export type Admins = typeof user.$inferSelect;
+
+const cachedAdminsById = (id: string) => {
+	const cachedFn = unstable_cache(
+		async (): Promise<Admins | null> => {
+			const [userRow] = await db
+				.select()
+				.from(user)
+				.where(and(eq(user.id, id), inArray(user.role, adminRoles), isNull(user.deletedAt)))
+				.limit(1);
+
+			return userRow || null;
+		},
+		["getAdminsById", id],
+		{ tags: [getUserIdTag(id)] }
+	);
+	return cachedFn;
+};
+export const getAdminsById = async (id: string) => cachedAdminsById(id);
 //#endregion
 
 //#region CRUD Coaches
@@ -993,7 +1222,7 @@ export const deleteCoachMileageById = async (mileageId: string) => {
 //#region Client Services
 export type ClientServiceInsert = typeof clientService.$inferInsert;
 
-export const insertClientService = async (data: ClientServiceInsert, coachIsViewing?: boolean) => {
+export const insertClientService = async (data: ClientServiceInsert) => {
 	const [newService] = await db.insert(clientService).values(data).returning();
 
 	if (newService == null) {
@@ -1001,15 +1230,11 @@ export const insertClientService = async (data: ClientServiceInsert, coachIsView
 		throw new Error("Failed to create client service");
 	}
 
-	revalidateClientCache(data.clientId, !!coachIsViewing);
+	revalidateClientCache(data.clientId);
 	return newService;
 };
 
-export const updateClientServiceById = async (
-	serviceId: string,
-	data: Partial<ClientServiceInsert>,
-	coachIsViewing?: boolean
-) => {
+export const updateClientServiceById = async (serviceId: string, data: Partial<ClientServiceInsert>) => {
 	const [updatedService] = await db
 		.update(clientService)
 		.set(data)
@@ -1019,11 +1244,11 @@ export const updateClientServiceById = async (
 		console.error("Failed to update client service");
 		throw new Error("Failed to update client service");
 	}
-	revalidateClientCache(updatedService.clientId, !!coachIsViewing);
+	revalidateClientCache(updatedService.clientId);
 	return updatedService;
 };
 
-export const deleteClientServiceById = async (serviceId: string, coachIsViewing?: boolean) => {
+export const deleteClientServiceById = async (serviceId: string) => {
 	const [deletedService] = await db.delete(clientService).where(eq(clientService.id, serviceId)).returning();
 
 	if (deletedService == null) {
@@ -1031,17 +1256,13 @@ export const deleteClientServiceById = async (serviceId: string, coachIsViewing?
 		throw new Error("Failed to delete client service");
 	}
 
-	revalidateClientCache(deletedService.clientId, !!coachIsViewing);
+	revalidateClientCache(deletedService.clientId);
 	return deletedService;
 };
 //#endregion
 
 //#region Client Checklist Items
-export const addClientReentryCheckListItemForClient = async (
-	clientId: string,
-	reentryCheckListItemId: string,
-	coachIsViewing?: boolean
-) => {
+export const addClientReentryCheckListItemForClient = async (clientId: string, reentryCheckListItemId: string) => {
 	const [newItem] = await db
 		.insert(clientReentryCheckListItem)
 		.values({
@@ -1055,15 +1276,11 @@ export const addClientReentryCheckListItemForClient = async (
 		throw new Error("Failed to add client reentry checklist item");
 	}
 
-	revalidateClientCache(clientId, !!coachIsViewing);
+	revalidateClientCache(clientId);
 	return newItem;
 };
 
-export const removeClientReentryCheckListItemForClient = async (
-	clientId: string,
-	reentryCheckListItemId: string,
-	coachIsViewing?: boolean
-) => {
+export const removeClientReentryCheckListItemForClient = async (clientId: string, reentryCheckListItemId: string) => {
 	const [deletedItem] = await db
 		.delete(clientReentryCheckListItem)
 		.where(
@@ -1077,7 +1294,7 @@ export const removeClientReentryCheckListItemForClient = async (
 		console.error("Failed to remove client reentry checklist item");
 		throw new Error("Failed to remove client reentry checklist item");
 	}
-	revalidateClientCache(clientId, !!coachIsViewing);
+	revalidateClientCache(clientId);
 	return deletedItem;
 };
 

@@ -1,8 +1,8 @@
 import { getAllUsers } from "@/userInteractions/db";
-import DataTable from "./DataTable";
+import DataTable from "../DataTable";
 import { User } from "@/types";
-import PageHeader from "../PageHeader";
-import { Button } from "../ui/button";
+import PageHeader from "../../PageHeader";
+import { Button } from "../../ui/button";
 import Link from "next/link";
 
 export default async function Applicants({ userType }: { userType: string }) {

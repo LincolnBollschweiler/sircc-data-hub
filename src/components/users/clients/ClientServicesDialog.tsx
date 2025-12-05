@@ -19,13 +19,11 @@ export default function ClientServicesDialog({
 	csTables,
 	values,
 	children,
-	coachIsViewing,
 }: {
 	clientId: string | null;
 	values?: Partial<ClientServiceInsert>;
 	csTables: CSTables;
 	children: ReactNode;
-	coachIsViewing?: boolean;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [requestedServiceId, setRequestedServiceId] = useState<string | null>(values?.requestedServiceId || null);
@@ -108,7 +106,7 @@ export default function ClientServicesDialog({
 		const action = values
 			? updateClientService.bind(null, values?.id || null)
 			: createClientService.bind(null, null);
-		const actionData = await action(clientService, !!coachIsViewing);
+		const actionData = await action(clientService);
 		if (actionData) actionToast({ actionData });
 		if (!actionData.error) resetAll();
 	};

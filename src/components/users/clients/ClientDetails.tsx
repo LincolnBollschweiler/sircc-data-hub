@@ -29,7 +29,7 @@ export const ClientDetails = ({
 		setIsReentry(checked);
 
 		const action = updateClientIsReentryStatus.bind(null, client.id);
-		const actionData = await action(checked, !!coachIsViewing);
+		const actionData = await action(checked);
 		if (actionData) {
 			actionToast({ actionData });
 		}

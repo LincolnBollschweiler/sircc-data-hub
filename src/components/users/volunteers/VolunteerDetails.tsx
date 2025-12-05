@@ -22,7 +22,7 @@ export const VolunteerDetails = ({ user }: { user: VolunteerFull["user"] }) => {
 			</div>
 			{user?.email && (
 				<div>
-					<a className="text-blue-600 hover:underline" href={`mailto:${user.email}`}>
+					<a className="text-blue-500 hover:underline" href={`mailto:${user.email}`}>
 						{user.email}
 					</a>
 				</div>

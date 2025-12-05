@@ -168,7 +168,7 @@ export default function ClientUserForm({
 				actionToast({
 					actionData: {
 						error: true,
-						message: `No duplicates found. You can only add Coach Role to Existing User.`,
+						message: `No duplicates found. You can only add Coach Role to a user with a login account.`,
 					},
 				});
 
@@ -490,7 +490,7 @@ export default function ClientUserForm({
 							Cancel
 						</Button>
 						<Button type="submit" disabled={form.formState.isSubmitting}>
-							Save
+							Find Users
 						</Button>
 					</div>
 				</form>

@@ -56,6 +56,7 @@ export const clerkUserSchema = z
 				"client-volunteer",
 				"client-staff",
 				"client-staff-volunteer",
+				"",
 			])
 			.optional(),
 		themePreference: z.enum(["light", "dark", "system"]).default("system"),
@@ -207,6 +208,33 @@ export const coachSchema = z.object({
 	role: z.enum(["coach", "coach-staff", "coach-volunteer", "coach-staff-volunteer"]),
 });
 
+export const mergeUserSchema = z.object({
+	firstName: z.string().max(30).optional(),
+	lastName: z.string().max(30).optional(),
+	birthMonth: z.number().min(1).max(12).nullable(),
+	birthDay: z.number().min(1).max(31).nullable(),
+	phone: z
+		.string()
+		.nullable()
+		.transform((val) => (val === "" ? null : val))
+		.refine((val) => val === null || val.length === 12, "Phone number must be 12 characters (Ex: 208-555-1234)"),
+	role: z
+		.enum([
+			"admin-volunteer",
+			"admin-coach-volunteer",
+			"staff-volunteer",
+			"coach-volunteer",
+			"coach-staff-volunteer",
+			"volunteer",
+			"client-volunteer",
+			"client-staff-volunteer",
+			"staff",
+			"client",
+			"client-staff",
+		])
+		.optional(),
+});
+
 export const volunteerSchema = z
 	.object({
 		...userSchemaBase,
@@ -247,6 +275,77 @@ export const volunteerSchema = z
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
 				message: "Please provide either a phone number or your birth month and day.",
+				path: ["phone"],
+			});
+		}
+	});
+
+export const staffSchema = z
+	.object({
+		...userSchemaBase,
+		role: z
+			.enum([
+				"staff",
+				"staff-volunteer",
+				"coach-staff",
+				"coach-staff-volunteer",
+				"client-staff",
+				"client-staff-volunteer",
+			])
+			.optional(),
+		birthMonth: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(12).nullable().optional()
+		),
+		birthDay: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(31).nullable().optional()
+		),
+	})
+	.superRefine((data, ctx) => {
+		const hasPhone = !!data.phone;
+
+		if (hasPhone && (data.phone as string).length !== 12) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number must be 12 characters (Ex: 208-555-1234)",
+				path: ["phone"],
+			});
+		} else if (!hasPhone) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number required for staff members.",
+				path: ["phone"],
+			});
+		}
+	});
+
+export const adminSchema = z
+	.object({
+		...userSchemaBase,
+		role: z.enum(["admin", "admin-coach", "admin-volunteer", "admin-coach-volunteer"]).optional(),
+		birthMonth: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(12).nullable().optional()
+		),
+		birthDay: z.preprocess(
+			(val) => (val === "" || val == null ? null : Number(val)),
+			z.number().min(1).max(31).nullable().optional()
+		),
+	})
+	.superRefine((data, ctx) => {
+		const hasPhone = !!data.phone;
+
+		if (hasPhone && (data.phone as string).length !== 12) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number must be 12 characters (Ex: 208-555-1234)",
+				path: ["phone"],
+			});
+		} else if (!hasPhone) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Phone number required for staff members.",
 				path: ["phone"],
 			});
 		}

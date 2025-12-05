@@ -2,7 +2,6 @@
 
 import { ReactNode, useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-// import { ClientCombobox } from "./ClientCombobox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,8 +14,6 @@ import { VolunteerHours } from "@/userInteractions/db";
 import { VolunteerType } from "@/tableInteractions/db";
 import { insertVolunteerHours, updateVolunteerHours } from "@/userInteractions/actions";
 import { ClientCombobox } from "../clients/ClientCombobox";
-
-// import { Service } from "@/tableInteractions/db";
 
 export default function VolunteerHoursDialog({
 	volunteerId,

@@ -4,6 +4,9 @@ import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { clerkUserSchema } from "@/userInteractions/schema";
 import ProfileForm from "@/components/users/profile/ProfileForm";
 import { z } from "zod";
+import LandingPage from "@/components/LandingPage";
+import ApplicantReview from "@/components/ApplicantReview";
+import ApplicantAccepted from "@/components/ApplicantAccepted";
 
 export default async function Home() {
 	const currentUser = await getCurrentClerkUser({ allData: true });
@@ -21,20 +24,11 @@ export default async function Home() {
 						</div>
 					</div>
 				)}
-				{intakeComplete && !accepted && (
-					<div className="p-20 text-center">
-						We have received your application and will review it soon. We will reach out to you via
-						telephone (if provided) or email.
-					</div>
-				)}
-				{intakeComplete && accepted && (
-					<div className="p-20 text-center">
-						Welcome to the community! Your application has been accepted.
-					</div>
-				)}
+				{intakeComplete && !accepted && <ApplicantReview />}
+				{intakeComplete && accepted && <ApplicantAccepted role={profile.role! as string} />}
 			</SignedIn>
 			<SignedOut>
-				<div className="container flex gap-3">Signed out stuff</div>
+				<LandingPage />
 			</SignedOut>
 		</>
 	);

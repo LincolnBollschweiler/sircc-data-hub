@@ -13,9 +13,11 @@ export const revalidateUserCache = async (id: string) => {
 	revalidatePath(`/admin/volunteers/${id}/edit`);
 	revalidatePath("/coach");
 	revalidatePath(`/coach/clients/${id}/edit`);
+	revalidatePath("/admin/staff");
+	revalidatePath("/admin/admins");
 };
 
-export const revalidateClientCache = async (id: string, coachIsViewing?: boolean) => {
+export const revalidateClientCache = async (id: string) => {
 	revalidateTag(cacheTags.getClientGlobalTag(), "max");
 	revalidateTag(cacheTags.getClientIdTag(id), "max");
 	revalidatePath("/admin/clients");
@@ -24,7 +26,6 @@ export const revalidateClientCache = async (id: string, coachIsViewing?: boolean
 	revalidatePath(`/admin/volunteers/${id}/edit`);
 	revalidatePath("/coach");
 	revalidatePath(`/coach/clients/${id}/edit`);
-	if (coachIsViewing) revalidatePath(`/`);
 };
 
 export const revalidateCoachCache = async (id: string) => {

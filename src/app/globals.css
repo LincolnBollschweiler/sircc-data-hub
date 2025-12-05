@@ -7,6 +7,9 @@ body {
 	overflow-x: hidden;
 }
 
+html {
+	overflow-y: scroll;
+}
 body {
 	position: relative;
 	min-height: 100vh;

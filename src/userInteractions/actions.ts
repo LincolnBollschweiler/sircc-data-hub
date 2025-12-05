@@ -31,6 +31,7 @@ import {
 	addVolunteer,
 	updateVolunteerById,
 	updateUserRoleById,
+	mergeUsersInDB,
 } from "@/userInteractions/db";
 import { assignRoleSchema, clerkUserSchema, userSchema, volunteerSchema } from "@/userInteractions/schema";
 
@@ -57,6 +58,11 @@ export const queryUserById = async (id: string) => {
 	return rv;
 };
 
+export const undeleteUserById = async (id: string) => {
+	const rv = await updateClientUserById(id, { deletedAt: null });
+	return { error: !rv, message: rv ? "User undeleted successfully" : "Failed to undelete user" };
+};
+
 export const updateUserRole = async (id: string, user: User) => {
 	const rv = await updateUserRoleById(id, user.role);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
@@ -81,46 +87,48 @@ export const updateClientsCoach = async (userId: string | null, coachId: string 
 	return { error: !rv, message: rv ? "Client updated successfully" : "Failed to update client" };
 };
 
-export const updateClientIsReentryStatus = async (
-	userId: string | null,
-	isReentryClient: boolean,
-	coachIsViewing: boolean
-) => {
+export const updateClientIsReentryStatus = async (userId: string | null, isReentryClient: boolean) => {
 	if (!userId) return { error: true, message: "Invalid user ID" };
-	const rv = await updateClientById(userId, { isReentryClient }, coachIsViewing);
+	const rv = await updateClientById(userId, { isReentryClient });
 	return { error: !rv, message: rv ? "Re-entry status updated successfully" : "Failed to update re-entry status" };
 };
 
-export const createClientService = async (userId: null, data: ClientServiceInsert, coachIsViewing?: boolean) => {
-	const rv = await insertClientService(data, !!coachIsViewing);
+export const createClientService = async (userId: null, data: ClientServiceInsert) => {
+	const rv = await insertClientService(data);
 	return { error: !rv, message: rv ? "Service created successfully" : "Failed to create service" };
 };
 
-export const updateClientService = async (
-	serviceId: string | null,
-	data: Partial<ClientServiceInsert>,
-	coachIsViewing?: boolean
-) => {
+export const updateClientService = async (serviceId: string | null, data: Partial<ClientServiceInsert>) => {
 	if (!serviceId) {
 		return { error: true, message: "Invalid service ID" };
 	}
-	const rv = await updateClientServiceById(serviceId, data, !!coachIsViewing);
+	const rv = await updateClientServiceById(serviceId, data);
 	return { error: !rv, message: rv ? "Service updated successfully" : "Failed to update service" };
 };
 
-export const deleteClientService = async (serviceId: string, coachIsViewing?: boolean) => {
-	const rv = await deleteClientServiceById(serviceId, !!coachIsViewing);
+export const deleteClientService = async (serviceId: string) => {
+	const rv = await deleteClientServiceById(serviceId);
 	return { error: !rv, message: rv ? "Service deleted successfully" : "Failed to delete service" };
 };
 
-export const addClientChecklistItem = async (clientId: string, itemId: string, coachIsViewing?: boolean) => {
-	const rv = await addClientReentryCheckListItemForClient(clientId, itemId, !!coachIsViewing);
+export const addClientChecklistItem = async (clientId: string, itemId: string) => {
+	const rv = await addClientReentryCheckListItemForClient(clientId, itemId);
 	return { error: !rv, message: rv ? "Checklist item added successfully" : "Failed to add checklist item" };
 };
 
-export const deleteClientChecklistItem = async (clientId: string, itemId: string, coachIsViewing?: boolean) => {
-	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId, !!coachIsViewing);
+export const deleteClientChecklistItem = async (clientId: string, itemId: string) => {
+	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId);
 	return { error: !rv, message: rv ? "Checklist item deleted successfully" : "Failed to delete checklist item" };
+};
+//#endregion
+
+//#region Merge Users Action
+export const mergeUsersAction = async (duplicateUser: User, pendingUser: User) => {
+	const rv = await mergeUsersInDB(duplicateUser, pendingUser);
+	if (rv === null) {
+		return { error: true, message: "Failed to merge users" };
+	}
+	return { error: false, message: "Users merged successfully" };
 };
 //#endregion
 
@@ -140,6 +148,13 @@ export const updateVolunteer = async (
 	if (!success) return { error: true, message: "Invalid data" };
 	const rv = await updateVolunteerById(id, data, unsafeData.previousRole);
 	return { error: !rv, message: rv ? "User updated successfully" : "Failed to update user" };
+};
+//#endregion
+
+//#region Staff Actions
+export const updateStaffDetails = async (staffId: string, data: Partial<typeof user.$inferInsert>) => {
+	const rv = await updateClerkUserById(staffId, data);
+	return { error: !rv, message: rv ? "Staff updated successfully" : "Failed to update staff" };
 };
 
 //#region Coach Actions
