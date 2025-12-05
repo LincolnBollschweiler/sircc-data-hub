@@ -2,6 +2,13 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const adminRoutes = createRouteMatcher(["/admin", "/admin/(.*)"]);
+const staffRoutes = createRouteMatcher([
+	"/admin",
+	"/admin/data-types/cities",
+	"/admin/data-type/cities/(.*)",
+	"/admin/clients",
+	"/admin/clients/(.*)",
+]);
 const coachRoutes = createRouteMatcher(["/coach", "/coach/(.*)"]);
 const developerRoutes = createRouteMatcher(["/admin/dev/(.*)"]);
 const volunteerRoutes = createRouteMatcher(["/volunteer", "/volunteer/(.*)"]);
@@ -21,6 +28,14 @@ export default clerkMiddleware(async (auth, req) => {
 
 	const { sessionClaims } = await auth();
 	const role = sessionClaims?.role ?? "no-user";
+
+	// STAFF ROUTES
+	if (staffRoutes(req)) {
+		if (!role.includes("staff") && !role.includes("admin") && role !== "developer") {
+			return NextResponse.redirect(new URL("/", req.url));
+		}
+		return NextResponse.next({ request: { headers: requestHeaders } });
+	}
 
 	// ADMIN ROUTES
 	if (adminRoutes(req)) {

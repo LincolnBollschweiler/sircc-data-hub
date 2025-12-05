@@ -19,6 +19,7 @@ export default async function HeaderLinks() {
 
 	const admin = user && accepted && canAccessAdminPages(user);
 	const adminActive = admin && pathName?.includes("/admin");
+	console.log("Admin: ", admin, " Active: ", adminActive);
 
 	const coach = user && accepted && canAccessCoachPages(user);
 	const coachActive = coach && pathName?.includes("/coach");
@@ -30,11 +31,11 @@ export default async function HeaderLinks() {
 	const volunteerActive = volunteer && pathName?.includes("/volunteer");
 
 	const RoleLink = ({ label, href, active }: { label: string; href: string; active: boolean }) => (
-		<Link className="flex items-center hover:bg-accent/50" href={href}>
+		<Link className={cn("flex items-center hover:bg-accent/50", !active && "px-1 sm:px-2")} href={href}>
 			<span
 				className={cn(
-					"hover-underline-border rounded-sm px-1 sm:px-2",
-					active && "bg-foreground text-background"
+					"hover-underline-border rounded-sm",
+					active && "px-1 sm:px-2 bg-foreground text-background"
 				)}
 			>
 				{label}

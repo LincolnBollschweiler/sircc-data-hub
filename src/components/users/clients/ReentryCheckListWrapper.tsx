@@ -6,12 +6,10 @@ export default async function ReentryCheckListWrapper({
 	clientId,
 	clientCheckListItems,
 	isClientView,
-	coachIsViewing,
 }: {
 	clientId: string;
 	clientCheckListItems: ClientReentryCheckListItem[];
 	isClientView?: boolean;
-	coachIsViewing?: boolean;
 }) {
 	const checkListItems = await getReentryChecklistItems();
 
@@ -21,7 +19,6 @@ export default async function ReentryCheckListWrapper({
 			clientCheckListItems={clientCheckListItems}
 			checkListItems={checkListItems}
 			isClientView={isClientView}
-			coachIsViewing={coachIsViewing}
 		/>
 	);
 }

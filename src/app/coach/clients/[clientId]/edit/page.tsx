@@ -87,11 +87,7 @@ export default async function ViewClientPage({
 						coachIsViewing={true}
 					/>
 					{fullClient.client.isReentryClient && (
-						<ReentryCheckListWrapper
-							clientId={clientId}
-							clientCheckListItems={fullClient.checkListItems}
-							coachIsViewing={true}
-						/>
+						<ReentryCheckListWrapper clientId={clientId} clientCheckListItems={fullClient.checkListItems} />
 					)}
 					<DataTable
 						title="Services"
@@ -99,7 +95,6 @@ export default async function ViewClientPage({
 						userType="single-client"
 						csTables={csTables}
 						userId={clientId}
-						coachIsViewing={true}
 					/>
 				</>
 			)}

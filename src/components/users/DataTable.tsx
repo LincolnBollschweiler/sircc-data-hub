@@ -42,7 +42,6 @@ export default function DataTable<TData>({
 	title,
 	data,
 	userType,
-	coachIsViewing,
 	userId,
 	csTables,
 	services,
@@ -52,7 +51,6 @@ export default function DataTable<TData>({
 }: DataTableProps<TData> & {
 	title?: string;
 	userType: string;
-	coachIsViewing?: boolean;
 	userId?: string;
 	csTables?: CSTables;
 	services?: Service[] | undefined;
@@ -77,7 +75,6 @@ export default function DataTable<TData>({
 		userType,
 		setDuplicatesDialogOpen,
 		setCurrentDuplicateUser,
-		coachIsViewing,
 		trainingsCount,
 		checkListCount,
 		csTables,
@@ -154,9 +151,7 @@ export default function DataTable<TData>({
 				<div className="flex items-center justify-between">
 					<h2 className="text-xl font-semibold mb-1">{title ?? ""}</h2>
 
-					{userType === "single-client" && (
-						<ClientServices clientId={userId!} csTables={csTables!} coachIsViewing={coachIsViewing} />
-					)}
+					{userType === "single-client" && <ClientServices clientId={userId!} csTables={csTables!} />}
 					{userType === "single-client-view" && <NewClientService clientId={userId!} services={services!} />}
 					{userType === "client" && (
 						<ClientUpdateDialog>
@@ -222,9 +217,7 @@ export default function DataTable<TData>({
 								onChange={(e) => setGlobalFilter(e.target.value)}
 							/>
 						</div>
-						{userType === "single-client" && (
-							<ClientServices clientId={userId!} csTables={csTables!} coachIsViewing={coachIsViewing} />
-						)}
+						{userType === "single-client" && <ClientServices clientId={userId!} csTables={csTables!} />}
 						{userType === "single-client-view" && (
 							<NewClientService clientId={userId!} services={services!} />
 						)}

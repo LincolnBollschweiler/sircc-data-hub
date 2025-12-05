@@ -133,7 +133,6 @@ export const userDataTableColumns = (
 	userType: string,
 	setDuplicatesDialogOpen: (open: boolean) => void,
 	setCurrentDuplicateUser: (user: User | null) => void,
-	coachIsViewing?: boolean,
 	trainingsCount?: number,
 	checkListCount?: number,
 	csTables?: CSTables,
@@ -771,7 +770,6 @@ export const userDataTableColumns = (
 											clientId={service.clientId}
 											csTables={csTables!}
 											values={service}
-											coachIsViewing={!!coachIsViewing}
 										>
 											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
 												Edit Service

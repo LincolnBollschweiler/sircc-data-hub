@@ -475,13 +475,9 @@ const getCachedClient = (id: string) => {
 };
 export const getClientById = async (id: string) => getCachedClient(id);
 
-export const updateClientById = async (
-	clientId: string,
-	data: Partial<typeof client.$inferInsert>,
-	coachIsViewing?: boolean
-) => {
+export const updateClientById = async (clientId: string, data: Partial<typeof client.$inferInsert>) => {
 	const [updatedClient] = await db.update(client).set(data).where(eq(client.id, clientId)).returning();
-	revalidateClientCache(clientId, !!coachIsViewing);
+	revalidateClientCache(clientId);
 	return updatedClient;
 };
 
@@ -1212,7 +1208,7 @@ export const deleteCoachMileageById = async (mileageId: string) => {
 //#region Client Services
 export type ClientServiceInsert = typeof clientService.$inferInsert;
 
-export const insertClientService = async (data: ClientServiceInsert, coachIsViewing?: boolean) => {
+export const insertClientService = async (data: ClientServiceInsert) => {
 	const [newService] = await db.insert(clientService).values(data).returning();
 
 	if (newService == null) {
@@ -1220,15 +1216,11 @@ export const insertClientService = async (data: ClientServiceInsert, coachIsView
 		throw new Error("Failed to create client service");
 	}
 
-	revalidateClientCache(data.clientId, !!coachIsViewing);
+	revalidateClientCache(data.clientId);
 	return newService;
 };
 
-export const updateClientServiceById = async (
-	serviceId: string,
-	data: Partial<ClientServiceInsert>,
-	coachIsViewing?: boolean
-) => {
+export const updateClientServiceById = async (serviceId: string, data: Partial<ClientServiceInsert>) => {
 	const [updatedService] = await db
 		.update(clientService)
 		.set(data)
@@ -1238,11 +1230,11 @@ export const updateClientServiceById = async (
 		console.error("Failed to update client service");
 		throw new Error("Failed to update client service");
 	}
-	revalidateClientCache(updatedService.clientId, !!coachIsViewing);
+	revalidateClientCache(updatedService.clientId);
 	return updatedService;
 };
 
-export const deleteClientServiceById = async (serviceId: string, coachIsViewing?: boolean) => {
+export const deleteClientServiceById = async (serviceId: string) => {
 	const [deletedService] = await db.delete(clientService).where(eq(clientService.id, serviceId)).returning();
 
 	if (deletedService == null) {
@@ -1250,17 +1242,13 @@ export const deleteClientServiceById = async (serviceId: string, coachIsViewing?
 		throw new Error("Failed to delete client service");
 	}
 
-	revalidateClientCache(deletedService.clientId, !!coachIsViewing);
+	revalidateClientCache(deletedService.clientId);
 	return deletedService;
 };
 //#endregion
 
 //#region Client Checklist Items
-export const addClientReentryCheckListItemForClient = async (
-	clientId: string,
-	reentryCheckListItemId: string,
-	coachIsViewing?: boolean
-) => {
+export const addClientReentryCheckListItemForClient = async (clientId: string, reentryCheckListItemId: string) => {
 	const [newItem] = await db
 		.insert(clientReentryCheckListItem)
 		.values({
@@ -1274,15 +1262,11 @@ export const addClientReentryCheckListItemForClient = async (
 		throw new Error("Failed to add client reentry checklist item");
 	}
 
-	revalidateClientCache(clientId, !!coachIsViewing);
+	revalidateClientCache(clientId);
 	return newItem;
 };
 
-export const removeClientReentryCheckListItemForClient = async (
-	clientId: string,
-	reentryCheckListItemId: string,
-	coachIsViewing?: boolean
-) => {
+export const removeClientReentryCheckListItemForClient = async (clientId: string, reentryCheckListItemId: string) => {
 	const [deletedItem] = await db
 		.delete(clientReentryCheckListItem)
 		.where(
@@ -1296,7 +1280,7 @@ export const removeClientReentryCheckListItemForClient = async (
 		console.error("Failed to remove client reentry checklist item");
 		throw new Error("Failed to remove client reentry checklist item");
 	}
-	revalidateClientCache(clientId, !!coachIsViewing);
+	revalidateClientCache(clientId);
 	return deletedItem;
 };
 

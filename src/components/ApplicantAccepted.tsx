@@ -53,7 +53,7 @@ export default function ApplicantAccepted({ role }: { role: string }) {
 										</p>
 									</a>
 								)}
-								{role.includes("admin") && (
+								{(role.includes("staff") || role.includes("admin")) && (
 									<a
 										href="/admin/"
 										className="block bg-background-light border border-border-muted rounded-lg shadow hover:shadow-md transition-shadow p-5"

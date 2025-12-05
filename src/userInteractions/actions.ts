@@ -82,45 +82,37 @@ export const updateClientsCoach = async (userId: string | null, coachId: string 
 	return { error: !rv, message: rv ? "Client updated successfully" : "Failed to update client" };
 };
 
-export const updateClientIsReentryStatus = async (
-	userId: string | null,
-	isReentryClient: boolean,
-	coachIsViewing: boolean
-) => {
+export const updateClientIsReentryStatus = async (userId: string | null, isReentryClient: boolean) => {
 	if (!userId) return { error: true, message: "Invalid user ID" };
-	const rv = await updateClientById(userId, { isReentryClient }, coachIsViewing);
+	const rv = await updateClientById(userId, { isReentryClient });
 	return { error: !rv, message: rv ? "Re-entry status updated successfully" : "Failed to update re-entry status" };
 };
 
-export const createClientService = async (userId: null, data: ClientServiceInsert, coachIsViewing?: boolean) => {
-	const rv = await insertClientService(data, !!coachIsViewing);
+export const createClientService = async (userId: null, data: ClientServiceInsert) => {
+	const rv = await insertClientService(data);
 	return { error: !rv, message: rv ? "Service created successfully" : "Failed to create service" };
 };
 
-export const updateClientService = async (
-	serviceId: string | null,
-	data: Partial<ClientServiceInsert>,
-	coachIsViewing?: boolean
-) => {
+export const updateClientService = async (serviceId: string | null, data: Partial<ClientServiceInsert>) => {
 	if (!serviceId) {
 		return { error: true, message: "Invalid service ID" };
 	}
-	const rv = await updateClientServiceById(serviceId, data, !!coachIsViewing);
+	const rv = await updateClientServiceById(serviceId, data);
 	return { error: !rv, message: rv ? "Service updated successfully" : "Failed to update service" };
 };
 
-export const deleteClientService = async (serviceId: string, coachIsViewing?: boolean) => {
-	const rv = await deleteClientServiceById(serviceId, !!coachIsViewing);
+export const deleteClientService = async (serviceId: string) => {
+	const rv = await deleteClientServiceById(serviceId);
 	return { error: !rv, message: rv ? "Service deleted successfully" : "Failed to delete service" };
 };
 
-export const addClientChecklistItem = async (clientId: string, itemId: string, coachIsViewing?: boolean) => {
-	const rv = await addClientReentryCheckListItemForClient(clientId, itemId, !!coachIsViewing);
+export const addClientChecklistItem = async (clientId: string, itemId: string) => {
+	const rv = await addClientReentryCheckListItemForClient(clientId, itemId);
 	return { error: !rv, message: rv ? "Checklist item added successfully" : "Failed to add checklist item" };
 };
 
-export const deleteClientChecklistItem = async (clientId: string, itemId: string, coachIsViewing?: boolean) => {
-	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId, !!coachIsViewing);
+export const deleteClientChecklistItem = async (clientId: string, itemId: string) => {
+	const rv = await removeClientReentryCheckListItemForClient(clientId, itemId);
 	return { error: !rv, message: rv ? "Checklist item deleted successfully" : "Failed to delete checklist item" };
 };
 //#endregion

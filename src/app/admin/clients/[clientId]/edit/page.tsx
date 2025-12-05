@@ -6,10 +6,11 @@ import { ClientDetails } from "@/components/users/clients/ClientDetails";
 import { getAllClientServiceTables } from "@/tableInteractions/db";
 import { getClientById, getAllCoachUsers, ClientServiceFull } from "@/userInteractions/db";
 import Link from "next/link";
+import { getCurrentClerkUser } from "@/services/clerk";
 
 export default async function ViewClientPage({ params }: { params: Promise<{ clientId: string }> }) {
-	const { clientId } = await params;
-
+	const [{ clientId }, { role }] = await Promise.all([params, getCurrentClerkUser()]);
+	console.log("Current role:", role);
 	const [fullClient, allCoaches, csTables] = await Promise.all([
 		getClientById(clientId),
 		getAllCoachUsers(),
@@ -56,18 +57,9 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 							<p>{fullClient.client.followUpNotes}</p>
 						</div>
 					)}
-					<ClientDetails
-						user={fullClient.user}
-						client={fullClient.client}
-						allCoaches={allCoaches}
-						coachIsViewing={false}
-					/>
+					<ClientDetails user={fullClient.user} client={fullClient.client} allCoaches={allCoaches} />
 					{fullClient.client.isReentryClient && (
-						<ReentryCheckListWrapper
-							clientId={clientId}
-							clientCheckListItems={fullClient.checkListItems}
-							coachIsViewing={false}
-						/>
+						<ReentryCheckListWrapper clientId={clientId} clientCheckListItems={fullClient.checkListItems} />
 					)}
 					<DataTable
 						title="Services"
@@ -75,7 +67,6 @@ export default async function ViewClientPage({ params }: { params: Promise<{ cli
 						userType="single-client"
 						csTables={csTables}
 						userId={clientId}
-						coachIsViewing={false}
 					/>
 				</>
 			)}
