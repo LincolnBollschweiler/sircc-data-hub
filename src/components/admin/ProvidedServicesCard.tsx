@@ -16,6 +16,13 @@ export default function ProvidedServicesCard() {
 	useEffect(() => setSelectedRange(globalPreset), [globalPreset]);
 	useEffect(() => setEffectiveRange(getLocalDateRange(selectedRange)), [selectedRange]);
 
+	// use this to get the total number of provided services and breakdown for your specified range. Debug only
+	// so we can get a number for the Landing Page.
+	// const query = useAggregateQuery<ProvidedServiceResponse>("providedServices", {
+	// 	end: "2025-11-01T06:00:00.000Z",
+	// 	start: "2024-11-01T06:00:00.000Z",
+	// });
+
 	const query = useAggregateQuery<ProvidedServiceResponse>("providedServices", effectiveRange);
 	const rows = query.data?.rows ?? [];
 	const total = query.data?.total ?? 0;

@@ -12,13 +12,11 @@ export default function ReentryCheckList({
 	clientCheckListItems,
 	checkListItems,
 	isClientView,
-	coachIsViewing,
 }: {
 	clientId: string;
 	clientCheckListItems: ClientReentryCheckListItem[];
 	checkListItems: ReentryChecklistItems;
 	isClientView?: boolean;
-	coachIsViewing?: boolean;
 }) {
 	// Local state
 	const [checkedItems, setCheckedItems] = useState(clientCheckListItems.map((item) => item.reentryCheckListItemId));
@@ -39,7 +37,7 @@ export default function ReentryCheckList({
 			const { itemId, adding } = pendingOps.current!;
 			const action = adding ? addClientChecklistItem : deleteClientChecklistItem;
 
-			const actionData = await action(clientId, itemId, !!coachIsViewing);
+			const actionData = await action(clientId, itemId);
 			if (actionData) actionToast({ actionData });
 
 			pendingOps.current = null;

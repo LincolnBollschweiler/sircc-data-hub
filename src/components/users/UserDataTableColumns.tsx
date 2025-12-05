@@ -13,7 +13,13 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteCoachMiles, deleteCoachHours, updateClerkUser, updateUserRole } from "@/userInteractions/actions";
+import {
+	deleteCoachMiles,
+	deleteCoachHours,
+	updateClerkUser,
+	updateUserRole,
+	undeleteUserById,
+} from "@/userInteractions/actions";
 import { actionToast } from "@/hooks/use-toast";
 import { DialogTrigger } from "../ui/dialog";
 import AssignRoleFormDialog from "./assignRole/AssignRoleFormDialog";
@@ -53,6 +59,13 @@ const processAcceptance = async (user: Partial<User>, accepted: boolean | null) 
 	const action = user.id ? updateClerkUser.bind(null, user.id) : undefined;
 	if (!action) return;
 	const actionData = await action({ ...user, accepted });
+	if (actionData) actionToast({ actionData });
+};
+
+const undeleteUser = async (user: Partial<User>) => {
+	const action = user.id ? undeleteUserById.bind(null, user.id) : undefined;
+	if (!action) return;
+	const actionData = await action();
 	if (actionData) actionToast({ actionData });
 };
 
@@ -133,7 +146,6 @@ export const userDataTableColumns = (
 	userType: string,
 	setDuplicatesDialogOpen: (open: boolean) => void,
 	setCurrentDuplicateUser: (user: User | null) => void,
-	coachIsViewing?: boolean,
 	trainingsCount?: number,
 	checkListCount?: number,
 	csTables?: CSTables,
@@ -199,6 +211,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "desiredRole",
@@ -278,13 +299,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									{userType !== "rejected" && (
-										<DropdownMenuItem asChild>
-											<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-												Send Email
-											</a>
-										</DropdownMenuItem>
-									)}
 									{userType === "rejected" && (
 										<DropdownMenuItem onClick={() => processAcceptance(user, null)}>
 											Undecided Applicant
@@ -309,6 +323,162 @@ export const userDataTableColumns = (
 											</DropdownMenuItem>
 										</>
 									)}
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
+			},
+		];
+	}
+
+	if (userType === "deletedUser") {
+		return [
+			{
+				id: "userPhoto",
+				header: "",
+				accessorKey: "photoUrl",
+				cell: (info) => {
+					const r = asUserRow(info.row.original);
+					return (
+						<Image
+							src={r.photoUrl ?? "/default-avatar.png"}
+							alt={`${r.firstName} ${r.lastName}`}
+							width={30}
+							height={30}
+							className="rounded-full object-cover mx-auto"
+						/>
+					);
+				},
+			},
+			{
+				id: "name",
+				accessorFn: (row) => {
+					const r = asUserRow(row);
+					return `${r.firstName} ${r.lastName}`;
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="-ml-4 h-4 w-4" />
+						Name
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const rA = asUserRow(rowA.original);
+					const rB = asUserRow(rowB.original);
+					return `${rA.firstName} ${rA.lastName}`
+						.toLowerCase()
+						.localeCompare(`${rB.firstName} ${rB.lastName}`.toLowerCase());
+				},
+				cell: (info) => {
+					const r = asUserRow(info.row.original);
+					return <div className="text-nowrap">{`${r.firstName} ${r.lastName}`}</div>;
+				},
+			},
+			{
+				accessorKey: "phone",
+				header: () => <div className="text-center">Phone</div>,
+				cell: (info) => {
+					const phone = formatPhoneNumber(info.getValue<string>() || "");
+					return <div className="text-center text-nowrap">{phone || "N/A"}</div>;
+				},
+			},
+			{
+				accessorKey: "email",
+				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
+			},
+			{
+				accessorKey: "role",
+				header: ({ column }) => (
+					<Button
+						className="text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						Last Role
+						<ArrowUpDown className="h-4 w-4" />
+					</Button>
+				),
+				cell: (info) => <div className="text-center text-nowrap">{info.getValue<string>() || "N/A"}</div>,
+			},
+			{
+				accessorKey: "notes",
+				header: "Notes",
+				cell: ({ getValue }) => {
+					const notes = getValue<string>() || "";
+					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+					return (
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant="ghost"
+									className="text-left p-0 px-1 h-auto whitespace-nowrap text-ellipsis"
+								>
+									{truncated}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="max-w-sm">
+								<p className="whitespace-pre-wrap">{notes}</p>
+							</PopoverContent>
+						</Popover>
+					);
+				},
+			},
+			{
+				accessorKey: "deletedAt",
+				accessorFn: (row) => {
+					const r = asUserRow(row);
+					const date = r.deletedAt;
+					return date ? new Date(date).toLocaleDateString("en-US", dateOptions) : "";
+				},
+				header: ({ column }) => (
+					<Button
+						className="text-center w-full"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						Deleted
+						<ArrowUpDown className="h-4 w-4" />
+					</Button>
+				),
+				cell: (info) => {
+					const date = info.getValue<Date>();
+					return date ? (
+						<div className="text-center">{new Date(date).toLocaleDateString("en-US", dateOptions)}</div>
+					) : (
+						<div className="text-center">N/A</div>
+					);
+				},
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const user = row.original as User;
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem onClick={() => undeleteUser(user)}>Add Back</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</div>
@@ -477,6 +647,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "user.email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "user.phone",
@@ -560,12 +739,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -771,7 +944,6 @@ export const userDataTableColumns = (
 											clientId={service.clientId}
 											csTables={csTables!}
 											values={service}
-											coachIsViewing={!!coachIsViewing}
 										>
 											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
 												Edit Service
@@ -1004,6 +1176,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				id: "actions",
@@ -1020,12 +1201,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<StaffUpdateDialog user={user}>
 											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
@@ -1109,6 +1284,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				id: "actions",
@@ -1125,12 +1309,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<AdminUpdateDialog user={user}>
 											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
@@ -1214,6 +1392,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "hours",
@@ -1291,12 +1478,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -1648,6 +1829,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "user.email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "clientCount",
@@ -1785,12 +1975,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -1980,6 +2164,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "user.email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				id: "actions",
@@ -1999,12 +2192,6 @@ export const userDataTableColumns = (
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem asChild>
-										<a className="hover:!bg-background-dark" href={`mailto:${user.email}`}>
-											Send Email
-										</a>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
 									<DropdownMenuItem asChild>
 										<a
 											className="hover:!bg-success hover:!text-success-foreground"
@@ -2332,6 +2519,15 @@ export const userDataTableColumns = (
 			{
 				accessorKey: "email",
 				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
 			},
 			{
 				accessorKey: "notes",

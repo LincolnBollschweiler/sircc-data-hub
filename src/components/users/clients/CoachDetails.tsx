@@ -16,7 +16,7 @@ export default function CoachDetails({ coach, coachDetails }: { coach: User; coa
 				<div>
 					Email:{" "}
 					{
-						<a href={`mailto:${coach.email}`} className="text-blue-600 hover:underline">
+						<a href={`mailto:${coach.email}`} className="text-blue-500 hover:underline">
 							{coach.email}
 						</a>
 					}
@@ -28,7 +28,7 @@ export default function CoachDetails({ coach, coachDetails }: { coach: User; coa
 					Website:{" "}
 					<a
 						href={coachDetails.website}
-						className="text-blue-600 hover:underline"
+						className="text-blue-500 hover:underline"
 						target="_blank"
 						rel="noopener noreferrer"
 					>

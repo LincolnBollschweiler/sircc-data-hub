@@ -15,7 +15,7 @@ export default async function ClientPage() {
 					href="https://www.sircc-tencsinc.com/contact-us/"
 					rel="noopener noreferrer"
 					target="_blank"
-					className="ml-1 mr-1 text-blue-600 hover:underline"
+					className="ml-1 mr-1 text-blue-500 hover:underline"
 				>
 					contact
 				</a>

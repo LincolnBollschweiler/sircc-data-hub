@@ -14,7 +14,7 @@ export default async function VolunteerPage() {
 					You are not listed as a volunteer. If you should be, please contact an SIRCC Admin. Or, if you are
 					an Admin, find yourself on the
 				</span>
-				<a href="/admin/admins" className="ml-1 mr-1 text-blue-600 hover:underline">
+				<a href="/admin/admins" className="ml-1 mr-1 text-blue-500 hover:underline">
 					admins
 				</a>
 				<span> page and update your role to include &quot;client&quot;.</span>

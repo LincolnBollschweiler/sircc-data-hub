@@ -1,3 +1,8 @@
+"use client";
+
+import Image from "next/image";
+import { Button } from "./ui/button";
+
 export default function LandingPage() {
 	return (
 		<div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -15,20 +20,34 @@ export default function LandingPage() {
 							our mission.
 						</p>
 						<div className="flex flex-wrap gap-4">
-							<a href="/signup" className="btn-primary px-6 py-3 text-lg">
+							<Button
+								variant="ghost"
+								className="btn-primary px-6 py-3 text-lg"
+								onClick={() => {
+									document.getElementById("sign-in-button")?.click();
+								}}
+							>
 								Get Started
-							</a>
-							<a href="/about" className="btn-secondary px-6 py-3 text-lg">
-								Learn More
-							</a>
+							</Button>
+							<Button variant="ghost" className="btn-secondary px-6 py-3 text-lg" asChild>
+								<a
+									href="https://www.sircc-tencsinc.com/services/"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Learn More
+								</a>
+							</Button>
 						</div>
 					</div>
 					<div className="flex-1">
-						{/* Hero image: real people/community, not stock if possible */}
-						<img
-							src="/images/community-hero.jpg"
+						<Image
+							src="/landing-hero.png"
 							alt="Community support and volunteers"
+							width={1000} // pick a safe intrinsic width
+							height={625} // and height (aspect ratio preserved)
 							className="w-full rounded-lg shadow-lg object-cover max-h-[400px] md:max-h-[500px]"
+							priority // optional: good for hero images
 						/>
 					</div>
 				</div>
@@ -65,19 +84,24 @@ export default function LandingPage() {
 					<h2 className="text-3xl font-semibold">Real people. Real impact.</h2>
 					<div className="grid gap-6 md:grid-cols-3">
 						<div className="space-y-2">
-							<p className="text-4xl font-bold text-primary">500+</p>
-							<p>Clients served last year</p>
+							<p className="text-4xl font-bold text-primary">1100+</p>
+							<p>Services provided last year</p>
 						</div>
 						<div className="space-y-2">
-							<p className="text-4xl font-bold text-primary">120+</p>
+							<p className="text-4xl font-bold text-primary">250+</p>
 							<p>Community partners statewide</p>
 						</div>
 						<div className="space-y-2">
-							<p className="text-4xl font-bold text-primary">50+</p>
+							<p className="text-4xl font-bold text-primary">100+</p>
 							<p>Active volunteers & coaches</p>
 						</div>
 					</div>
-					<a href="/donate" className="btn-primary px-6 py-3 text-lg mt-6">
+					<a
+						href="https://www.sircc-tencsinc.com/donate/"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="btn-primary px-6 py-3 text-lg mt-6"
+					>
 						Support Our Work
 					</a>
 				</div>
@@ -112,18 +136,26 @@ export default function LandingPage() {
 						minutes.
 					</p>
 					<div className="flex flex-wrap justify-center gap-4">
-						<a href="/signup" className="btn-primary px-6 py-3 text-lg">
+						<Button
+							variant="ghost"
+							className="btn-primary px-6 py-3 text-lg"
+							onClick={() => {
+								document.getElementById("sign-in-button")?.click();
+							}}
+						>
 							Get Started
-						</a>
-						<a href="/donate" className="btn-outline px-6 py-3 text-lg">
-							Donate Now
-						</a>
+						</Button>
+						<Button variant="ghost" className="btn-secondary px-6 py-3 text-lg" asChild>
+							<a href="https://www.sircc-tencsinc.com/donate/" target="_blank" rel="noopener noreferrer">
+								Donate Now
+							</a>
+						</Button>
 					</div>
 				</div>
 			</section>
 
 			{/* FOOTER */}
-			<footer className="bg-background-dark text-background-light py-8">
+			<footer className="bg-background-dark text-muted/80 py-8">
 				<div className="container mx-auto space-y-4 text-sm">
 					<p>© {new Date().getFullYear()} SIRCC — Hope & Support for Families & Individuals</p>
 					<p>
