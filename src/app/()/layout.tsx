@@ -22,13 +22,13 @@ const Navbar = () => {
 					{/* Mobile: icon only */}
 					<Home className="size-5 md:hidden" />
 					{/* >= sm: text only */}
-					<span className="hidden md:inline">SIRCC Data Hubs</span>
+					<span className="hidden md:inline">SIRCC Data Hub</span>
 				</Link>
 				<SignedIn>
 					<SignedInNavbar />
 				</SignedIn>
 				<SignedOut>
-					<Button className="self-center" asChild>
+					<Button id="sign-in-button" className="self-center" asChild>
 						<SignInButton>Sign In</SignInButton>
 					</Button>
 				</SignedOut>
