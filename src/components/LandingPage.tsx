@@ -84,19 +84,24 @@ export default function LandingPage() {
 					<h2 className="text-3xl font-semibold">Real people. Real impact.</h2>
 					<div className="grid gap-6 md:grid-cols-3">
 						<div className="space-y-2">
-							<p className="text-4xl font-bold text-primary">500+</p>
-							<p>Clients served last year</p>
+							<p className="text-4xl font-bold text-primary">1100+</p>
+							<p>Services provided last year</p>
 						</div>
 						<div className="space-y-2">
-							<p className="text-4xl font-bold text-primary">120+</p>
+							<p className="text-4xl font-bold text-primary">250+</p>
 							<p>Community partners statewide</p>
 						</div>
 						<div className="space-y-2">
-							<p className="text-4xl font-bold text-primary">50+</p>
+							<p className="text-4xl font-bold text-primary">100+</p>
 							<p>Active volunteers & coaches</p>
 						</div>
 					</div>
-					<a href="/donate" className="btn-primary px-6 py-3 text-lg mt-6">
+					<a
+						href="https://www.sircc-tencsinc.com/donate/"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="btn-primary px-6 py-3 text-lg mt-6"
+					>
 						Support Our Work
 					</a>
 				</div>
