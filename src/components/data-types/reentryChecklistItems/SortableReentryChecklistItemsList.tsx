@@ -10,14 +10,13 @@ import ReentryChecklistItemsFormDialog from "./ReentryChecklistItemsFormDialog";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { generalSchema, updateSchema } from "@/tableInteractions/schemas";
 import { z } from "zod";
+import { dateOptions } from "@/utils/constants";
 
 export function SortableReentryChecklistItemsList({
 	items,
 }: {
 	items: (z.infer<typeof generalSchema> & z.infer<typeof updateSchema>)[];
 }) {
-	const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
-
 	return (
 		<SortableList items={items} onOrderChange={updateReentryChecklistItemOrders}>
 			{(sorted) =>

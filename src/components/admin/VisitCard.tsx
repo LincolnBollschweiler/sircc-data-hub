@@ -28,11 +28,12 @@ export default function VisitCard() {
 	}));
 
 	return (
-		<DashboardCard loading={query.isLoading} minHeight="h-[300px]">
+		<DashboardCard loading={query.isLoading}>
 			<DashboardCardContent
 				title="Visits"
 				total={total}
 				tableHeaders={["Type", "Count"]}
+				effectiveRange={effectiveRange}
 				selectedRange={selectedRange}
 				setSelectedRange={setSelectedRange}
 				pieData={pieData}

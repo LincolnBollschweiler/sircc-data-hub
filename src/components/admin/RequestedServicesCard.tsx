@@ -27,11 +27,12 @@ export default function RequestedServicesCard() {
 	}));
 
 	return (
-		<DashboardCard loading={query.isLoading} minHeight="h-[300px]">
+		<DashboardCard loading={query.isLoading}>
 			<DashboardCardContent
 				title="Requested Services"
 				total={total}
 				tableHeaders={["Service", "Count"]}
+				effectiveRange={effectiveRange}
 				selectedRange={selectedRange}
 				setSelectedRange={setSelectedRange}
 				pieData={pieData}

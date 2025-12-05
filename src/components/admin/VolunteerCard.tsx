@@ -28,11 +28,12 @@ export default function VolunteerCard() {
 	}));
 
 	return (
-		<DashboardCard loading={query.isLoading} minHeight="h-[300px]">
+		<DashboardCard loading={query.isLoading}>
 			<DashboardCardContent
 				title="Volunteer Hours"
 				total={total}
 				tableHeaders={["Type", "Total"]}
+				effectiveRange={effectiveRange}
 				selectedRange={selectedRange}
 				setSelectedRange={setSelectedRange}
 				pieData={pieData}

@@ -28,11 +28,12 @@ export default function ReferredOutCard() {
 	}));
 
 	return (
-		<DashboardCard loading={query.isLoading} minHeight="h-[300px]">
+		<DashboardCard loading={query.isLoading}>
 			<DashboardCardContent
 				title="Referred Out"
 				total={total}
 				tableHeaders={["To", "Count"]}
+				effectiveRange={effectiveRange}
 				selectedRange={selectedRange}
 				setSelectedRange={setSelectedRange}
 				pieData={pieData}

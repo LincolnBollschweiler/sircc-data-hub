@@ -26,11 +26,12 @@ export default function ProvidedServicesCard() {
 	}));
 
 	return (
-		<DashboardCard loading={query.isLoading} minHeight="h-[300px]">
+		<DashboardCard loading={query.isLoading}>
 			<DashboardCardContent
 				title="Provided Services"
 				total={total}
 				tableHeaders={["Service", "Count"]}
+				effectiveRange={effectiveRange}
 				isLoading={query.isLoading}
 				pieData={pieData}
 				selectedRange={selectedRange}

@@ -37,8 +37,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { createRoot } from "react-dom/client";
 import StaffUpdateDialog from "./staff/StaffUpdateDialog";
 import AdminUpdateDialog from "./admins/AdminUpdateDialog";
-
-const dateOptions: Intl.DateTimeFormatOptions = { year: "2-digit", month: "2-digit", day: "2-digit" };
+import { dateOptions } from "@/utils/constants";
 
 // Helper casts
 const asUserRow = (row: unknown): User => row as User;

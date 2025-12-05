@@ -28,11 +28,12 @@ export default function ReferralSourcesCard() {
 	}));
 
 	return (
-		<DashboardCard loading={query.isLoading} minHeight="h-[300px]">
+		<DashboardCard loading={query.isLoading}>
 			<DashboardCardContent
 				title="Referral Sources"
 				total={total}
 				tableHeaders={["Source", "Count"]}
+				effectiveRange={effectiveRange}
 				selectedRange={selectedRange}
 				setSelectedRange={setSelectedRange}
 				pieData={pieData}

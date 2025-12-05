@@ -29,35 +29,28 @@ export default function TotalsMiniTable({
 	}
 
 	if (rows.length === 0) {
-		return <div className="text-sm text-muted">No data</div>;
+		return <div className="text-sm text-muted m-1">No data</div>;
 	}
 
 	// Sort descending by value
 	const sortedRows = [...rows].sort((a, b) => b.value - a.value);
 
-	// Calculate height: one row ~2rem, plus a small buffer
-	const rowHeight = 32; // px
-	const visibleRows = Math.min(sortedRows.length, maxVisibleRows);
-	const tableHeight = visibleRows * rowHeight;
-
 	return (
-		<div style={{ maxHeight: `${tableHeight}px` }}>
-			<table className="w-full text-left text-sm">
-				<thead>
-					<tr>
-						<th className="pb-1 font-semibold">{tableHeaders[0]}</th>
-						<th className="pb-1 font-semibold text-right">{tableHeaders[1]}</th>
+		<table className="w-full text-left text-sm relative">
+			<thead className="sticky top-0 bg-background-light text-[1.05em] border-b-2 border-border">
+				<tr>
+					<th className="py-1 font-semibold">{tableHeaders[0]}</th>
+					<th className="py-1 font-semibold text-right">{tableHeaders[1]}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{sortedRows.map((r, idx) => (
+					<tr key={idx} className="border-t border-border">
+						<td className="py-1">{r.label}</td>
+						<td className="py-1 text-right">{r.value}</td>
 					</tr>
-				</thead>
-				<tbody>
-					{sortedRows.map((r, idx) => (
-						<tr key={idx} className="border-t border-border">
-							<td className="py-1">{r.label}</td>
-							<td className="py-1 text-right font-semibold">{r.value}</td>
-						</tr>
-					))}
-				</tbody>
-			</table>
-		</div>
+				))}
+			</tbody>
+		</table>
 	);
 }
