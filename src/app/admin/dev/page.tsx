@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createNewTheme } from "@/utils/createNewTheme";
 import {
+	deleteAllContacts,
 	deleteAllCity,
 	deleteAllLocation,
 	deleteAllReentryChecklistItem,
@@ -26,6 +27,7 @@ import {
 	deleteAllClientService,
 	deleteAllClient,
 	createReentryChecklistItem,
+	insertContact,
 } from "@/tableInteractions/adminActions";
 import { revalidatAllCaches } from "@/tableInteractions/cache";
 import Papa from "papaparse";
@@ -100,7 +102,8 @@ body.light {
 
 	const process = () => createNewTheme(iamsajidThemeInputText);
 
-	const loadDataTypeValues = async () => await loadClients();
+	const loadInClients = async () => await loadClients();
+	const loadInContacts = async () => await loadContacts();
 	const loadOther = async () => await loadNonClientPageData();
 	const revalidate = async () => await revalidateAllPages();
 
@@ -156,7 +159,11 @@ body.light {
 			</section>
 			<section>
 				<h2 className="text-2xl font-semibold mb-2">Parse CSV</h2>
-				<Button onClick={loadDataTypeValues}>Load in Clients and Client Data Types</Button>
+				<Button onClick={loadInClients}>Load in Clients and Client Data Types</Button>
+			</section>
+			<section>
+				<h2 className="text-2xl font-semibold mb-2">Parse CSV</h2>
+				<Button onClick={loadInContacts}>Load in Contacts</Button>
 			</section>
 			<section>
 				<h2 className="text-2xl font-semibold mb-2">Load Non-Client Page Data</h2>
@@ -175,6 +182,7 @@ const revalidateAllPages = async () => {
 };
 
 const loadNonClientPageData = async () => {
+	return;
 	const [reentry, volunteer] = await Promise.all([
 		fetch(`/temp-load-in/reentryCheckListItem.csv`),
 		fetch(`/temp-load-in/volunteeringType.csv`),
@@ -243,6 +251,10 @@ const deleteAllFromDb = async (type: string) => {
 			break;
 		case "volunteeringType":
 			deleteAction = deleteAllVolunteerTypes;
+			await deleteAction();
+			break;
+		case "contacts":
+			deleteAction = deleteAllContacts;
 			await deleteAction();
 			break;
 		default:
@@ -488,7 +500,62 @@ const addUserData = async (data) => {
 	});
 };
 
+const loadContacts = async () => {
+	const response = await fetch(`/temp-load-in/businessContacts.csv`);
+	const csvText = await response.text();
+
+	const parsed = Papa.parse(csvText, {
+		header: true, // use first row as keys
+		skipEmptyLines: true,
+	});
+
+	await deleteAllFromDb("contacts");
+
+	for (const contactInfo of parsed.data) {
+		let phone = null;
+		if (contactInfo.phone && contactInfo.phone.trim().length > 0) {
+			phone = `+1${contactInfo.phone.trim().replace(/\D/g, "")}`;
+		}
+		if (contactInfo.phone && phone?.length !== 12) phone = null;
+
+		let contactPhone = null;
+		if (contactInfo.contactPhone && contactInfo.contactPhone.trim().length > 0) {
+			contactPhone = `+1${contactInfo.contactPhone.trim().replace(/\D/g, "")}`;
+		}
+		if (contactInfo.contactPhone && contactPhone?.length !== 12) contactPhone = null;
+
+		let secondContactPhone = null;
+		if (contactInfo.secondContactPhone && contactInfo.secondContactPhone.trim().length > 0) {
+			secondContactPhone = `+1${contactInfo.secondContactPhone.trim().replace(/\D/g, "")}`;
+		}
+		if (contactInfo.secondContactPhone && secondContactPhone?.length !== 12) secondContactPhone = null;
+
+		const sanitizedUser = {
+			name: contactInfo.name ? contactInfo.name.trim() : null,
+			typeOfService: contactInfo.typeOfService ? contactInfo.typeOfService.trim() : null,
+			phone,
+			phoneExt: contactInfo.phoneExt ? contactInfo.phoneExt.trim() : null,
+			email: contactInfo.email ? contactInfo.email.trim() : null,
+			contactName: contactInfo.contactName ? contactInfo.contactName.trim() : null,
+			contactPhone,
+			contactEmail: contactInfo.contactEmail ? contactInfo.contactEmail.trim() : null,
+			secondContactPhone,
+			secondContactPhoneExt: contactInfo.secondContactPhoneExt ? contactInfo.secondContactPhoneExt.trim() : null,
+			secondContactEmail: contactInfo.secondContactEmail ? contactInfo.secondContactEmail.trim() : null,
+			address1: contactInfo.address1 ? contactInfo.address1.trim() : null,
+			city: contactInfo.city ? contactInfo.city.trim() : null,
+			state: contactInfo.state ? contactInfo.state.trim() : null,
+			zip: contactInfo.zip ? contactInfo.zip.trim() : null,
+			notes: contactInfo.notes ? contactInfo.notes.trim() : null,
+		};
+
+		const action = insertContact.bind(null);
+		await action(sanitizedUser);
+	}
+};
+
 const loadClients = async () => {
+	return;
 	const response = await fetch(`/temp-load-in/clients.csv`);
 	const csvText = await response.text();
 

@@ -544,7 +544,7 @@ const cachedClients = unstable_cache(
 export const getAllClients = async () => cachedClients();
 //#endregion
 
-//region merge users in DB
+//#region merge users in DB
 export const mergeUsersInDB = async (duplicateUser: User, pendingUser: User) => {
 	return await db.transaction(async (tx) => {
 		// --- Coach Trainings ---

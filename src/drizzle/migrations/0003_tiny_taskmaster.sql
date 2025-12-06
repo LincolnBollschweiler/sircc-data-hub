@@ -1,0 +1,1 @@
+ALTER TABLE "business_contact" ALTER COLUMN "zip" SET DATA TYPE varchar(10);

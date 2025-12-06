@@ -1,4 +1,4 @@
-import { DateRangePreset } from "@/components/admin/DateRangeProvider";
+import { DateRangePreset } from "@/components/providers/DateRangeProvider";
 import { useQuery } from "@tanstack/react-query";
 import { clsx, type ClassValue } from "clsx";
 import {

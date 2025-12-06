@@ -2,6 +2,7 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import * as cacheTags from "./cacheTags";
+import { getAllContactsGlobalTag } from "@/contactInteractions/cacheTags";
 
 export const revalidateVolunteeringTypeCache = async (id: string) => {
 	revalidateTag(cacheTags.getVolunteeringTypeGlobalTag(), "max");
@@ -84,6 +85,7 @@ export const revalidatAllCaches = async () => {
 	revalidateTag(cacheTags.getReferralSourceGlobalTag(), "max");
 	revalidateTag(cacheTags.getReferredOutGlobalTag(), "max");
 	revalidateTag(cacheTags.getServiceGlobalTag(), "max");
+	revalidateTag(getAllContactsGlobalTag(), "max");
 	revalidatePath("/admin/data-types/volunteer-types");
 	revalidatePath("/admin/data-types/reentry-checklist-items");
 	revalidatePath("/admin/data-types/coach-trainings");
@@ -94,4 +96,5 @@ export const revalidatAllCaches = async () => {
 	revalidatePath("/admin/data-types/referral-sources");
 	revalidatePath("/admin/data-types/referred-out");
 	revalidatePath("/admin/data-types/client-services");
+	revalidatePath("/admin/business-contacts");
 };

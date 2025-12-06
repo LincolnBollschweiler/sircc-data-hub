@@ -1,7 +1,7 @@
 "use client";
 
 import { QueryClientProvider } from "@tanstack/react-query";
-import { DateRangeProvider } from "./admin/DateRangeProvider";
+import { DateRangeProvider } from "./providers/DateRangeProvider";
 import { queryClient } from "@/lib/react-query";
 import ProvidedServicesCard from "./admin/ProvidedServicesCard";
 

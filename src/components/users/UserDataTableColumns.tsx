@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@/types";
+import { Contact, User } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { formatPhoneNumber } from "react-phone-number-input";
@@ -44,6 +44,9 @@ import { createRoot } from "react-dom/client";
 import StaffUpdateDialog from "./staff/StaffUpdateDialog";
 import AdminUpdateDialog from "./admins/AdminUpdateDialog";
 import { dateOptions } from "@/utils/constants";
+import ContactUpdateDialog from "../contacts/ContactUpdateDialog";
+import { deleteContact } from "@/contactInteractions/actions";
+// import { Contact } from "@/contactInteractions/db";
 
 // Helper casts
 const asUserRow = (row: unknown): User => row as User;
@@ -54,6 +57,7 @@ const asCoachRow = (row: unknown): CoachList => row as CoachList;
 const asCoachHoursRow = (row: unknown): CoachHours => row as CoachHours;
 const asMilesRow = (row: unknown): CoachMiles => row as CoachMiles;
 const asVolunteerHoursRow = (row: unknown): VolunteerHours => row as VolunteerHours;
+const asContactRow = (row: unknown): Contact => row as Contact;
 
 const processAcceptance = async (user: Partial<User>, accepted: boolean | null) => {
 	const action = user.id ? updateClerkUser.bind(null, user.id) : undefined;
@@ -65,6 +69,12 @@ const processAcceptance = async (user: Partial<User>, accepted: boolean | null) 
 const undeleteUser = async (user: Partial<User>) => {
 	const action = user.id ? undeleteUserById.bind(null, user.id) : undefined;
 	if (!action) return;
+	const actionData = await action();
+	if (actionData) actionToast({ actionData });
+};
+
+const removeContact = async (id: string) => {
+	const action = deleteContact.bind(null, id);
 	const actionData = await action();
 	if (actionData) actionToast({ actionData });
 };
@@ -2562,6 +2572,176 @@ export const userDataTableColumns = (
 				},
 				header: "Added",
 				cell: (info) => new Date(info.getValue<Date>()).toLocaleDateString("en-US", dateOptions),
+			},
+		];
+	}
+
+	if (userType === "contact") {
+		return [
+			{
+				id: "name",
+				accessorFn: (row) => {
+					const r = asContactRow(row);
+					return r.name;
+				},
+				header: ({ column }) => (
+					<Button
+						className="px-0"
+						variant="ghost"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+					>
+						<ArrowUpDown className="h-4 w-4" />
+						Name
+					</Button>
+				),
+				sortingFn: (rowA, rowB) => {
+					const a = asContactRow(rowA.original);
+					const b = asContactRow(rowB.original);
+					const nameA = a.name.toLowerCase();
+					const nameB = b.name.toLowerCase();
+					return nameA.localeCompare(nameB);
+				},
+				cell: (info) => {
+					const r = asContactRow(info.row.original);
+					return <div className="text-nowrap">{r.name}</div>;
+				},
+			},
+			{
+				accessorKey: "typeOfService",
+				header: "Type of Service",
+				cell: (info) => {
+					const r = asContactRow(info.row.original);
+					return <div className="text-nowrap">{r.typeOfService || ""}</div>;
+				},
+			},
+			{
+				accessorKey: "phone",
+				header: () => <div className="text-center">Phone</div>,
+				cell: (info) => {
+					const r = asContactRow(info.row.original);
+					const phone = formatPhoneNumber(r.phone || "");
+					return <div className="text-center text-nowrap">{phone || "N/A"}</div>;
+				},
+			},
+			{
+				accessorKey: "email",
+				header: "Email",
+				cell: ({ getValue }) => {
+					const email = getValue<string>() || "";
+					if (!email) return "";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
+			},
+			{
+				accessorKey: "contactName",
+				header: "Contact Name",
+				cell: (info) => {
+					const r = asContactRow(info.row.original);
+					return <div className="text-nowrap">{r.contactName || ""}</div>;
+				},
+			},
+			{
+				accessorKey: "contactPhone",
+				header: "Contact Phone",
+				cell: (info) => {
+					const r = asContactRow(info.row.original);
+					const phone = formatPhoneNumber(r.contactPhone || "");
+					return <div className="text-nowrap">{phone || "N/A"}</div>;
+				},
+			},
+			{
+				accessorKey: "contactEmail",
+				header: "Contact Email",
+				cell: (info) => {
+					const r = asContactRow(info.row.original);
+					const email = r.contactEmail || "";
+					if (!email) return "N/A";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
+			},
+			{
+				accessorKey: "secondContactName",
+				header: "Second Contact Name",
+				cell: (info) => {
+					const r = asContactRow(info.row.original);
+					return <div className="text-nowrap">{r.secondContactName || ""}</div>;
+				},
+			},
+			{
+				accessorKey: "secondContactPhone",
+				header: "Second Contact Phone",
+				cell: (info) => {
+					const r = asContactRow(info.row.original);
+					const phone = formatPhoneNumber(r.secondContactPhone || "");
+					return <div className="text-nowrap">{phone || "N/A"}</div>;
+				},
+			},
+			{
+				accessorKey: "secondContactEmail",
+				header: "Second Contact Email",
+				cell: (info) => {
+					const r = asContactRow(info.row.original);
+					const email = r.secondContactEmail || "";
+					if (!email) return "N/A";
+					return (
+						<a href={`mailto:${email}`} className="text-blue-500 hover:underline">
+							{email}
+						</a>
+					);
+				},
+			},
+			{
+				accessorKey: "notes",
+				header: "Notes",
+				cell: ({ getValue }) => {
+					const notes = getValue<string>() || "";
+					const truncated = notes.length > 30 ? `${notes.slice(0, 30)}…` : notes;
+					return <div className="text-nowrap">{truncated}</div>;
+				},
+			},
+			{
+				id: "actions",
+				header: () => <div className="text-right"></div>,
+				cell: ({ row }) => {
+					const contact = asContactRow(row.original);
+
+					return (
+						<div className="text-right">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem asChild>
+										<ContactUpdateDialog contact={contact}>
+											<DialogTrigger className="w-full rounded-sm px-2 py-1.5 text-sm text-left hover:!bg-success">
+												Edit Contact
+											</DialogTrigger>
+										</ContactUpdateDialog>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="hover:!bg-danger"
+										onClick={() => removeContact(contact.id)}
+									>
+										Delete Contact
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					);
+				},
 			},
 		];
 	}

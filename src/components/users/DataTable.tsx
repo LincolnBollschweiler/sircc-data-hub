@@ -30,6 +30,7 @@ import StaffUpdateDialog from "./staff/StaffUpdateDialog";
 import AdminUpdateDialog from "./admins/AdminUpdateDialog";
 import { User } from "@/types";
 import MergeUsersDialog from "./duplicate/MergeUsersDialog";
+import ContactUpdateDialog from "../contacts/ContactUpdateDialog";
 
 interface DataTableProps<TData> {
 	data: TData[];
@@ -195,6 +196,13 @@ export default function DataTable<TData>({
 							</DialogTrigger>
 						</AdminUpdateDialog>
 					)}
+					{userType === "contact" && (
+						<ContactUpdateDialog>
+							<DialogTrigger asChild>
+								<Button className="btn-primary">Add Contact</Button>
+							</DialogTrigger>
+						</ContactUpdateDialog>
+					)}
 				</div>
 			)}
 
@@ -263,6 +271,13 @@ export default function DataTable<TData>({
 									<Button className="btn-primary">Add Admin Role to Existing User</Button>
 								</DialogTrigger>
 							</AdminUpdateDialog>
+						)}
+						{userType === "contact" && (
+							<ContactUpdateDialog>
+								<DialogTrigger asChild>
+									<Button className="btn-primary">Add Contact</Button>
+								</DialogTrigger>
+							</ContactUpdateDialog>
 						)}
 					</div>
 

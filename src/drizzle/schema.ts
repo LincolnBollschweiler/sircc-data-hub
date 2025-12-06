@@ -90,6 +90,36 @@ const themePreferenceEnum = pgEnum("theme_preference", themes);
 
 // ---------- Tables ----------
 
+export const businessContact = pgTable(
+	"business_contact",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		name: varchar("name", { length: 100 }).notNull(),
+		typeOfService: varchar("type_of_service", { length: 100 }),
+		email: varchar("email", { length: 255 }),
+		phone: varchar("phone", { length: 12 }),
+		phoneExt: varchar("phone_ext", { length: 6 }),
+		address1: varchar("address1", { length: 100 }),
+		address2: varchar("address2", { length: 100 }),
+		city: varchar("city", { length: 50 }),
+		state: varchar("state", { length: 2 }),
+		zip: varchar("zip", { length: 10 }),
+		contactName: varchar("contact_name", { length: 50 }),
+		contactPhone: varchar("contact_phone", { length: 12 }),
+		contactPhoneExt: varchar("contact_phone_ext", { length: 6 }),
+		contactEmail: varchar("contact_email", { length: 255 }),
+		secondContactName: varchar("second_contact_name", { length: 50 }),
+		secondContactPhone: varchar("second_contact_phone", { length: 12 }),
+		secondContactPhoneExt: varchar("second_contact_phone_ext", { length: 6 }),
+		secondContactEmail: varchar("second_contact_email", { length: 255 }),
+		notes: varchar("notes", { length: 1000 }),
+		createdAt,
+		updatedAt,
+		deletedAt,
+	},
+	(table) => [index("business_contact_deleted_at_idx").on(table.deletedAt)]
+);
+
 export const site = pgTable(
 	"site",
 	{

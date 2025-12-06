@@ -2,7 +2,7 @@
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
-import { DateRangeProvider } from "@/components/admin/DateRangeProvider";
+import { DateRangeProvider } from "@/components/providers/DateRangeProvider";
 import GlobalDateRangeSelector from "@/components/admin/GlobalDateRangeSelector";
 import ProvidedServicesCard from "@/components/admin/ProvidedServicesCard";
 import RequestedServicesCard from "@/components/admin/RequestedServicesCard";
