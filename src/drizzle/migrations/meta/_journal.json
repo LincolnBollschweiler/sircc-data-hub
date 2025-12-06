@@ -15,6 +15,20 @@
       "when": 1764967696403,
       "tag": "0001_fuzzy_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764986923733,
+      "tag": "0002_charming_spiral",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764997803865,
+      "tag": "0003_tiny_taskmaster",
+      "breakpoints": true
     }
   ]
 }

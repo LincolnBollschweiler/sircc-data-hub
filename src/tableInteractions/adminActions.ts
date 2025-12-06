@@ -2,7 +2,7 @@
 
 import { db } from "@/drizzle/db";
 import * as table from "@/drizzle/schema";
-import { client, user } from "@/drizzle/schema";
+import { businessContact, client, user } from "@/drizzle/schema";
 
 export const insertClerkUserDev = async (data: typeof table.user.$inferInsert) => {
 	const [newUser] = await db.insert(table.user).values(data).returning();
@@ -14,6 +14,9 @@ export const deleteAllReferralSource = async () => {
 };
 export const deleteAllReferredOut = async () => {
 	await db.delete(table.referredOut);
+};
+export const deleteAllContacts = async () => {
+	await db.delete(table.businessContact);
 };
 export const deleteAllVolunteerTypes = async () => {
 	await db.delete(table.volunteeringType);
@@ -108,4 +111,10 @@ export const createUser = async (userData: typeof user.$inferInsert, clientData:
 export const addClientService = async (data: typeof table.clientService.$inferInsert) => {
 	const [newClientService] = await db.insert(table.clientService).values(data).returning();
 	return newClientService?.id;
+};
+
+export const insertContact = async (data: typeof businessContact.$inferInsert) => {
+	console.log(data);
+	const [newContact] = await db.insert(businessContact).values(data).returning();
+	return newContact?.id;
 };
