@@ -339,7 +339,7 @@ export default function StaffForm({
 											<Input
 												{...field}
 												value={field.value ?? ""}
-												placeholder="Zip Code (optional)"
+												placeholder="ZIP Code (optional)"
 											/>
 										</FormControl>
 										<FormMessage />

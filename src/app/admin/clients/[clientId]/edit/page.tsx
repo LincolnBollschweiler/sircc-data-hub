@@ -10,7 +10,8 @@ import { getCurrentClerkUser } from "@/services/clerk";
 
 export default async function ViewClientPage({ params }: { params: Promise<{ clientId: string }> }) {
 	const [{ clientId }, { role }] = await Promise.all([params, getCurrentClerkUser()]);
-	console.log("Current role:", role);
+	console.log("Current role:", role); // used to allow build ... might want if we
+	// need to conditionlly disallow staff actions later
 	const [fullClient, allCoaches, csTables] = await Promise.all([
 		getClientById(clientId),
 		getAllCoachUsers(),

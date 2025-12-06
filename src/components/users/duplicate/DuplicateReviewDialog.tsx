@@ -116,7 +116,7 @@ export function DuplicateReviewDialog({
 										/>
 										<FieldRow label="City" existing={dup.city} pending={pendingValues.city} />
 										<FieldRow label="State" existing={dup.state} pending={pendingValues.state} />
-										<FieldRow label="Zip" existing={dup.zip} pending={pendingValues.zip} />
+										<FieldRow label="ZIP" existing={dup.zip} pending={pendingValues.zip} />
 										<FieldRow label="Role" existing={dup.role} pending={pendingValues.role} />
 									</CardContent>
 								</Card>

@@ -16,7 +16,8 @@ type CACHE_TAG =
 	| "referral-sources"
 	| "referred-out"
 	| "sites"
-	| "user-sites";
+	| "user-sites"
+	| "contacts";
 
 export const getGlobalTag = (tag: CACHE_TAG) => `global:${tag}` as const;
 export const getIdTag = (tag: CACHE_TAG, id: string) => `id:${id}-${tag}` as const;

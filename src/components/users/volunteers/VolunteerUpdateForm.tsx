@@ -295,7 +295,7 @@ export default function VolunteerUpdateForm({
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<Input {...field} value={field.value ?? ""} placeholder="Zip Code (optional)" />
+										<Input {...field} value={field.value ?? ""} placeholder="ZIP Code (optional)" />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

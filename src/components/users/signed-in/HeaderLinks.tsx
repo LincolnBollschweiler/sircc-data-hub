@@ -19,7 +19,6 @@ export default async function HeaderLinks() {
 
 	const admin = user && accepted && canAccessAdminPages(user);
 	const adminActive = admin && pathName?.includes("/admin") && !pathName?.includes("/admins");
-	console.log("Admin: ", admin, " Active: ", adminActive);
 
 	const coach = user && accepted && canAccessCoachPages(user);
 	const coachActive = coach && pathName?.includes("/coach") && !pathName?.includes("/coaches");

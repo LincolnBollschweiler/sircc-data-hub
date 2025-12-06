@@ -433,7 +433,7 @@ export default function ClientUserForm({
 											<Input
 												{...field}
 												value={field.value ?? ""}
-												placeholder="Zip Code (optional)"
+												placeholder="ZIP Code (optional)"
 											/>
 										</FormControl>
 										<FormMessage />
