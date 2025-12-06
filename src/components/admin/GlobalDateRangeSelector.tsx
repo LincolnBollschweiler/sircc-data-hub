@@ -1,6 +1,6 @@
 "use client";
 
-import { useDateRange, DateRangePreset } from "./DateRangeProvider";
+import { useDateRange, DateRangePreset } from "../providers/DateRangeProvider";
 
 export default function GlobalDateRangeSelector() {
 	const { selectedPreset, setPreset } = useDateRange();

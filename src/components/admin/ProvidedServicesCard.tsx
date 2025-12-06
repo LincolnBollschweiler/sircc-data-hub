@@ -1,7 +1,7 @@
 import DashboardCard from "./DashboardCard";
 import { TotalsMiniTableRow } from "./TotalsMiniTable";
 import { useEffect, useState } from "react";
-import { useDateRange } from "./DateRangeProvider";
+import { useDateRange } from "../providers/DateRangeProvider";
 import { getLocalDateRange, useAggregateQuery } from "@/lib/utils";
 import DashboardCardContent from "./DashboardCardContent";
 import { DateRangePreset } from "@/types";

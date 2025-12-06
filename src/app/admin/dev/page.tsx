@@ -503,7 +503,6 @@ const addUserData = async (data) => {
 const loadContacts = async () => {
 	const response = await fetch(`/temp-load-in/businessContacts.csv`);
 	const csvText = await response.text();
-	debugger;
 
 	const parsed = Papa.parse(csvText, {
 		header: true, // use first row as keys
@@ -517,28 +516,19 @@ const loadContacts = async () => {
 		if (contactInfo.phone && contactInfo.phone.trim().length > 0) {
 			phone = `+1${contactInfo.phone.trim().replace(/\D/g, "")}`;
 		}
-		if (contactInfo.phone && phone?.length !== 12) {
-			debugger;
-			phone = null;
-		}
+		if (contactInfo.phone && phone?.length !== 12) phone = null;
 
 		let contactPhone = null;
 		if (contactInfo.contactPhone && contactInfo.contactPhone.trim().length > 0) {
 			contactPhone = `+1${contactInfo.contactPhone.trim().replace(/\D/g, "")}`;
 		}
-		if (contactInfo.contactPhone && contactPhone?.length !== 12) {
-			debugger;
-			contactPhone = null;
-		}
+		if (contactInfo.contactPhone && contactPhone?.length !== 12) contactPhone = null;
 
 		let secondContactPhone = null;
 		if (contactInfo.secondContactPhone && contactInfo.secondContactPhone.trim().length > 0) {
 			secondContactPhone = `+1${contactInfo.secondContactPhone.trim().replace(/\D/g, "")}`;
 		}
-		if (contactInfo.secondContactPhone && secondContactPhone?.length !== 12) {
-			debugger;
-			secondContactPhone = null;
-		}
+		if (contactInfo.secondContactPhone && secondContactPhone?.length !== 12) secondContactPhone = null;
 
 		const sanitizedUser = {
 			name: contactInfo.name ? contactInfo.name.trim() : null,
@@ -562,8 +552,6 @@ const loadContacts = async () => {
 		const action = insertContact.bind(null);
 		await action(sanitizedUser);
 	}
-
-	debugger;
 };
 
 const loadClients = async () => {

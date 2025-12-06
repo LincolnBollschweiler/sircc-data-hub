@@ -114,7 +114,6 @@ export const addClientService = async (data: typeof table.clientService.$inferIn
 };
 
 export const insertContact = async (data: typeof businessContact.$inferInsert) => {
-	console.log(data);
 	const [newContact] = await db.insert(businessContact).values(data).returning();
 	return newContact?.id;
 };

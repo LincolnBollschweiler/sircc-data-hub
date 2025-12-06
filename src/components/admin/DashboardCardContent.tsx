@@ -1,5 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { DateRangePreset } from "./DateRangeProvider";
+import { DateRangePreset } from "../providers/DateRangeProvider";
 import TotalsMiniTable, { TotalsMiniTableRow } from "./TotalsMiniTable";
 import { useEffect, useState } from "react";
 import { dateOptions } from "@/utils/constants";
